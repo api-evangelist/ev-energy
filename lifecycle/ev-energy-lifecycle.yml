@@ -1,0 +1,42 @@
+generated: '2026-08-12'
+method: searched
+source: https://developers.ev.energy/docs/versioning.md
+versioning:
+  scheme: point version
+  current_version: '2.0'
+  next_breaking_version: '2.1'
+  negotiation_header: EvEnergy-Version
+  response_header: EvEnergy-Version
+  pinning: Each API client is pinned to the version current when the client was created.
+  invalid_version: 400 Bad Request
+  policy_url: https://developers.ev.energy/docs/versioning
+  support_statement: Previous versions continue to be supported but do not receive new features.
+maturity:
+  stage: beta
+  statement: Version 2 of our API is currently under development and should be considered a Beta product.
+    We will be making rapid changes as we add functionality.
+  source: https://developers.ev.energy/docs/intro.md
+deprecation:
+  policy_published: false
+  sunset_header: false
+  deprecation_header: false
+  deprecated_operations: []
+  note: No RFC 8594 Sunset/Deprecation header policy and no dated deprecation schedule are published.
+    The versioning page states old versions stay supported but never states for how long or how removal
+    is signalled. No Deprecation pointer emitted.
+status_page:
+  published: false
+  probed:
+  - url: https://status.ev.energy/
+    result: TLS handshake failure — no status page served on that hostname
+  note: No public status page or uptime dashboard found on any ev.energy host. No StatusPage pointer emitted.
+sla:
+  published: false
+  note: No public SLA. Terms are commercial and negotiated per integration.
+changelog:
+  published: false
+  note: The developer portal publishes no dated changelog or release-notes page; the llms.txt table of
+    contents lists 22 pages and none is a changelog. No ChangeLog pointer emitted.
+support:
+  developer_contact: developers@ev.energy
+  help_centre: https://support.ev.energy/en/support/home

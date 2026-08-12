@@ -1,0 +1,30 @@
+generated: '2026-08-12'
+method: searched
+source: npm registry search, PyPI, and https://api.github.com/orgs/ev-energy/repos
+package_count: 0
+packages: []
+note: 'No first-party ev.energy client library exists on any public registry. npm registry search for
+  "ev.energy" and "evenergy" returns zero packages; PyPI returns 404 for ev-energy, evenergy, ev_energy
+  and evenergy-api. The company GitHub organisation (https://github.com/ev-energy, blog https://ev.energy,
+  London UK) holds six public repositories and none is an API client: two archived upstream forks (PGPy,
+  cfn-lint), a fork of the mobilityhouse OCPP library (ocpp-parallel), fleet-telemetry, labtrack, and
+  a Terraform ElastiCache module. The API product page advertises an "SDK" but the linked deliverable
+  is documentation, web views and code samples, not a published package. No SDKs pointer is emitted.'
+searched_registries:
+- registry: npm
+  query: ev.energy / evenergy
+  result: 0 packages
+- registry: pypi
+  query: ev-energy, evenergy, ev_energy, evenergy-api
+  result: 404 on all
+- registry: github
+  query: orgs/ev-energy/repos
+  result: 6 repos, 0 API client libraries
+evidence:
+- url: https://registry.npmjs.org/-/v1/search?text=ev.energy&size=20
+  status: 200
+  note: 'objects: []'
+- url: https://pypi.org/pypi/ev-energy/json
+  status: 404
+- url: https://api.github.com/orgs/ev-energy/repos
+  status: 200

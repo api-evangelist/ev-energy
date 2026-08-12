@@ -1,0 +1,82 @@
+generated: '2026-08-12'
+method: searched
+source: https://developers.ev.energy/docs/intro.md and the sibling convention pages listed under docs_pages
+derived_from: openapi/ev-energy-api-v2-openapi.yaml
+docs_pages:
+  authentication: https://developers.ev.energy/docs/auth
+  versioning: https://developers.ev.energy/docs/versioning
+  pagination: https://developers.ev.energy/docs/pagination
+  errors: https://developers.ev.energy/docs/errors
+  rate_limits: https://developers.ev.energy/docs/rate_limiting
+  resource_ids: https://developers.ev.energy/docs/resource_ids
+  expansion: https://developers.ev.energy/docs/expand
+  user_context_header: https://developers.ev.energy/docs/user-header
+  webhooks: https://developers.ev.energy/docs/webhooks
+  sandbox: https://developers.ev.energy/docs/sandbox
+auth:
+  style: oauth2
+  flows:
+  - authorization_code (with optional PKCE, S256)
+  - client_credentials
+  token_header: 'Authorization: Bearer <access_token>'
+  token_lifetime_seconds: 36000
+  authorization_code_lifetime: 1 minute
+  refresh: refresh_token grant at https://api.ev.energy/o/token
+  revocation: https://api.ev.energy/o/revoke_token (trailing slash required; 405 without it)
+  scopes_artifact: scopes/ev-energy-scopes.yml
+  artifact: authentication/ev-energy-authentication.yml
+idempotency:
+  supported: false
+  note: 'No idempotency key header, retry-safety guarantee, or replay window is documented anywhere in
+    the developer portal or declared in the OpenAPI. Searched all 20 published docs pages and the 785KB
+    OpenAPI for /idempoten/i: zero matches. Recorded as an honest absence — no Idempotency pointer is
+    emitted.'
+  checked: '2026-08-12'
+pagination:
+  styles:
+  - cursor
+  - page-number
+  discovery: RFC 5988 `Link` header with rel="previous" and rel="next"; `about:blank` marks the first/last
+    page.
+  parameters:
+  - name: page_size
+    description: Items per page. Between 1 and 100. Defaults to 25.
+  - name: page_after
+    description: 'Cursor: return resources created after this resource ID.'
+  - name: page_before
+    description: 'Cursor: return resources created immediately before this resource ID. Ignored if page_after
+      is also supplied.'
+  - name: page
+    description: Page-number scheme. Must be > 0. Requesting a non-existent page returns 404.
+  guidance: Follow the Link header rather than constructing pagination URLs by hand.
+expansion:
+  supported: true
+  docs: https://developers.ev.energy/docs/expand
+  note: Related resources are returned as absolute URLs by default and can be inlined on request.
+user_context:
+  header: EvEnergy-User
+  description: Supplies single-user context for client_credentials tokens, which do not represent one
+    user. Set to the absolute URL of the user resource. Endpoints that require it return 400 when it is
+    missing; the API reference marks which ones.
+versioning:
+  scheme: point version, pinned per OAuth client at creation time
+  current: '2.0'
+  request_header: EvEnergy-Version
+  response_header: EvEnergy-Version
+  invalid_version_response: 400 Bad Request
+  policy: A new point version is released when breaking changes are made. Previous versions continue to
+    be supported but do not receive new features. The first breaking release will be 2.1.
+errors:
+  format: rfc9457
+  media_type: application/problem+json
+  artifact: errors/ev-energy-problem-types.yml
+rate_limits:
+  artifact: rate-limits/ev-energy-rate-limits.yml
+  response_headers:
+  - x-ratelimit-limit
+  - x-ratelimit-remaining
+  - retry-after
+resource_ids:
+  format: 4-char collection prefix + 26-char ULID
+  artifact: data-model/ev-energy-data-model.yml
+lifecycle_artifact: lifecycle/ev-energy-lifecycle.yml

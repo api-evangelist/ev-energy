@@ -1,0 +1,26 @@
+# llms.txt
+
+## Table of contents
+
+ - [Promo Code In Use Error](https://developers.ev.energy/docs/promo_code_in_use.md)
+ - [Promo Code Invalid Error](https://developers.ev.energy/docs/promo_code_invalid.md)
+ - [Home Batteries](https://developers.ev.energy/docs/home_batteries.md)
+ - [Sandbox environment for testing](https://developers.ev.energy/docs/sandbox.md)
+ - [EvEnergy-User Header](https://developers.ev.energy/docs/user-header.md)
+ - [Versioning](https://developers.ev.energy/docs/versioning.md)
+ - [Understanding Charging Data](https://developers.ev.energy/docs/understanding/charging_sessions.md)
+ - [Pagination](https://developers.ev.energy/docs/pagination.md)
+ - [Rate limits](https://developers.ev.energy/docs/rate_limiting.md)
+ - [Resource IDs](https://developers.ev.energy/docs/resource_ids.md)
+ - [Schedules](https://developers.ev.energy/docs/schedules.md)
+ - [Webhooks](https://developers.ev.energy/docs/webhooks.md)
+ - [Authentication](https://developers.ev.energy/docs/auth.md)
+ - [Expanding Responses](https://developers.ev.energy/docs/expand.md)
+ - [Solar](https://developers.ev.energy/docs/solar.md)
+ - [Onboarding vehicles, EVSEs and inverters](https://developers.ev.energy/docs/howto/onboarding_custom.md)
+ - [Error response format](https://developers.ev.energy/docs/errors.md)
+ - [Introduction](https://developers.ev.energy/docs/intro.md)
+ - [Onboarding Users](https://developers.ev.energy/docs/howto/onboarding_users.md)
+ - [The Scheduler](https://developers.ev.energy/docs/understanding/scheduler.md)
+ - [ev.energy v2 API](https://developers.ev.energy/ev.energy-api-v2.md)
+

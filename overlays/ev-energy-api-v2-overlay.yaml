@@ -1,0 +1,75 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enrichment overlay for the ev.energy v2 API
+  version: 1.0.0
+extends: ../openapi/ev-energy-api-v2-openapi.yaml
+x-generated: '2026-08-12'
+x-method: generated
+x-source: https://developers.ev.energy/docs/ + API Evangelist enrichment artifacts in this repo
+x-note: Additive only. Records what the developer portal documents in prose but the spec does not encode,
+  plus the cross-cutting absences an agent needs to know about. The original spec is never mutated.
+actions:
+- target: $.info
+  description: Record the published support and portal surface on info.
+  update:
+    contact:
+      name: ev.energy developers
+      email: developers@ev.energy
+      url: https://developers.ev.energy/
+    x-developer-portal: https://developers.ev.energy/
+    x-api-status: beta
+    x-api-status-note: The developer portal states version 2 is under development and should be considered
+      a Beta product.
+- target: $.info
+  description: Record cross-cutting runtime semantics documented in prose only.
+  update:
+    x-idempotency:
+      supported: false
+      note: No idempotency key header or replay window is documented or declared. Unsafe methods are not
+        documented as retry-safe.
+    x-pagination:
+      style:
+      - cursor
+      - page-number
+      discovery: RFC 5988 Link header
+      parameters:
+      - page_size
+      - page_after
+      - page_before
+      - page
+      page_size_default: 25
+      page_size_max: 100
+    x-rate-limit:
+      limit: 1000
+      window: 1 hour rolling
+      scope: OAuth application + user
+      headers:
+      - x-ratelimit-limit
+      - x-ratelimit-remaining
+      - retry-after
+      exhaustion_status: 429
+    x-versioning:
+      header: EvEnergy-Version
+      current: '2.0'
+      pinning: per OAuth client at creation
+    x-user-context-header: EvEnergy-User
+    x-error-format: rfc9457
+    x-resource-id-format: 4-character collection prefix + 26-character ULID
+- target: $.components.securitySchemes.oauth2.flows.authorizationCode
+  description: Record PKCE support, which the authentication page documents but the spec does not encode.
+  update:
+    x-pkce:
+      supported: true
+      code_challenge_method: S256
+      rfc: RFC 7636
+    x-authorization-code-lifetime: 1 minute
+    x-revocation-endpoint: https://api.ev.energy/o/revoke_token
+- target: $.servers
+  description: Annotate the shared production/sandbox base URL.
+  update:
+  - url: https://api.ev.energy/v2
+    x-sandbox:
+      shares_base_url: true
+      selection: credentials
+      note: Sandbox and production are the same base URL; the credential type decides which dataset is
+        returned.

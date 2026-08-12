@@ -1,0 +1,72 @@
+generated: '2026-08-12'
+method: searched
+source: https://developers.ev.energy/docs/ (auth, errors, pagination, rate_limiting, resource_ids, webhooks)
+  + openapi/ev-energy-api-v2-openapi.yaml
+standards:
+- id: openapi-3.1
+  conforms: true
+  evidence: 'openapi: 3.1.0 document published at https://developers.ev.energy/_spec/ev.energy-API-v2.yaml
+    — 180 paths, 210 operations, 149 component schemas, unique operationId on every operation.'
+- id: oauth2
+  conforms: true
+  evidence: components.securitySchemes.oauth2 declares authorizationCode and clientCredentials flows against
+    https://api.ev.energy/o/authorize/ and /o/token/; applied globally via top-level security.
+- id: rfc7636-pkce
+  conforms: true
+  evidence: 'The authentication page documents S256 code_challenge_method for native and SPA clients:
+    https://developers.ev.energy/docs/auth#implementing-pkce'
+- id: rfc7009-token-revocation
+  conforms: true
+  evidence: POST https://api.ev.energy/o/revoke_token documented on the authentication page.
+- id: rfc9457
+  conforms: true
+  evidence: '"All errors from the ev.energy API ... return bodies in the standard Problem Details format
+    described by RFC 9457." 13 spec responses declare application/problem+json against components.schemas.RFC9457ProblemDetail.'
+- id: rfc5988-web-linking
+  conforms: true
+  evidence: Pagination is discovered through a Link header carrying rel="previous" and rel="next", explicitly
+    citing RFC 5988.
+- id: rfc9116-security-txt
+  conforms: true
+  evidence: https://app.ev.energy/.well-known/security.txt returns 200 with Contact, Expires, Policy,
+    Preferred-Languages and Hiring fields.
+- id: ulid
+  conforms: true
+  evidence: Every resource ID is a 4-character collection prefix plus a 26-character ULID per https://github.com/ulid/spec
+- id: ocpp-1.6
+  conforms: true
+  evidence: ev.energy states it is "OCPP 1.6 fully certified" on https://www.ev.energy/about ; the API
+    exposes OCPP call logs (components.schemas.EVSEOCPPLog, EVSEOCPPCallResponse).
+- id: rfc8414-oauth-metadata
+  conforms: false
+  evidence: The v2 API OAuth endpoints publish no authorization-server metadata. The only RFC 8414 document
+    on an ev.energy host (developers.ev.energy/.well-known/oauth-authorization-server, 200) belongs to
+    the Redocly docs portal, issuer auth.cloud.redocly.com.
+- id: oidc-discovery
+  conforms: false
+  evidence: /.well-known/openid-configuration returns 404 on www/developers and 403 on api.ev.energy.
+    No OpenID Connect layer is documented.
+- id: rfc8594-sunset
+  conforms: false
+  evidence: No Sunset or Deprecation response headers and no dated deprecation schedule are documented;
+    the versioning page states old versions remain supported but never states a removal signal.
+- id: idempotency
+  conforms: false
+  evidence: No idempotency key header or retry-safety contract anywhere in the developer portal or the
+    OpenAPI. Zero matches for /idempoten/i across 20 docs pages and the 785KB spec.
+- id: asyncapi
+  conforms: false
+  evidence: No AsyncAPI document published. The event surface is declared instead through OpenAPI 3.1
+    top-level webhooks (2 events) and the Svix event catalog.
+- id: ratelimit-headers
+  conforms: partial
+  evidence: Publishes x-ratelimit-limit and x-ratelimit-remaining plus retry-after on 429 — the de-facto
+    X-RateLimit convention, not the IETF draft RateLimit / RateLimit-Policy fields. No reset field is
+    published.
+certifications:
+  published:
+  - OCPP 1.6 (fully certified)
+  - Certified B Corporation
+  note: No SOC 2, ISO 27001, PCI DSS, HIPAA or FedRAMP attestation, and no trust centre, is published
+    on any ev.energy host. Because no security/privacy compliance programme is published, no Compliance
+    pointer is emitted.

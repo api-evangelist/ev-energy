@@ -1,23 +1,145 @@
 aid: ev-energy
 name: ev.energy
-description: 'ev.energy is a company surfaced via the API Evangelist harvest backlog (source: secondary-market)
-  and added to the network as a stub for full-pipeline profiling.'
+description: 'ev.energy is a London- and Palo-Alto-based smart electric-vehicle charging
+  platform. Its cloud software connects EV drivers, vehicles, EVSEs (chargers), home
+  batteries, solar inverters and utility programs so charging can be shifted to cheaper,
+  greener periods and aggregated as grid flexibility. The company operates a consumer
+  driver app across the UK, EU, US and Canada, a white-label platform for utilities
+  and e-mobility businesses, an EV Flex virtual power plant product, and the Smart
+  Charge API — a public OpenAPI 3.1 REST contract at api.ev.energy covering vehicles,
+  EVSEs, charging sessions, schedules, tariffs, solar, home batteries, VPP dispatch,
+  rebates and utility program enrollment.'
+image: https://cdn.prod.website-files.com/6278ea1f9c10c9550411fdd7/627a9ce3111e36661da5018c_ev-logo-256px.png
 url: https://raw.githubusercontent.com/api-evangelist/ev-energy/refs/heads/main/apis.yml
 x-type: company
 x-source: harvest:secondary-market
-x-tier: stub
-x-tier-reason: harvest
 specificationVersion: '0.20'
 created: '2026-08-12'
 modified: '2026-08-12'
 tags:
 - Company
-apis: []
+- Energy
+- Electric Vehicles
+- EV Charging
+- Smart Charging
+- Utilities
+- Sustainability
+- Virtual Power Plant
+- Demand Response
+- Solar
+- Home Energy
+- Internet of Things
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
 - FN: APIs.json
   email: info@apis.io
+apis:
+- aid: ev-energy-api-v2
+  name: ev.energy v2 API
+  description: 'The official ev.energy v2 REST API. 210 operations across 180 paths
+    covering users, vehicles, EVSEs, charging sessions, schedules, tariffs, regions,
+    solar, solar forecasts, home batteries, boundary meters, CT clamps, HEM systems,
+    sites, carbon intensity, grid data, programs, rebates, subscriptions, notifications,
+    support tickets and VPP dispatch. OAuth 2.0 (authorization code with PKCE, and
+    client credentials) with 35 fine-grained scopes; RFC 9457 problem-details errors;
+    RFC 5988 Link-header pagination; ULID-prefixed resource IDs.'
+  humanURL: https://developers.ev.energy/ev.energy-api-v2
+  baseURL: https://api.ev.energy/v2
+  tags:
+  - EV Charging
+  - Smart Charging
+  - Energy
+  - Vehicles
+  - Solar
+  - Virtual Power Plant
+  properties:
+  - type: OpenAPI
+    url: openapi/ev-energy-api-v2-openapi.yaml
+  - type: Overlay
+    url: overlays/ev-energy-api-v2-overlay.yaml
+  - type: Documentation
+    url: https://developers.ev.energy/docs/intro
+  - type: APIReference
+    url: https://developers.ev.energy/ev.energy-api-v2
+  - type: GettingStarted
+    url: https://developers.ev.energy/docs/intro
+  - type: Authentication
+    url: authentication/ev-energy-authentication.yml
+  - type: OAuthScopes
+    url: scopes/ev-energy-scopes.yml
+  - type: RateLimits
+    url: rate-limits/ev-energy-rate-limits.yml
+  - type: ErrorCatalog
+    url: errors/ev-energy-problem-types.yml
+  - type: Conventions
+    url: conventions/ev-energy-conventions.yml
+  - type: DataModel
+    url: data-model/ev-energy-data-model.yml
+  - type: Sandbox
+    url: sandbox/ev-energy-sandbox.yml
+  - type: Webhooks
+    url: asyncapi/ev-energy-webhooks.yml
+  - type: Lifecycle
+    url: lifecycle/ev-energy-lifecycle.yml
+  - type: Conformance
+    url: conformance/ev-energy-conformance.yml
 common:
 - type: Website
-  url: https://www.nasdaqprivatemarket.com/
+  url: https://www.ev.energy/
+- type: DeveloperPortal
+  url: https://developers.ev.energy/
+- type: Documentation
+  url: https://developers.ev.energy/docs/intro
+- type: APIReference
+  url: https://developers.ev.energy/ev.energy-api-v2
+- type: GettingStarted
+  url: https://developers.ev.energy/docs/intro
+- type: Support
+  url: https://support.ev.energy/en/support/home
+- type: Blog
+  url: https://www.ev.energy/blog
+- type: GitHubOrganization
+  url: https://github.com/ev-energy
+- type: TermsOfService
+  url: https://www.ev.energy/terms
+- type: PrivacyPolicy
+  url: https://www.ev.energy/privacy
+- type: Plans
+  url: plans/ev-energy-plans-pricing.yml
+- type: LLMsTxt
+  url: llms/ev-energy-llms.txt
+- type: MCPServer
+  url: mcp/ev-energy-mcp.yml
+- type: ToolCrosswalk
+  url: mcp/ev-energy-tool-crosswalk.yml
+- type: AgentSkill
+  url: skills/_index.yml
+- type: WellKnown
+  url: well-known/ev-energy-well-known.yml
+- type: SecurityTxt
+  url: well-known/ev-energy-security.txt
+- type: Security
+  url: security/ev-energy-vulnerability-disclosure.yml
+- type: VulnerabilityDisclosure
+  url: security/ev-energy-vulnerability-disclosure.yml
+- type: DomainSecurity
+  url: security/ev-energy-domain-security.yml
+x-enrichment:
+  date: '2026-08-12'
+  status: enriched
+  artifacts_added: 28
+  pass: local-v1
+x-notes:
+  contract_discovery: 'The API host api.ev.energy returns 403 text/plain for every unauthenticated
+    path, including / and every /.well-known/* path, so host-root spec probing finds nothing there.
+    The real OpenAPI 3.1.0 is served by the Redocly Realm developer portal at
+    https://developers.ev.energy/_spec/ev.energy-API-v2.yaml — discovered from
+    /page-data/ev.energy-api-v2/data.json, which names definitionId ev.energy-API-v2.yaml.
+    Ownership is direct: developers.ev.energy, api.ev.energy and www.ev.energy share the registrable
+    domain ev.energy, and the spec servers[] block names https://api.ev.energy/v2.'
+  not_found: 'No A2A agent card on any host (canonical or legacy path). No AsyncAPI. No published
+    idempotency contract. No status page, deprecation policy, changelog, CLI, embedded components,
+    gRPC/protobuf, Postman collection, roadmap, trust centre, bug bounty, or first-party SDK on any
+    public registry. No public API pricing and no self-service signup — credentials are provisioned
+    by ev.energy during commercial onboarding.'

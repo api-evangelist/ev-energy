@@ -1,0 +1,56 @@
+generated: '2026-08-12'
+method: searched
+source: https://developers.ev.energy/docs/webhooks.md
+derived_from: openapi/ev-energy-api-v2-openapi.yaml
+asyncapi_published: false
+note: ev.energy publishes no AsyncAPI document. It does publish a real webhook surface, declared natively
+  in the OpenAPI 3.1 top-level `webhooks` object and documented on the developer portal, so this artifact
+  captures the webhook catalog and carries a Webhooks pointer rather than a fabricated AsyncAPI.
+delivery:
+  platform: Svix
+  provider_event_catalog: https://www.svix.com/event-types/eu/org_2eoqqPZwMlztxZbIXr0eeqYTscI/
+  portal: Generated per-application via an authenticated call to the Webhook Portal endpoint; the response
+    carries a browser link.
+  retries: Automatic retry of failed messages, plus manual replay through the Svix app portal.
+  reliability_statement: ev.energy explicitly states webhooks are a fundamentally unreliable mechanism
+    and that integrators should always keep an API-polling fallback.
+envelope:
+  fields:
+  - name: type
+    description: The event type, e.g. charging_sub_session.created. Also delivered in the svix-event-type
+      header so consumers can route without parsing the body.
+  - name: timestamp
+    description: ISO 8601 UTC timestamp of when the event occurred. Distinct from the svix-timestamp delivery
+      header.
+  - name: data
+    description: The resource itself, in exactly the same representation the equivalent REST endpoint
+      returns.
+delivery_headers:
+- header: svix-id
+  description: Stable unique message identifier across delivery retries. Use it to deduplicate.
+- header: svix-timestamp
+  description: Unix epoch seconds when the message was dispatched.
+- header: svix-signature
+  description: Space-separated list of HMAC signatures (multiple during key rotation). Verify per the
+    Svix payload-verification guide.
+- header: svix-event-type
+  description: The event type, mirroring the body `type` field.
+signature_verification: https://docs.svix.com/receiving/verifying-payloads/how
+event_count: 2
+events:
+- event: charging_sub_session.created
+  summary: Charging sub-session created
+  description: A charging sub-session is created, representing a period of charging in a single mode.
+  tags:
+  - Charging Sessions
+  method: POST
+  payload_schema: '#/components/schemas/ChargingSubSessionCreatedWebhook'
+  expected_response: 200
+- event: charging_sub_session.ended
+  summary: Charging sub-session ended
+  description: A charging sub-session has ended, representing a period of charging in a single mode.
+  tags:
+  - Charging Sessions
+  method: POST
+  payload_schema: '#/components/schemas/ChargingSubSessionEndedWebhook'
+  expected_response: 200

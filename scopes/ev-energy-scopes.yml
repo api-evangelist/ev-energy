@@ -1,0 +1,269 @@
+generated: '2026-08-12'
+method: derived
+source: openapi/ev-energy-api-v2-openapi.yaml
+docs: https://developers.ev.energy/docs/auth
+note: 'Scopes read verbatim from components.securitySchemes.oauth2.flows.clientCredentials.scopes in the
+  published OpenAPI. The developer portal documents the OAuth flows but publishes NO scope reference page,
+  so 26 of the 35 scopes ship with an empty description string in the spec and are recorded here as description_published:
+  false rather than being given an invented meaning. The authorizationCode flow declares an empty scopes
+  object in the spec even though the authentication page describes per-user consent to named scopes —
+  the two flows are not consistently described. Scopes are assigned by ev.energy when it provisions the
+  OAuth application; there is no self-service scope selection.'
+scheme:
+  name: oauth2
+  type: oauth2
+  authorizationUrl: https://api.ev.energy/o/authorize/
+  tokenUrl: https://api.ev.energy/o/token/
+  refreshUrl: https://api.ev.energy/o/token/
+  revocationUrl: https://api.ev.energy/o/revoke_token
+  flows:
+  - clientCredentials
+  - authorizationCode
+scope_count: 35
+described_count: 11
+scopes:
+- scope: boundary_meter:read
+  flows:
+  - clientCredentials
+  description: null
+  description_published: false
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+- scope: carbon:read
+  flows:
+  - clientCredentials
+  description: null
+  description_published: false
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+- scope: charging_session:read
+  flows:
+  - clientCredentials
+  description: null
+  description_published: false
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+- scope: charging_session:write
+  flows:
+  - clientCredentials
+  description: null
+  description_published: false
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+- scope: debug:read
+  flows:
+  - clientCredentials
+  description: null
+  description_published: false
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+- scope: dispatch_coordinator:read
+  flows:
+  - clientCredentials
+  description: null
+  description_published: false
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+- scope: dispatch_event:write
+  flows:
+  - clientCredentials
+  description: null
+  description_published: false
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+- scope: evse:read
+  flows:
+  - clientCredentials
+  description: null
+  description_published: false
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+- scope: evse:write
+  flows:
+  - clientCredentials
+  description: null
+  description_published: false
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+- scope: grid:read
+  flows:
+  - clientCredentials
+  description: null
+  description_published: false
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+- scope: home_battery:read
+  flows:
+  - clientCredentials
+  description: null
+  description_published: false
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+- scope: home_energy:read
+  flows:
+  - clientCredentials
+  description: null
+  description_published: false
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+- scope: inverter:read
+  flows:
+  - clientCredentials
+  description: null
+  description_published: false
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+- scope: inverter:write
+  flows:
+  - clientCredentials
+  description: null
+  description_published: false
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+- scope: notification_preferences:read
+  flows:
+  - clientCredentials
+  description: Read a user's notification group opt-in state
+  description_published: true
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+- scope: notification_preferences:write
+  flows:
+  - clientCredentials
+  description: Update a user's notification group opt-in state
+  description_published: true
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+- scope: payout_method:read
+  flows:
+  - clientCredentials
+  description: Read a user's preferred payout method
+  description_published: true
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+- scope: payout_method:write
+  flows:
+  - clientCredentials
+  description: Set, update, or clear a user's preferred payout method
+  description_published: true
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+- scope: region:read
+  flows:
+  - clientCredentials
+  description: Read region and region group boundary data
+  description_published: true
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+- scope: region:write
+  flows:
+  - clientCredentials
+  description: Create regions and region groups
+  description_published: true
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+- scope: route_planner_preferences:read
+  flows:
+  - clientCredentials
+  description: Read a user's EV Route Planner preferences
+  description_published: true
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+- scope: route_planner_preferences:write
+  flows:
+  - clientCredentials
+  description: Update a user's EV Route Planner preferences
+  description_published: true
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+- scope: saved_routes:read
+  flows:
+  - clientCredentials
+  description: Read a user's saved route-planner routes
+  description_published: true
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+- scope: saved_routes:write
+  flows:
+  - clientCredentials
+  description: Create, update, or delete a user's saved routes
+  description_published: true
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+- scope: solar:read
+  flows:
+  - clientCredentials
+  description: null
+  description_published: false
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+- scope: solar:write
+  flows:
+  - clientCredentials
+  description: null
+  description_published: false
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+- scope: solar_forecast:read
+  flows:
+  - clientCredentials
+  description: null
+  description_published: false
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+- scope: subscription:read
+  flows:
+  - clientCredentials
+  description: null
+  description_published: false
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+- scope: tariff:prices:read
+  flows:
+  - clientCredentials
+  description: null
+  description_published: false
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+- scope: tariff:read
+  flows:
+  - clientCredentials
+  description: null
+  description_published: false
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+- scope: user:read
+  flows:
+  - clientCredentials
+  description: null
+  description_published: false
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+- scope: user:write
+  flows:
+  - clientCredentials
+  description: null
+  description_published: false
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+- scope: vehicle:read
+  flows:
+  - clientCredentials
+  description: null
+  description_published: false
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+- scope: vehicle:write
+  flows:
+  - clientCredentials
+  description: null
+  description_published: false
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+- scope: vehicle_catalogue:write
+  flows:
+  - clientCredentials
+  description: Update shared vehicle-catalogue reference data (e.g. a model's default connector type)
+  description_published: true
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml

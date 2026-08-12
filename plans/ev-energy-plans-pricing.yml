@@ -1,0 +1,17 @@
+generated: '2026-08-12'
+method: searched
+source: https://www.ev.energy/products/api and the www.ev.energy sitemap (642KB, 0 pricing URLs)
+plan_count: 0
+plans: []
+model: enterprise-sales
+note: ev.energy publishes no pricing for the Smart Charge API — no tiers, no free tier, no rate card,
+  no self-service signup. The API product page ends in a "Book a demo" contact form and the sitemap contains
+  no /pricing path (https://www.ev.energy/pricing returns 404). Credentials, scopes and rate limits are
+  all provisioned by ev.energy during a commercial onboarding. Consumer-side driver-app rewards and tariffs
+  are priced, but that is the retail product, not the API.
+evidence:
+- url: https://www.ev.energy/pricing
+  status: 404
+- url: https://www.ev.energy/products/api
+  status: 200
+  note: No pricing on the API product page.

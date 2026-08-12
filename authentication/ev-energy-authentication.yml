@@ -1,0 +1,71 @@
+generated: '2026-08-12'
+method: searched
+source: https://developers.ev.energy/docs/auth.md
+derived_from: openapi/ev-energy-api-v2-openapi.yaml
+docs: https://developers.ev.energy/docs/auth
+summary:
+  types:
+  - oauth2
+  oauth2_flows:
+  - authorizationCode
+  - clientCredentials
+  self_service_registration: false
+  note: OAuth applications are created by ev.energy, not self-registered. You supply the app name, the
+    data types (scopes) you need and the redirect URI; ev.energy returns a client_id and client_secret,
+    and separate sandbox and production credential pairs.
+schemes:
+- name: oauth2
+  type: oauth2
+  token_header: 'Authorization: Bearer <access_token>'
+  flows:
+  - flow: clientCredentials
+    tokenUrl: https://api.ev.energy/o/token/
+    scopes: 35
+    client_auth: HTTP Basic — base64(client_id:client_secret) in the Authorization header
+    note: Authorises as a single individual or organisation depending on configuration. All requests share
+      one rate-limit bucket. Because the token does not represent one user, endpoints that need single-user
+      context require the EvEnergy-User header set to the absolute URL of the user resource; they return
+      400 without it.
+  - flow: authorizationCode
+    authorizationUrl: https://api.ev.energy/o/authorize/
+    tokenUrl: https://api.ev.energy/o/token/
+    scopes: 0
+    pkce:
+      supported: true
+      code_challenge_method: S256
+      rfc: RFC 7636
+      note: Recommended for native apps and single-page apps that cannot keep a client secret.
+    authorization_code_lifetime: 1 minute
+    note: Acts on behalf of one end user; each user gets their own rate-limit bucket. The spec declares
+      an empty scopes object for this flow even though the docs describe a user-facing consent screen
+      listing requested scopes.
+  sources:
+  - openapi/ev-energy-api-v2-openapi.yaml
+  - https://developers.ev.energy/docs/auth.md
+token:
+  type: Bearer
+  lifetime_seconds: 36000
+  lifetime_human: 10 hours
+  refresh:
+    grant: refresh_token
+    endpoint: https://api.ev.energy/o/token
+  revocation:
+    endpoint: https://api.ev.energy/o/revoke_token
+    rfc: RFC 7009
+    note: The trailing slash on the revoke URL is required; without it the API returns 405.
+discovery:
+  rfc8414_metadata: false
+  openid_configuration: false
+  note: The v2 API publishes no /.well-known/oauth-authorization-server or /.well-known/openid-configuration.
+    api.ev.energy returns 403 for every unauthenticated path. Endpoints must be read from the docs or
+    the OpenAPI.
+scopes_artifact: scopes/ev-energy-scopes.yml
+additional_headers:
+- header: EvEnergy-User
+  required: conditional
+  description: Absolute URL of the user resource. Supplies single-user context for client_credentials
+    tokens. Endpoints that require it return 400 when it is absent.
+- header: EvEnergy-Version
+  required: false
+  description: Overrides the API version pinned to the OAuth client. Invalid values return 400. Echoed
+    on every response.

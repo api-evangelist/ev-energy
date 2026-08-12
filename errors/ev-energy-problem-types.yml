@@ -1,0 +1,104 @@
+generated: '2026-08-12'
+method: searched
+source: https://developers.ev.energy/docs/errors.md
+derived_from: openapi/ev-energy-api-v2-openapi.yaml
+format: rfc9457
+media_type: application/problem+json
+docs: https://developers.ev.energy/docs/errors
+envelope:
+  fields:
+  - type
+  - title
+  - status
+  - detail
+  - instance
+  - field_errors
+  notes:
+  - '`type` is omitted when the HTTP status code alone is sufficient (e.g. 404).'
+  - '`type` is a dereferenceable URL under https://api.ev.energy/v2/problems/ that both identifies the
+    problem class and links to documentation.'
+  - '`instance` carries the URL of the resource the error relates to.'
+  - '`field_errors` is an ev.energy extension: an object mapping request-body field names to arrays of
+    validation-error strings. Most common on 400 responses to POST/PUT/PATCH.'
+example:
+  title: Request failed validation.
+  detail: 'Error on fields: user, trim'
+  status: 400
+  type: https://api.ev.energy/v2/problems/validation-failed-create-vehicle/
+  field_errors:
+    user:
+    - This field is required.
+    trim:
+    - Invalid hyperlink - Object does not exist.
+status_codes:
+- status: 400
+  operations: 198
+  meaning: The request could not be parsed or failed validation.
+- status: 401
+  operations: 188
+  meaning: The request must include a valid authorization token.
+- status: 403
+  operations: 185
+  meaning: The authorization token for this request does not have permission to access the resource.
+- status: 404
+  operations: 147
+  meaning: The resource does not exist.
+- status: 405
+  operations: 26
+  meaning: The endpoint does not support that method.
+- status: 406
+  operations: 201
+  meaning: The requested representation is not acceptable.
+- status: 409
+  operations: 4
+  meaning: Conflict with the current state of the resource.
+- status: 413
+  operations: 3
+  meaning: Request body exceeds the size limit (20 MB on region uploads).
+- status: 422
+  operations: 7
+  meaning: The request was well formed but could not be processed.
+- status: 429
+  operations: 204
+  meaning: The request exceeded rate limits.
+- status: 503
+  operations: 2
+  meaning: The service is temporarily unavailable.
+problem_types:
+- type: region-group-name-conflict
+  status: 409
+  operationId: post-region_groups
+  method: POST
+  path: /region_groups
+  detail: Name conflict — either the group name is taken (problem type region-group-name-conflict, extension
+    member `existing_region_group`) or one or more region entries clash with existing regions (problem
+    type region-name-conflict, extension member `conflicts`). Includes clashes that appeared between :vali
+- type: region-name-conflict
+  status: 409
+  operationId: post-regions
+  method: POST
+  path: /regions
+  detail: A region with this name already exists (problem type region-name-conflict; extension member
+    `conflicts` lists the clashing name and existing region URL). Nothing was written.
+- type: payload-too-large
+  status: 413
+  operationId: post-regions
+  method: POST
+  path: /regions
+  detail: Request body exceeds the 20 MB limit (problem type payload-too-large).
+- type: invalid-geometry
+  status: 422
+  operationId: post-regions
+  method: POST
+  path: /regions
+  detail: Validation failed — malformed GeoJSON, geometry not repairable by make_valid (problem type invalid-geometry,
+    naming the region), or field validation errors (problem type validation-failed-regions).
+- type: validation-failed-regions
+  status: 422
+  operationId: post-regions
+  method: POST
+  path: /regions
+  detail: Validation failed — malformed GeoJSON, geometry not repairable by make_valid (problem type invalid-geometry,
+    naming the region), or field validation errors (problem type validation-failed-regions).
+problem_type_count: 5
+schema: components.schemas.RFC9457ProblemDetail

@@ -1,0 +1,1103 @@
+generated: '2026-08-12'
+method: derived
+source: mcp/ev-energy-mcp-tools.json + openapi/ev-energy-api-v2-openapi.yaml
+surfaces:
+  openapi:
+    file: openapi/ev-energy-api-v2-openapi.yaml
+    title: ev.energy v2 API
+    version: '2.0'
+    operations: 210
+    server: https://api.ev.energy/v2
+    gated: OAuth 2.0 bearer token required on every operation
+  mcp:
+    url: https://developers.ev.energy/mcp
+    tools: 6
+    gated: false
+    kind: documentation-retrieval
+  graphql:
+    present: false
+finding: 'The MCP surface and the REST surface do not overlap at all. Every published MCP tool reads the
+  API description; no MCP tool invokes an ev.energy v2 operation. The crosswalk is therefore fully disjoint:
+  0 bound rows, 6 mcp_only, 210 rest_only. This is the Redocly-Realm docs-MCP pattern, and it is worth
+  recording explicitly so the MCPServer pointer is not read as "the ev.energy API is callable by an agent
+  over MCP" — it is not.'
+crosswalk: []
+mcp_only:
+- tool: list-apis
+  reason: Documentation-retrieval tool over the OpenAPI/docs corpus. Has no backing ev.energy v2 REST
+    operation.
+- tool: get-endpoints
+  reason: Documentation-retrieval tool over the OpenAPI/docs corpus. Has no backing ev.energy v2 REST
+    operation.
+- tool: get-endpoint-info
+  reason: Documentation-retrieval tool over the OpenAPI/docs corpus. Has no backing ev.energy v2 REST
+    operation.
+- tool: get-security-schemes
+  reason: Documentation-retrieval tool over the OpenAPI/docs corpus. Has no backing ev.energy v2 REST
+    operation.
+- tool: get-full-api-description
+  reason: Documentation-retrieval tool over the OpenAPI/docs corpus. Has no backing ev.energy v2 REST
+    operation.
+- tool: search
+  reason: Documentation-retrieval tool over the OpenAPI/docs corpus. Has no backing ev.energy v2 REST
+    operation.
+rest_only:
+- operationId: get-root
+  method: GET
+  path: /
+  tags:
+  - Root
+- operationId: get-users
+  method: GET
+  path: /users
+  tags:
+  - Users
+- operationId: post-users
+  method: POST
+  path: /users
+  tags:
+  - Users
+- operationId: get-users-user_id
+  method: GET
+  path: /users/{user_id}
+  tags:
+  - Users
+- operationId: patch-users-user_id
+  method: PATCH
+  path: /users/{user_id}
+  tags:
+  - Users
+- operationId: get-users-user_id-notification_preferences
+  method: GET
+  path: /users/{user_id}/notification_preferences
+  tags:
+  - Users
+- operationId: patch-users-user_id-notification_preferences
+  method: PATCH
+  path: /users/{user_id}/notification_preferences
+  tags:
+  - Users
+- operationId: get-users-user_id-route_planner_preferences
+  method: GET
+  path: /users/{user_id}/route_planner_preferences
+  tags:
+  - Users
+- operationId: patch-users-user_id-route_planner_preferences
+  method: PATCH
+  path: /users/{user_id}/route_planner_preferences
+  tags:
+  - Users
+- operationId: get-vehicles-vehicle_id-connectors
+  method: GET
+  path: /vehicles/{vehicle_id}/connectors
+  tags:
+  - Vehicles
+- operationId: patch-vehicles-vehicle_id-connectors
+  method: PATCH
+  path: /vehicles/{vehicle_id}/connectors
+  tags:
+  - Vehicles
+- operationId: get-vehicles-vehicle_id-state_of_charge
+  method: GET
+  path: /vehicles/{vehicle_id}/state_of_charge
+  tags:
+  - Vehicles
+- operationId: patch-vehicles-vehicle_id-state_of_charge
+  method: PATCH
+  path: /vehicles/{vehicle_id}/state_of_charge
+  tags:
+  - Vehicles
+- operationId: post-auth-password_reset
+  method: POST
+  path: /auth/password_reset
+  tags:
+  - Auth
+- operationId: get-evse_compatibility-check
+  method: GET
+  path: /evse_compatibility/check
+  tags:
+  - EVSEs
+- operationId: get-users-user_id-payout-method
+  method: GET
+  path: /users/{user_id}/payout_method
+  tags:
+  - Users
+- operationId: patch-users-user_id-payout-method
+  method: PATCH
+  path: /users/{user_id}/payout_method
+  tags:
+  - Users
+- operationId: delete-users-user_id-payout-method
+  method: DELETE
+  path: /users/{user_id}/payout_method
+  tags:
+  - Users
+- operationId: get-users-user_id-saved_routes
+  method: GET
+  path: /users/{user_id}/saved_routes
+  tags:
+  - Users
+- operationId: post-users-user_id-saved_routes
+  method: POST
+  path: /users/{user_id}/saved_routes
+  tags:
+  - Users
+- operationId: get-users-user_id-saved_routes-saved_route_id
+  method: GET
+  path: /users/{user_id}/saved_routes/{saved_route_id}
+  tags:
+  - Users
+- operationId: patch-users-user_id-saved_routes-saved_route_id
+  method: PATCH
+  path: /users/{user_id}/saved_routes/{saved_route_id}
+  tags:
+  - Users
+- operationId: delete-users-user_id-saved_routes-saved_route_id
+  method: DELETE
+  path: /users/{user_id}/saved_routes/{saved_route_id}
+  tags:
+  - Users
+- operationId: get-evses
+  method: GET
+  path: /evses
+  tags:
+  - EVSEs
+- operationId: get-evses-evse_id
+  method: GET
+  path: /evses/{evse_id}
+  tags:
+  - EVSEs
+- operationId: patch-evses-evse_id
+  method: PATCH
+  path: /evses/{evse_id}
+  tags:
+  - EVSEs
+- operationId: delete-evses-evse_id
+  method: DELETE
+  path: /evses/{evse_id}
+  tags:
+  - EVSEs
+- operationId: get-evse_models
+  method: GET
+  path: /evse_models
+  tags:
+  - EVSEs
+- operationId: get-evse_models-evse_model_id
+  method: GET
+  path: /evse_models/{evse_model_id}
+  tags:
+  - EVSEs
+- operationId: get-evse_makes
+  method: GET
+  path: /evse_makes
+  tags:
+  - EVSEs
+- operationId: get-evse_makes-evse_make_id
+  method: GET
+  path: /evse_makes/{evse_make_id}
+  tags:
+  - EVSEs
+- operationId: get-evses-evse_id-status_logs
+  method: GET
+  path: /evses/{evse_id}/status_logs
+  tags:
+  - EVSEs
+- operationId: get-evses-evse_id-status_logs-timestamp
+  method: GET
+  path: /evses/{evse_id}/status_logs/{sampled_at}
+  tags:
+  - EVSEs
+- operationId: get-evses-evse_id-command_logs
+  method: GET
+  path: /evses/{evse_id}/command_logs
+  tags:
+  - EVSEs
+- operationId: get-evses-evse_id-command_logs-timestamp
+  method: GET
+  path: /evses/{evse_id}/command_logs/{logged_at}
+  tags:
+  - EVSEs
+- operationId: get-evses-evse_id-error_logs
+  method: GET
+  path: /evses/{evse_id}/error_logs
+  tags:
+  - EVSEs
+- operationId: get-evses-evse_id-error_logs-timestamp
+  method: GET
+  path: /evses/{evse_id}/error_logs/{sampled_at}
+  tags:
+  - EVSEs
+- operationId: get-evses-evse_id-ocpp_logs
+  method: GET
+  path: /evses/{evse_id}/ocpp_logs
+  tags:
+  - EVSEs
+- operationId: get-evses-evse_id-ocpp_logs-timestamp
+  method: GET
+  path: /evses/{evse_id}/ocpp_logs/{sampled_at}
+  tags:
+  - EVSEs
+- operationId: get-evses-evse_id-vpp_modes
+  method: GET
+  path: /evses/{evse_id}/vpp_modes
+  tags:
+  - EVSEs
+  - VPP
+- operationId: get-evses-evse_id-connectivity
+  method: GET
+  path: /evses/{evse_id}/connectivity
+  tags:
+  - EVSEs
+- operationId: get-ct-clamps
+  method: GET
+  path: /ct_clamps
+  tags:
+  - CT Clamps
+- operationId: get-ct-clamps-ct_clamp_id
+  method: GET
+  path: /ct_clamps/{ct_clamp_id}
+  tags:
+  - CT Clamps
+- operationId: get-ct-clamps-ct_clamp_id-logs
+  method: GET
+  path: /ct_clamps/{ct_clamp_id}/logs
+  tags:
+  - CT Clamps
+- operationId: get-ct-clamps-ct_clamp_id-logs-sampled_at
+  method: GET
+  path: /ct_clamps/{ct_clamp_id}/logs/{sampled_at}
+  tags:
+  - CT Clamps
+- operationId: post-evses-evse_id-reconnect
+  method: POST
+  path: /evses/{evse_id}/reconnect
+  tags:
+  - EVSEs
+- operationId: get-evse_firmware_versions
+  method: GET
+  path: /evse_firmware_versions
+  tags:
+  - EVSEs
+- operationId: get-evse_firmware_versions-evse_firmware_version_id
+  method: GET
+  path: /evse_firmware_versions/{evse_firmware_version_id}
+  tags:
+  - EVSEs
+- operationId: get-evse_onboarding
+  method: GET
+  path: /evse_onboarding
+  tags:
+  - EVSEs
+- operationId: post-evse_onboarding-import
+  method: POST
+  path: /evse_onboarding/import
+  tags:
+  - EVSEs
+- operationId: post-evse_waitlist
+  method: POST
+  path: /evse_waitlist
+  tags:
+  - EVSEs
+- operationId: get-vehicles
+  method: GET
+  path: /vehicles
+  tags:
+  - Vehicles
+- operationId: post-vehicles
+  method: POST
+  path: /vehicles
+  tags:
+  - Vehicles
+- operationId: get-vehicles-vehicle_id
+  method: GET
+  path: /vehicles/{vehicle_id}
+  tags:
+  - Vehicles
+- operationId: patch-vehicles
+  method: PATCH
+  path: /vehicles/{vehicle_id}
+  tags:
+  - Vehicles
+- operationId: delete-vehicles
+  method: DELETE
+  path: /vehicles/{vehicle_id}
+  tags:
+  - Vehicles
+- operationId: get-vehicle_trims
+  method: GET
+  path: /vehicle_trims
+  tags:
+  - Vehicles
+- operationId: post-vehicle_trims
+  method: POST
+  path: /vehicle_trims
+  tags:
+  - Vehicles
+- operationId: get-vehicle_trims-vehicle_trim_id
+  method: GET
+  path: /vehicle_trims/{vehicle_trim_id}
+  tags:
+  - Vehicles
+- operationId: get-vehicle_models
+  method: GET
+  path: /vehicle_models
+  tags:
+  - Vehicles
+- operationId: post-vehicle_models
+  method: POST
+  path: /vehicle_models
+  tags:
+  - Vehicles
+- operationId: get-vehicle_models-vehicle_model_id-connectors
+  method: GET
+  path: /vehicle_models/{vehicle_model_id}/connectors
+  tags:
+  - Vehicles
+- operationId: post-vehicle_models-vehicle_model_id-connectors
+  method: POST
+  path: /vehicle_models/{vehicle_model_id}/connectors
+  tags:
+  - Vehicles
+- operationId: get-vehicle_models-vehicle_model_id-connectors-region
+  method: GET
+  path: /vehicle_models/{vehicle_model_id}/connectors/{region}
+  tags:
+  - Vehicles
+- operationId: patch-vehicle_models-vehicle_model_id-connectors-region
+  method: PATCH
+  path: /vehicle_models/{vehicle_model_id}/connectors/{region}
+  tags:
+  - Vehicles
+- operationId: get-vehicle_models-vehicle_model_id
+  method: GET
+  path: /vehicle_models/{vehicle_model_id}
+  tags:
+  - Vehicles
+- operationId: patch-vehicle_models-vehicle_model_id
+  method: PATCH
+  path: /vehicle_models/{vehicle_model_id}
+  tags:
+  - Vehicles
+- operationId: get-vehicle_makes
+  method: GET
+  path: /vehicle_makes
+  tags:
+  - Vehicles
+- operationId: get-vehicle_makes-vehicle_make_id
+  method: GET
+  path: /vehicle_makes/{vehicle_make_id}
+  tags:
+  - Vehicles
+- operationId: get-vehicles-vehicle_id-status_logs
+  method: GET
+  path: /vehicles/{vehicle_id}/status_logs
+  tags:
+  - Vehicles
+- operationId: get-vehicles-vehicle_id-status_logs-timestamp
+  method: GET
+  path: /vehicles/{vehicle_id}/status_logs/{sampled_at}
+  tags:
+  - Vehicles
+- operationId: get-vehicles-vehicle_id-error_logs
+  method: GET
+  path: /vehicles/{vehicle_id}/error_logs
+  tags:
+  - Vehicles
+- operationId: get-vehicles-vehicle_id-error_logs-timestamp
+  method: GET
+  path: /vehicles/{vehicle_id}/error_logs/{logged_at}
+  tags:
+  - Vehicles
+- operationId: get-vehicles-vehicle_id-location_logs
+  method: GET
+  path: /vehicles/{vehicle_id}/location_logs
+  tags:
+  - Vehicles
+- operationId: get-vehicles-vehicle_id-location_logs-timestamp
+  method: GET
+  path: /vehicles/{vehicle_id}/location_logs/{sampled_at}
+  tags:
+  - Vehicles
+- operationId: get-vehicles-vehicle_id-command_logs
+  method: GET
+  path: /vehicles/{vehicle_id}/command_logs
+  tags:
+  - Vehicles
+- operationId: get-vehicles-vehicle_id-command_logs-timestamp
+  method: GET
+  path: /vehicles/{vehicle_id}/command_logs/{logged_at}
+  tags:
+  - Vehicles
+- operationId: get-vehicles-vehicle_id-vpp_modes
+  method: GET
+  path: /vehicles/{vehicle_id}/vpp_modes
+  tags:
+  - Vehicles
+  - VPP
+- operationId: get-vehicle_onboarding
+  method: GET
+  path: /vehicle_onboarding
+  tags:
+  - Vehicles
+- operationId: post-vehicle_onboarding-complete
+  method: POST
+  path: /vehicle_onboarding/complete
+  tags:
+  - Vehicles
+- operationId: post-vehicle_onboarding-onboarding_link
+  method: POST
+  path: /vehicle_onboarding/onboarding_link
+  tags:
+  - Vehicles
+- operationId: get-vehicle_compatibility-check
+  method: GET
+  path: /vehicle_compatibility/check
+  tags:
+  - Vehicles
+- operationId: post-vehicle_waitlist
+  method: POST
+  path: /vehicle_waitlist
+  tags:
+  - Vehicles
+- operationId: get-programs-program_id-vehicle_compatibility
+  method: GET
+  path: /programs/{program_id}/vehicle_compatibility
+  tags:
+  - Programs
+- operationId: get-suppliers
+  method: GET
+  path: /suppliers
+  tags:
+  - Tariffs
+- operationId: get-suppliers-suppler_id
+  method: GET
+  path: /suppliers/{supplier_id}
+  tags:
+  - Tariffs
+- operationId: get-tariffs
+  method: GET
+  path: /tariffs
+  tags:
+  - Tariffs
+- operationId: get-tariffs-tariff_id
+  method: GET
+  path: /tariffs/{tariff_id}
+  tags:
+  - Tariffs
+- operationId: get-tariff-prices
+  method: GET
+  path: /tariffs/{tariff_id}/prices
+  tags:
+  - Tariffs
+- operationId: get-carbon_feeds
+  method: GET
+  path: /carbon_feeds
+  tags:
+  - Carbon
+- operationId: get-carbon_feeds-carbon_feed_id
+  method: GET
+  path: /carbon_feeds/{carbon_feed_id}
+  tags:
+  - Carbon
+- operationId: get-carbon_feeds-carbon_feed_id-carbon_intensities
+  method: GET
+  path: /carbon_feeds/{carbon_feed_id}/carbon_intensities
+  tags:
+  - Carbon
+- operationId: get-grid_feeds
+  method: GET
+  path: /grid_feeds
+  tags:
+  - Grid
+- operationId: get-grid_feeds-grid_feed_id
+  method: GET
+  path: /grid_feeds/{grid_feed_id}
+  tags:
+  - Grid
+- operationId: get-grid_feeds-grid_feed_id-levels
+  method: GET
+  path: /grid_feeds/{grid_feed_id}/levels
+  tags:
+  - Grid
+- operationId: get-charging_sessions
+  method: GET
+  path: /charging_sessions
+  tags:
+  - Charging Sessions
+- operationId: get-charging_sessions-charging_session_id
+  method: GET
+  path: /charging_sessions/{charging_session_id}
+  tags:
+  - Charging Sessions
+- operationId: post-charging_sessions-charging_session_id-boost_start
+  method: POST
+  path: /charging_sessions/{charging_session_id}/boost_start
+  tags:
+  - Charging Sessions
+- operationId: post-charging_sessions-charging_session_id-boost_end
+  method: POST
+  path: /charging_sessions/{charging_session_id}/boost_end
+  tags:
+  - Charging Sessions
+- operationId: get-charging_sub_sessions
+  method: GET
+  path: /charging_sub_sessions
+  tags:
+  - Charging Sessions
+- operationId: get-charging_sub_sessions-charging_sub_session_id
+  method: GET
+  path: /charging_sub_sessions/{charging_sub_session_id}
+  tags:
+  - Charging Sessions
+- operationId: get-charging_sub_sessions-charging_sub_session_id-energy_usage
+  method: GET
+  path: /charging_sub_sessions/{charging_sub_session_id}/energy_usage
+  tags:
+  - Charging Sessions
+- operationId: get-charging_sub_sessions-charging_sub_session_id-flags
+  method: GET
+  path: /charging_sub_sessions/{charging_sub_session_id}/flags
+  tags:
+  - Charging Sessions
+- operationId: get-charging_sub_sessions-charging_sub_session_id-debug_metadata
+  method: GET
+  path: /charging_sub_sessions/{charging_sub_session_id}/debug_metadata
+  tags:
+  - Charging Sessions
+- operationId: get-notifications
+  method: GET
+  path: /notifications
+  tags:
+  - Notifications
+- operationId: patch-notifications-notification_id
+  method: PATCH
+  path: /notifications/{notification_id}
+  tags:
+  - Notifications
+- operationId: get-notifications-notification_id
+  method: GET
+  path: /notifications/{notification_id}
+  tags:
+  - Notifications
+- operationId: get-webhook_portal
+  method: GET
+  path: /webhook_portal
+  tags:
+  - Webhooks
+- operationId: get-solar-arrays
+  method: GET
+  path: /solar_arrays
+  tags:
+  - Solar
+- operationId: post-solar-arrays
+  method: POST
+  path: /solar_arrays
+  tags:
+  - Solar
+- operationId: get-solar-arrays-solar_array_id
+  method: GET
+  path: /solar_arrays/{solar_array_id}
+  tags:
+  - Solar
+- operationId: patch-solar_arrays-solar_array_id
+  method: PATCH
+  path: /solar_arrays/{solar_array_id}
+  tags:
+  - Solar
+- operationId: get-solar-forecasts
+  method: GET
+  path: /solar_forecasts
+  tags:
+  - Solar Forecasts
+- operationId: get-solar-forecasts-solar_forecast_id
+  method: GET
+  path: /solar_forecasts/{solar_forecast_id}
+  tags:
+  - Solar Forecasts
+- operationId: get-solar-forecasts-solar_forecast_id-forecast_logs
+  method: GET
+  path: /solar_forecasts/{solar_forecast_id}/forecast_logs
+  tags:
+  - Solar Forecasts
+- operationId: get-solar-forecasts-solar_forecast_id-forecast_logs-valid_period_start
+  method: GET
+  path: /solar_forecasts/{solar_forecast_id}/forecast_logs/{valid_period_start}
+  tags:
+  - Solar Forecasts
+- operationId: get-subscriptions
+  method: GET
+  path: /subscriptions
+  tags:
+  - Subscriptions
+- operationId: get-subscription-offerings-offering_id
+  method: GET
+  path: /subscription_offerings/{offering_id}
+  tags:
+  - Subscriptions
+- operationId: get-support_tickets
+  method: GET
+  path: /support_tickets
+  tags:
+  - Support Tickets
+- operationId: get-support_tickets-support_ticket_id
+  method: GET
+  path: /support_tickets/{support_ticket_id}
+  tags:
+  - Support Tickets
+- operationId: patch-support_tickets-support_ticket_id
+  method: PATCH
+  path: /support_tickets/{support_ticket_id}
+  tags:
+  - Support Tickets
+- operationId: get-support_tickets-support_ticket_id-messages
+  method: GET
+  path: /support_tickets/{support_ticket_id}/messages
+  tags:
+  - Support Tickets
+- operationId: get-support_tickets-support_ticket_id-messages-message_id
+  method: GET
+  path: /support_tickets/{support_ticket_id}/messages/{message_id}
+  tags:
+  - Support Tickets
+- operationId: get-support_tickets-categories
+  method: GET
+  path: /support_tickets/categories
+  tags:
+  - Support Tickets
+- operationId: get-support_ticket_stats-sankey
+  method: GET
+  path: /support-ticket-stats/sankey
+  tags:
+  - Support Tickets
+- operationId: get-support_ticket_stats-volume
+  method: GET
+  path: /support-ticket-stats/volume
+  tags:
+  - Support Tickets
+- operationId: get-support_ticket_stats-resolution
+  method: GET
+  path: /support-ticket-stats/resolution
+  tags:
+  - Support Tickets
+- operationId: get-support_ticket_stats-status
+  method: GET
+  path: /support-ticket-stats/status
+  tags:
+  - Support Tickets
+- operationId: get-support_ticket_stats-priority
+  method: GET
+  path: /support-ticket-stats/priority
+  tags:
+  - Support Tickets
+- operationId: get-support_ticket_stats-source
+  method: GET
+  path: /support-ticket-stats/source
+  tags:
+  - Support Tickets
+- operationId: get-support_ticket_stats-top-categories
+  method: GET
+  path: /support-ticket-stats/top-categories
+  tags:
+  - Support Tickets
+- operationId: post-inverters
+  method: POST
+  path: /inverters
+  tags:
+  - Solar
+- operationId: get-inverters
+  method: GET
+  path: /inverters
+  tags:
+  - Solar
+- operationId: get-inverters-inverter_id
+  method: GET
+  path: /inverters/{inverter_id}
+  tags:
+  - Solar
+- operationId: get-inverter_makes
+  method: GET
+  path: /inverter_makes
+  tags:
+  - Solar
+- operationId: get-inverter_makes-inverter_make_id
+  method: GET
+  path: /inverter_makes/{inverter_make_id}
+  tags:
+  - Solar
+- operationId: get-inverter_models
+  method: GET
+  path: /inverter_models
+  tags:
+  - Solar
+- operationId: get-inverter_models-inverter_model_id
+  method: GET
+  path: /inverter_models/{inverter_model_id}
+  tags:
+  - Solar
+- operationId: get-home_battery_makes
+  method: GET
+  path: /home_battery_makes
+  tags:
+  - Home Batteries
+- operationId: get-home_battery_makes-home_battery_make_id
+  method: GET
+  path: /home_battery_makes/{home_battery_make_id}
+  tags:
+  - Home Batteries
+- operationId: get-home_battery_models
+  method: GET
+  path: /home_battery_models
+  tags:
+  - Home Batteries
+- operationId: get-home_battery_models-home_battery_model_id
+  method: GET
+  path: /home_battery_models/{home_battery_model_id}
+  tags:
+  - Home Batteries
+- operationId: get-home_batteries
+  method: GET
+  path: /home_batteries
+  tags:
+  - Home Batteries
+- operationId: get-home_batteries-home_battery_id
+  method: GET
+  path: /home_batteries/{home_battery_id}
+  tags:
+  - Home Batteries
+- operationId: get-home_batteries-home_battery_id-status_logs
+  method: GET
+  path: /home_batteries/{home_battery_id}/status_logs
+  tags:
+  - Home Batteries
+- operationId: get-home_batteries-home_battery_id-status_logs-timestamp
+  method: GET
+  path: /home_batteries/{home_battery_id}/status_logs/{sampled_at}
+  tags:
+  - Home Batteries
+- operationId: get-hem_systems
+  method: GET
+  path: /hem_systems
+  tags:
+  - HEM Systems
+- operationId: get-hem_systems-hem_system_id
+  method: GET
+  path: /hem_systems/{hem_system_id}
+  tags:
+  - HEM Systems
+- operationId: get-hem_systems-hem_system_id-energy_stats
+  method: GET
+  path: /hem_systems/{hem_system_id}/energy_stats
+  tags:
+  - HEM Systems
+- operationId: get-hem_systems-hem_system_id-live_power
+  method: GET
+  path: /hem_systems/{hem_system_id}/live_power
+  tags:
+  - HEM Systems
+- operationId: get-boundary_meter_makes
+  method: GET
+  path: /boundary_meter_makes
+  tags:
+  - Boundary Meters
+- operationId: get-boundary_meter_makes-boundary_meter_make_id
+  method: GET
+  path: /boundary_meter_makes/{boundary_meter_make_id}
+  tags:
+  - Boundary Meters
+- operationId: get-boundary_meter_models
+  method: GET
+  path: /boundary_meter_models
+  tags:
+  - Boundary Meters
+- operationId: get-boundary_meter_models-boundary_meter_model_id
+  method: GET
+  path: /boundary_meter_models/{boundary_meter_model_id}
+  tags:
+  - Boundary Meters
+- operationId: get-boundary_meters
+  method: GET
+  path: /boundary_meters
+  tags:
+  - Boundary Meters
+- operationId: get-boundary_meters-boundary_meter_id
+  method: GET
+  path: /boundary_meters/{boundary_meter_id}
+  tags:
+  - Boundary Meters
+- operationId: get-boundary_meters-boundary_meter_id-status_logs
+  method: GET
+  path: /boundary_meters/{boundary_meter_id}/status_logs
+  tags:
+  - Boundary Meters
+- operationId: get-boundary_meters-boundary_meter_id-status_logs-timestamp
+  method: GET
+  path: /boundary_meters/{boundary_meter_id}/status_logs/{sampled_at}
+  tags:
+  - Boundary Meters
+- operationId: get-inverter_onboarding
+  method: GET
+  path: /inverter_onboarding
+  tags:
+  - Solar
+- operationId: get-rebate_types
+  method: GET
+  path: /rebate_types
+  tags:
+  - Rebates
+- operationId: get-rebate_types-rebate_type_id
+  method: GET
+  path: /rebate_types/{rebate_type_id}
+  tags:
+  - Rebates
+- operationId: get-rebate_evidence_types
+  method: GET
+  path: /rebate_evidence_types
+  tags:
+  - Rebates
+- operationId: get-rebate_types-rebate_evidence_type_id
+  method: GET
+  path: /rebate_evidence_types/{rebate_evidence_type_id}
+  tags:
+  - Rebates
+- operationId: post-rebates
+  method: POST
+  path: /user_rebates
+  tags:
+  - Rebates
+- operationId: get-rebates
+  method: GET
+  path: /user_rebates
+  tags:
+  - Rebates
+- operationId: get-rebates-application_id
+  method: GET
+  path: /user_rebates/{user_rebate_id}
+  tags:
+  - Rebates
+- operationId: patch-user_rebates-application_id
+  method: PATCH
+  path: /user_rebates/{user_rebate_id}
+  tags:
+  - Rebates
+- operationId: post-user_rebates-application_id-:submit
+  method: POST
+  path: /user_rebates/{user_rebate_id}:submit
+  tags:
+  - Rebates
+- operationId: post-rebate-evidence_files:start_upload
+  method: POST
+  path: /rebate_evidence_files:start_upload
+  tags:
+  - Rebates
+- operationId: post-rebate-evidence_files-evidence_file_id-:finish_upload
+  method: POST
+  path: /rebate_evidence_files/{rebate_evidence_file_id}:finish_upload
+  tags:
+  - Rebates
+- operationId: get-regions
+  method: GET
+  path: /regions
+  tags:
+  - Regions
+- operationId: post-regions
+  method: POST
+  path: /regions
+  tags:
+  - Regions
+- operationId: get-regions-region_id
+  method: GET
+  path: /regions/{region_id}
+  tags:
+  - Regions
+- operationId: get-region_groups
+  method: GET
+  path: /region_groups
+  tags:
+  - Regions
+- operationId: post-region_groups
+  method: POST
+  path: /region_groups
+  tags:
+  - Regions
+- operationId: get-region_groups-region_group_id
+  method: GET
+  path: /region_groups/{region_group_id}
+  tags:
+  - Regions
+- operationId: post-region_groups:validate
+  method: POST
+  path: /region_groups:validate
+  tags:
+  - Regions
+- operationId: get-user_rebates-application_id-evidence_files
+  method: GET
+  path: /rebate_evidence_files
+  tags:
+  - Rebates
+- operationId: get-user_rebates-application_id-evidence_files-evidence_file_id
+  method: GET
+  path: /rebate_evidence_files/{rebate_evidence_file_id}
+  tags:
+  - Rebates
+- operationId: get-programs
+  method: GET
+  path: /programs
+  tags:
+  - Programs
+- operationId: get-programs-program_id
+  method: GET
+  path: /programs/{program_id}
+  tags:
+  - Programs
+- operationId: get-incentive_schemes
+  method: GET
+  path: /incentive_schemes
+  tags:
+  - Programs
+- operationId: get-evse_sites
+  method: GET
+  path: /evse_sites
+  tags:
+  - Sites
+- operationId: get-evse_sites-evse_site_id
+  method: GET
+  path: /evse_sites/{evse_site_id}
+  tags:
+  - Sites
+- operationId: post-vehicles-vehicle_id-reconnect
+  method: POST
+  path: /vehicles/{vehicle_id}/reconnect
+  tags:
+  - Vehicles
+- operationId: post-vehicles-vehicle_id-disconnect
+  method: POST
+  path: /vehicles/{vehicle_id}/disconnect
+  tags:
+  - Vehicles
+- operationId: post-programs-user-verification
+  method: POST
+  path: /programs/{program_id}/user_verification
+  tags:
+  - Programs
+- operationId: post-programs-program_id-join
+  method: POST
+  path: /programs/{program_id}/join
+  tags:
+  - Programs
+- operationId: get-programs-program_id-tiers
+  method: GET
+  path: /programs/{program_id}/tiers
+  tags:
+  - Programs
+- operationId: get-programs-program_id-tiers-tier_id
+  method: GET
+  path: /programs/{program_id}/tiers/{tier_id}
+  tags:
+  - Programs
+- operationId: get-programs-program_id-participation_agreement_versions
+  method: GET
+  path: /programs/{program_id}/participation_agreement_versions
+  tags:
+  - Programs
+- operationId: get-programs-program_id-participation_agreement_versions-id
+  method: GET
+  path: /programs/{program_id}/participation_agreement_versions/{participation_agreement_version_id}
+  tags:
+  - Programs
+- operationId: get-programs-program_id-participation_agreement_versions-current
+  method: GET
+  path: /programs/{program_id}/participation_agreement_versions/current
+  tags:
+  - Programs
+- operationId: post-programs-program_id-participation_agreement_versions-id-accept
+  method: POST
+  path: /programs/{program_id}/participation_agreement_versions/{participation_agreement_version_id}/accept
+  tags:
+  - Programs
+- operationId: post-programs-post-enrollment-verification
+  method: POST
+  path: /programs/{program_id}/post-enrollment-verification
+  tags:
+  - Programs
+- operationId: get-cpms_providers
+  method: GET
+  path: /cpms_providers
+  tags:
+  - Sites
+- operationId: get-cpms_providers-provider_id
+  method: GET
+  path: /cpms_providers/{cpms_provider_id}
+  tags:
+  - Sites
+- operationId: get-timezones
+  method: GET
+  path: /timezones
+  tags:
+  - Reference Data
+- operationId: get-timezones-timezone_id
+  method: GET
+  path: /timezones/{timezone_id}
+  tags:
+  - Reference Data
+- operationId: get-charging_sub_sessions-charging_sub_session_id-schedules
+  method: GET
+  path: /charging_sub_sessions/{charging_sub_session_id}/schedules
+  tags:
+  - Charging Sessions
+- operationId: get-charging_sub_sessions-charging_sub_session_id-schedule_plans
+  method: GET
+  path: /charging_sub_sessions/{charging_sub_session_id}/schedule_plans
+  tags:
+  - Charging Sessions
+- operationId: get-charging_sub_sessions-charging_sub_session_id-assessment
+  method: GET
+  path: /charging_sub_sessions/{charging_sub_session_id}/assessment
+  tags:
+  - Charging Sessions
+- operationId: post-charging_sub_sessions-charging_sub_session_id-recalculate_energy_usages
+  method: POST
+  path: /charging_sub_sessions/{charging_sub_session_id}/recalculate_energy_usages
+  tags:
+  - Charging Sessions
+- operationId: get-dispatcher_logs
+  method: GET
+  path: /dispatcher_logs
+  tags:
+  - Charging Sessions
+- operationId: get-dispatch_coordinators
+  method: GET
+  path: /dispatch_coordinators
+  tags:
+  - VPP
+- operationId: get-dispatch_coordinators-dispatch_coordinator_id
+  method: GET
+  path: /dispatch_coordinators/{dispatch_coordinator_id}
+  tags:
+  - VPP
+- operationId: post-dispatch_coordinators-dispatch_coordinator_id-dispatch_events
+  method: POST
+  path: /dispatch_coordinators/{dispatch_coordinator_id}/dispatch_events
+  tags:
+  - VPP
+- operationId: post-dispatch_coordinators-dispatch_coordinator_id-dispatch_events-dispatch_event_id-cancel
+  method: POST
+  path: /dispatch_coordinators/{dispatch_coordinator_id}/dispatch_events/{dispatch_event_id}/cancel
+  tags:
+  - VPP
+- operationId: get-dispatch_coordinators-dispatch_coordinator_id-dispatch_logs
+  method: GET
+  path: /dispatch_coordinators/{dispatch_coordinator_id}/dispatch_logs
+  tags:
+  - VPP
+- operationId: get-dispatch_coordinators-dispatch_coordinator_id-dispatch_logs-timestamp
+  method: GET
+  path: /dispatch_coordinators/{dispatch_coordinator_id}/dispatch_logs/{logged_at}
+  tags:
+  - VPP
+coverage:
+  mcp_tools: 6
+  rest_operations: 210
+  bound: 0
+  mcp_only: 6
+  rest_only: 210
+  binding_rate: 0.0

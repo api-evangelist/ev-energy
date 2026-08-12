@@ -1,0 +1,91 @@
+generated: '2026-08-12'
+method: searched
+status: published
+source: https://developers.ev.energy/mcp
+server:
+  name: ev.energy API Docs MCP Server
+  version: '2026-08-12'
+  url: https://developers.ev.energy/mcp
+  transport: streamable-http (SSE responses)
+  protocol_version: '2025-06-18'
+  vendor: Redocly Realm hosted docs MCP, served from the provider-controlled developers.ev.energy host
+  authentication: none required for tools/list and initialize; an OAuth authorization-server document
+    is advertised at /.well-known/oauth-authorization-server (issuer auth.cloud.redocly.com) for authenticated
+    portal features
+scope:
+  kind: documentation
+  note: 'IMPORTANT: this is a documentation-retrieval MCP server, not an operations server. Its tools
+    read the ev.energy OpenAPI and docs corpus; none of them call the ev.energy v2 API or mutate ev.energy
+    data. An agent still needs an OAuth token and direct HTTP calls to https://api.ev.energy/v2 to do
+    anything.'
+capabilities:
+  logging: {}
+  tools:
+    listChanged: true
+tool_count: 6
+tools:
+- name: list-apis
+  description: Lists available APIs with their context and purpose
+  required: []
+  parameters:
+  - filter
+  - page
+  - limit
+  read_only: true
+  idempotent: true
+- name: get-endpoints
+  description: Get all endpoints for a specific API
+  required:
+  - name
+  parameters:
+  - name
+  - version
+  read_only: true
+  idempotent: true
+- name: get-endpoint-info
+  description: Get comprehensive information about specific endpoint including parameters, security, and
+    examples
+  required:
+  - name
+  - path
+  - method
+  parameters:
+  - name
+  - path
+  - method
+  - version
+  read_only: true
+  idempotent: true
+- name: get-security-schemes
+  description: Get the security schemes for a specific API
+  required:
+  - name
+  parameters:
+  - name
+  - version
+  read_only: true
+  idempotent: true
+- name: get-full-api-description
+  description: Get the complete OpenAPI description
+  required:
+  - name
+  parameters:
+  - name
+  - version
+  read_only: true
+  idempotent: true
+- name: search
+  description: Search across the documentation to fetch relevant content for a given query
+  required:
+  - query
+  parameters:
+  - query
+  read_only: true
+  idempotent: false
+raw_manifest: mcp/ev-energy-mcp-tools.json
+x-evidence:
+  fetched: '2026-08-12'
+  method: POST tools/list
+  url: https://developers.ev.energy/mcp
+  http_status: 200
+  content_type: text/event-stream

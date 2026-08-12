@@ -1,0 +1,32 @@
+generated: '2026-08-12'
+method: searched
+source: https://developers.ev.energy/docs/rate_limiting.md
+docs: https://developers.ev.energy/docs/rate_limiting
+limit_count: 1
+limits:
+- name: default authenticated client limit
+  scope: per OAuth application + user
+  limit: 1000
+  window: 1 hour (rolling)
+  burst: null
+  note: Applied to each unique combination of OAuth application and user. Under the authorization_code
+    grant each end user gets their own bucket; under client_credentials all requests share one bucket.
+    The window is rolling, not reset at the top of the hour. Higher limits are arranged by contacting
+    developers@ev.energy or an account manager.
+response_headers:
+- header: x-ratelimit-limit
+  description: The ceiling for the current bucket (1000 by default).
+- header: x-ratelimit-remaining
+  description: Requests remaining in the current rolling hour.
+- header: retry-after
+  description: Seconds until the next request will be accepted. Returned on 429. The docs prose calls
+    this the `RetryAfter` header; the worked example shows the wire header as `retry-after`.
+exhaustion:
+  status: 429
+  title: Too many requests
+  problem_type: https://api.ev.energy/v2/problems/rate-limit-exceeded/
+  media_type: application/problem+json
+declared_in_spec:
+  429_responses: 204
+  note: 204 of the 210 operations declare a 429 response in the OpenAPI.
+contact: developers@ev.energy

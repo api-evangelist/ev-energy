@@ -1,0 +1,30 @@
+generated: '2026-08-12'
+method: searched
+source: https://developers.ev.energy/docs/sandbox.md
+docs: https://developers.ev.energy/docs/sandbox
+environments:
+- name: production
+  base_url: https://api.ev.energy/v2
+  description: Used by real, live integrations. The only environment where full testing against real hardware
+    (vehicles and EVSEs) is possible.
+- name: sandbox
+  base_url: https://api.ev.energy/v2
+  description: Test environment returning dummy data that matches the structure and format of the real
+    API closely but does not behave realistically. GET /v2/users/ returns a static list; GET /v2/users/{user_id}
+    always returns the same user regardless of the ID supplied.
+- name: staging
+  base_url: https://api-staging.ev.energy/v2
+  description: 'Declared in the OpenAPI servers[] block and marked x-internal: true — internal ev.energy
+    testing only, not offered to integrators.'
+selection:
+  mechanism: credentials
+  note: Sandbox and production share one base URL. Which dataset is returned is determined entirely by
+    the type of OAuth credentials used. There is no test-mode key prefix, header, or query parameter.
+credential_issuance:
+  self_serve: false
+  note: ev.energy issues sandbox and production client_id/client_secret pairs during onboarding. There
+    is no public self-service key signup.
+test_values:
+  published: false
+  note: No test cards, magic identifiers, fixture triggers, or time-simulation tooling are published.
+    None invented here.

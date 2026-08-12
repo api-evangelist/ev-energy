@@ -42,5 +42,10 @@
 > Full detail: **[Where this data comes from](https://apievangelist.com/about/where-our-data-comes-from)**
 <!-- API-EVANGELIST-PROVENANCE:END -->
 
-ev.energy is a company surfaced via the API Evangelist harvest backlog (source: secondary-market) and added to the network as a stub for full-pipeline profiling.
-- https://www.nasdaqprivatemarket.com/
+ev.energy is a London- and Palo-Alto-based smart electric-vehicle charging platform. Its cloud software connects EV drivers, vehicles, EVSEs (chargers), home batteries, solar inverters and utility programs so charging can be shifted to cheaper, greener periods and aggregated as grid flexibility. The public Smart Charge API is an OpenAPI 3.1 REST contract at `https://api.ev.energy/v2` with 210 operations, OAuth 2.0 (authorization code with PKCE, and client credentials), RFC 9457 problem-details errors and RFC 5988 Link-header pagination.
+
+- Website: https://www.ev.energy/
+- Developer portal: https://developers.ev.energy/
+- API reference: https://developers.ev.energy/ev.energy-api-v2
+- OpenAPI: https://developers.ev.energy/_spec/ev.energy-API-v2.yaml
+- GitHub: https://github.com/ev-energy

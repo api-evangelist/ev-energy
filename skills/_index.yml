@@ -1,0 +1,25 @@
+generated: '2026-08-12'
+method: generated
+source: openapi/ev-energy-api-v2-openapi.yaml + https://developers.ev.energy/docs/
+note: Packaged Agent Skills authored by API Evangelist from the published ev.energy OpenAPI. Every operationId
+  listed was verified present in the spec; none are invented. ev.energy publishes no skills or AGENTS.md
+  of its own.
+api: ev.energy v2 API
+base_url: https://api.ev.energy/v2
+skill_count: 3
+skills:
+- name: ev-energy-onboard-driver-vehicle
+  file: skills/ev-energy-onboard-driver-vehicle.md
+  description: Onboard an ev.energy driver and connect their electric vehicle so it becomes eligible for
+    smart charging.
+  operations: 8
+- name: ev-energy-read-charging-sessions
+  file: skills/ev-energy-read-charging-sessions.md
+  description: Retrieve and interpret ev.energy charging sessions, sub-sessions, energy usage and smart-charging
+    assessment data.
+  operations: 8
+- name: ev-energy-dispatch-vpp-event
+  file: skills/ev-energy-dispatch-vpp-event.md
+  description: Create and cancel an ev.energy virtual-power-plant dispatch event against a dispatch coordinator,
+    and audit its effect.
+  operations: 7
