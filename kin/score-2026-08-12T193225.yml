@@ -1,0 +1,42 @@
+# Kin Score artifact — ev-energy — 2026-08-12T193225
+# The API Evangelist rating (https://github.com/api-evangelist/kin-score). Generated; do not edit.
+---
+kin_score:
+  slug: ev-energy
+  schema_version: 0.11.0
+  scored_at: '2026-08-12'
+  run_ts: 2026-08-12T193225
+  composite: 46.8
+  band: developing
+  facets:
+    discoverability: 75.9
+    contract_quality: 63.4
+    governance: 20.8
+    operational_transparency: 36.8
+    developer_ergonomics: 56.5
+    commercial_clarity: 21.1
+  agent_readiness:
+    score: 56.3
+    band: agent-ready
+    band_gated_from: agent-native
+    dimensions:
+      spec_presence: true
+      agentic_access: false
+      mcp_server: true
+      auth_clarity: false
+      idempotency: false
+      error_semantics: verified
+      openapi_examples: partial
+      rate_limit_signal: verified
+      event_surface_described: true
+      agent_skills: true
+      well_known_catalog: false
+      consent_identity: true
+      agent_card: false
+      dry_run_mode: false
+  regulatory:
+    applies: true
+    regime: Energy & Utilities
+    regime_id: energy_utilities
+    score: 50.0
+    matched_via: tags
