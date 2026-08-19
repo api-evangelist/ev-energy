@@ -89,3 +89,11 @@ x-evidence:
   url: https://developers.ev.energy/mcp
   http_status: 200
   content_type: text/event-stream
+deployment:
+  mode: remote
+  endpoint: https://developers.ev.energy/mcp
+  verified: probed
+  probe: live
+  tools: 6
+  checked: '2026-08-12'
+  source: catalog MCP census
