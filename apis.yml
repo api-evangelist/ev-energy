@@ -13,7 +13,7 @@ image: https://cdn.prod.website-files.com/6278ea1f9c10c9550411fdd7/627a9ce3111e3
 url: https://raw.githubusercontent.com/api-evangelist/ev-energy/refs/heads/main/apis.yml
 x-type: company
 x-source: harvest:secondary-market
-specificationVersion: '0.20'
+specificationVersion: '0.23'
 created: '2026-08-12'
 modified: '2026-08-12'
 tags:
