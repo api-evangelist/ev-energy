@@ -35,29 +35,883 @@ maintainers:
 - FN: APIs.json
   email: info@apis.io
 apis:
-- aid: ev-energy-api-v2
-  name: ev.energy v2 API
-  description: 'The official ev.energy v2 REST API. 210 operations across 180 paths
-    covering users, vehicles, EVSEs, charging sessions, schedules, tariffs, regions,
-    solar, solar forecasts, home batteries, boundary meters, CT clamps, HEM systems,
-    sites, carbon intensity, grid data, programs, rebates, subscriptions, notifications,
-    support tickets and VPP dispatch. OAuth 2.0 (authorization code with PKCE, and
-    client credentials) with 35 fine-grained scopes; RFC 9457 problem-details errors;
-    RFC 5988 Link-header pagination; ULID-prefixed resource IDs.'
+- aid: ev-energy:ev-energy-auth-api
+  name: ev.energy Auth API
+  description: The Auth API from ev.energy — 1 operation(s) for auth.
   humanURL: https://developers.ev.energy/ev.energy-api-v2
   baseURL: https://api.ev.energy/v2
   tags:
-  - EV Charging
-  - Smart Charging
-  - Energy
-  - Vehicles
-  - Solar
-  - Virtual Power Plant
+  - Auth
   properties:
   - type: OpenAPI
-    url: openapi/ev-energy-api-v2-openapi.yaml
-  - type: Overlay
-    url: overlays/ev-energy-api-v2-overlay.yaml
+    url: openapi/ev-energy-auth-api-openapi.yml
+  - type: Documentation
+    url: https://developers.ev.energy/docs/intro
+  - type: APIReference
+    url: https://developers.ev.energy/ev.energy-api-v2
+  - type: GettingStarted
+    url: https://developers.ev.energy/docs/intro
+  - type: Authentication
+    url: authentication/ev-energy-authentication.yml
+  - type: OAuthScopes
+    url: scopes/ev-energy-scopes.yml
+  - type: RateLimits
+    url: rate-limits/ev-energy-rate-limits.yml
+  - type: ErrorCatalog
+    url: errors/ev-energy-problem-types.yml
+  - type: Conventions
+    url: conventions/ev-energy-conventions.yml
+  - type: DataModel
+    url: data-model/ev-energy-data-model.yml
+  - type: Sandbox
+    url: sandbox/ev-energy-sandbox.yml
+  - type: Webhooks
+    url: asyncapi/ev-energy-webhooks.yml
+  - type: Lifecycle
+    url: lifecycle/ev-energy-lifecycle.yml
+  - type: Conformance
+    url: conformance/ev-energy-conformance.yml
+- aid: ev-energy:ev-energy-boundary-meters-api
+  name: ev.energy Boundary Meters API
+  description: The Boundary Meters API from ev.energy — 8 operation(s) for boundary meters.
+  humanURL: https://developers.ev.energy/ev.energy-api-v2
+  baseURL: https://api.ev.energy/v2
+  tags:
+  - Boundary Meters
+  properties:
+  - type: OpenAPI
+    url: openapi/ev-energy-boundary-meters-api-openapi.yml
+  - type: Documentation
+    url: https://developers.ev.energy/docs/intro
+  - type: APIReference
+    url: https://developers.ev.energy/ev.energy-api-v2
+  - type: GettingStarted
+    url: https://developers.ev.energy/docs/intro
+  - type: Authentication
+    url: authentication/ev-energy-authentication.yml
+  - type: OAuthScopes
+    url: scopes/ev-energy-scopes.yml
+  - type: RateLimits
+    url: rate-limits/ev-energy-rate-limits.yml
+  - type: ErrorCatalog
+    url: errors/ev-energy-problem-types.yml
+  - type: Conventions
+    url: conventions/ev-energy-conventions.yml
+  - type: DataModel
+    url: data-model/ev-energy-data-model.yml
+  - type: Sandbox
+    url: sandbox/ev-energy-sandbox.yml
+  - type: Webhooks
+    url: asyncapi/ev-energy-webhooks.yml
+  - type: Lifecycle
+    url: lifecycle/ev-energy-lifecycle.yml
+  - type: Conformance
+    url: conformance/ev-energy-conformance.yml
+- aid: ev-energy:ev-energy-carbon-api
+  name: ev.energy Carbon API
+  description: Endpoints for interacting with carbon intensity data.
+  humanURL: https://developers.ev.energy/ev.energy-api-v2
+  baseURL: https://api.ev.energy/v2
+  tags:
+  - Carbon
+  properties:
+  - type: OpenAPI
+    url: openapi/ev-energy-carbon-api-openapi.yml
+  - type: Documentation
+    url: https://developers.ev.energy/docs/intro
+  - type: APIReference
+    url: https://developers.ev.energy/ev.energy-api-v2
+  - type: GettingStarted
+    url: https://developers.ev.energy/docs/intro
+  - type: Authentication
+    url: authentication/ev-energy-authentication.yml
+  - type: OAuthScopes
+    url: scopes/ev-energy-scopes.yml
+  - type: RateLimits
+    url: rate-limits/ev-energy-rate-limits.yml
+  - type: ErrorCatalog
+    url: errors/ev-energy-problem-types.yml
+  - type: Conventions
+    url: conventions/ev-energy-conventions.yml
+  - type: DataModel
+    url: data-model/ev-energy-data-model.yml
+  - type: Sandbox
+    url: sandbox/ev-energy-sandbox.yml
+  - type: Webhooks
+    url: asyncapi/ev-energy-webhooks.yml
+  - type: Lifecycle
+    url: lifecycle/ev-energy-lifecycle.yml
+  - type: Conformance
+    url: conformance/ev-energy-conformance.yml
+- aid: ev-energy:ev-energy-charging-sessions-api
+  name: ev.energy Charging Sessions API
+  description: >-
+    Endpoints related to records of charging. See [Understanding charging data](docs/understanding/charging_sessions.md)
+    for how charging sessions (plug-in episodes), charging sub-sessions (per-mode segments) and energy
+    usage intervals (actual energy delivery) relate to each other.
+  humanURL: https://developers.ev.energy/ev.energy-api-v2
+  baseURL: https://api.ev.energy/v2
+  tags:
+  - Charging Sessions
+  properties:
+  - type: OpenAPI
+    url: openapi/ev-energy-charging-sessions-api-openapi.yml
+  - type: Documentation
+    url: https://developers.ev.energy/docs/intro
+  - type: APIReference
+    url: https://developers.ev.energy/ev.energy-api-v2
+  - type: GettingStarted
+    url: https://developers.ev.energy/docs/intro
+  - type: Authentication
+    url: authentication/ev-energy-authentication.yml
+  - type: OAuthScopes
+    url: scopes/ev-energy-scopes.yml
+  - type: RateLimits
+    url: rate-limits/ev-energy-rate-limits.yml
+  - type: ErrorCatalog
+    url: errors/ev-energy-problem-types.yml
+  - type: Conventions
+    url: conventions/ev-energy-conventions.yml
+  - type: DataModel
+    url: data-model/ev-energy-data-model.yml
+  - type: Sandbox
+    url: sandbox/ev-energy-sandbox.yml
+  - type: Webhooks
+    url: asyncapi/ev-energy-webhooks.yml
+  - type: Lifecycle
+    url: lifecycle/ev-energy-lifecycle.yml
+  - type: Conformance
+    url: conformance/ev-energy-conformance.yml
+- aid: ev-energy:ev-energy-ct-clamps-api
+  name: ev.energy CT Clamps API
+  description: The CT Clamps API from ev.energy — 4 operation(s) for ct clamps.
+  humanURL: https://developers.ev.energy/ev.energy-api-v2
+  baseURL: https://api.ev.energy/v2
+  tags:
+  - CT Clamps
+  properties:
+  - type: OpenAPI
+    url: openapi/ev-energy-ct-clamps-api-openapi.yml
+  - type: Documentation
+    url: https://developers.ev.energy/docs/intro
+  - type: APIReference
+    url: https://developers.ev.energy/ev.energy-api-v2
+  - type: GettingStarted
+    url: https://developers.ev.energy/docs/intro
+  - type: Authentication
+    url: authentication/ev-energy-authentication.yml
+  - type: OAuthScopes
+    url: scopes/ev-energy-scopes.yml
+  - type: RateLimits
+    url: rate-limits/ev-energy-rate-limits.yml
+  - type: ErrorCatalog
+    url: errors/ev-energy-problem-types.yml
+  - type: Conventions
+    url: conventions/ev-energy-conventions.yml
+  - type: DataModel
+    url: data-model/ev-energy-data-model.yml
+  - type: Sandbox
+    url: sandbox/ev-energy-sandbox.yml
+  - type: Webhooks
+    url: asyncapi/ev-energy-webhooks.yml
+  - type: Lifecycle
+    url: lifecycle/ev-energy-lifecycle.yml
+  - type: Conformance
+    url: conformance/ev-energy-conformance.yml
+- aid: ev-energy:ev-energy-evses-api
+  name: ev.energy EVS Es API
+  description: Endpoints for interacting with EVSEs.
+  humanURL: https://developers.ev.energy/ev.energy-api-v2
+  baseURL: https://api.ev.energy/v2
+  tags:
+  - EVSEs
+  properties:
+  - type: OpenAPI
+    url: openapi/ev-energy-evses-api-openapi.yml
+  - type: Documentation
+    url: https://developers.ev.energy/docs/intro
+  - type: APIReference
+    url: https://developers.ev.energy/ev.energy-api-v2
+  - type: GettingStarted
+    url: https://developers.ev.energy/docs/intro
+  - type: Authentication
+    url: authentication/ev-energy-authentication.yml
+  - type: OAuthScopes
+    url: scopes/ev-energy-scopes.yml
+  - type: RateLimits
+    url: rate-limits/ev-energy-rate-limits.yml
+  - type: ErrorCatalog
+    url: errors/ev-energy-problem-types.yml
+  - type: Conventions
+    url: conventions/ev-energy-conventions.yml
+  - type: DataModel
+    url: data-model/ev-energy-data-model.yml
+  - type: Sandbox
+    url: sandbox/ev-energy-sandbox.yml
+  - type: Webhooks
+    url: asyncapi/ev-energy-webhooks.yml
+  - type: Lifecycle
+    url: lifecycle/ev-energy-lifecycle.yml
+  - type: Conformance
+    url: conformance/ev-energy-conformance.yml
+- aid: ev-energy:ev-energy-grid-api
+  name: ev.energy Grid API
+  description: The Grid API from ev.energy — 3 operation(s) for grid.
+  humanURL: https://developers.ev.energy/ev.energy-api-v2
+  baseURL: https://api.ev.energy/v2
+  tags:
+  - Grid
+  properties:
+  - type: OpenAPI
+    url: openapi/ev-energy-grid-api-openapi.yml
+  - type: Documentation
+    url: https://developers.ev.energy/docs/intro
+  - type: APIReference
+    url: https://developers.ev.energy/ev.energy-api-v2
+  - type: GettingStarted
+    url: https://developers.ev.energy/docs/intro
+  - type: Authentication
+    url: authentication/ev-energy-authentication.yml
+  - type: OAuthScopes
+    url: scopes/ev-energy-scopes.yml
+  - type: RateLimits
+    url: rate-limits/ev-energy-rate-limits.yml
+  - type: ErrorCatalog
+    url: errors/ev-energy-problem-types.yml
+  - type: Conventions
+    url: conventions/ev-energy-conventions.yml
+  - type: DataModel
+    url: data-model/ev-energy-data-model.yml
+  - type: Sandbox
+    url: sandbox/ev-energy-sandbox.yml
+  - type: Webhooks
+    url: asyncapi/ev-energy-webhooks.yml
+  - type: Lifecycle
+    url: lifecycle/ev-energy-lifecycle.yml
+  - type: Conformance
+    url: conformance/ev-energy-conformance.yml
+- aid: ev-energy:ev-energy-hem-systems-api
+  name: ev.energy HEM Systems API
+  description: The HEM Systems API from ev.energy — 4 operation(s) for hem systems.
+  humanURL: https://developers.ev.energy/ev.energy-api-v2
+  baseURL: https://api.ev.energy/v2
+  tags:
+  - HEM Systems
+  properties:
+  - type: OpenAPI
+    url: openapi/ev-energy-hem-systems-api-openapi.yml
+  - type: Documentation
+    url: https://developers.ev.energy/docs/intro
+  - type: APIReference
+    url: https://developers.ev.energy/ev.energy-api-v2
+  - type: GettingStarted
+    url: https://developers.ev.energy/docs/intro
+  - type: Authentication
+    url: authentication/ev-energy-authentication.yml
+  - type: OAuthScopes
+    url: scopes/ev-energy-scopes.yml
+  - type: RateLimits
+    url: rate-limits/ev-energy-rate-limits.yml
+  - type: ErrorCatalog
+    url: errors/ev-energy-problem-types.yml
+  - type: Conventions
+    url: conventions/ev-energy-conventions.yml
+  - type: DataModel
+    url: data-model/ev-energy-data-model.yml
+  - type: Sandbox
+    url: sandbox/ev-energy-sandbox.yml
+  - type: Webhooks
+    url: asyncapi/ev-energy-webhooks.yml
+  - type: Lifecycle
+    url: lifecycle/ev-energy-lifecycle.yml
+  - type: Conformance
+    url: conformance/ev-energy-conformance.yml
+- aid: ev-energy:ev-energy-home-batteries-api
+  name: ev.energy Home Batteries API
+  description: Endpoints for interacting with home batteries.
+  humanURL: https://developers.ev.energy/ev.energy-api-v2
+  baseURL: https://api.ev.energy/v2
+  tags:
+  - Home Batteries
+  properties:
+  - type: OpenAPI
+    url: openapi/ev-energy-home-batteries-api-openapi.yml
+  - type: Documentation
+    url: https://developers.ev.energy/docs/intro
+  - type: APIReference
+    url: https://developers.ev.energy/ev.energy-api-v2
+  - type: GettingStarted
+    url: https://developers.ev.energy/docs/intro
+  - type: Authentication
+    url: authentication/ev-energy-authentication.yml
+  - type: OAuthScopes
+    url: scopes/ev-energy-scopes.yml
+  - type: RateLimits
+    url: rate-limits/ev-energy-rate-limits.yml
+  - type: ErrorCatalog
+    url: errors/ev-energy-problem-types.yml
+  - type: Conventions
+    url: conventions/ev-energy-conventions.yml
+  - type: DataModel
+    url: data-model/ev-energy-data-model.yml
+  - type: Sandbox
+    url: sandbox/ev-energy-sandbox.yml
+  - type: Webhooks
+    url: asyncapi/ev-energy-webhooks.yml
+  - type: Lifecycle
+    url: lifecycle/ev-energy-lifecycle.yml
+  - type: Conformance
+    url: conformance/ev-energy-conformance.yml
+- aid: ev-energy:ev-energy-notifications-api
+  name: ev.energy Notifications API
+  description: Endpoints for communicating notifications.
+  humanURL: https://developers.ev.energy/ev.energy-api-v2
+  baseURL: https://api.ev.energy/v2
+  tags:
+  - Notifications
+  properties:
+  - type: OpenAPI
+    url: openapi/ev-energy-notifications-api-openapi.yml
+  - type: Documentation
+    url: https://developers.ev.energy/docs/intro
+  - type: APIReference
+    url: https://developers.ev.energy/ev.energy-api-v2
+  - type: GettingStarted
+    url: https://developers.ev.energy/docs/intro
+  - type: Authentication
+    url: authentication/ev-energy-authentication.yml
+  - type: OAuthScopes
+    url: scopes/ev-energy-scopes.yml
+  - type: RateLimits
+    url: rate-limits/ev-energy-rate-limits.yml
+  - type: ErrorCatalog
+    url: errors/ev-energy-problem-types.yml
+  - type: Conventions
+    url: conventions/ev-energy-conventions.yml
+  - type: DataModel
+    url: data-model/ev-energy-data-model.yml
+  - type: Sandbox
+    url: sandbox/ev-energy-sandbox.yml
+  - type: Webhooks
+    url: asyncapi/ev-energy-webhooks.yml
+  - type: Lifecycle
+    url: lifecycle/ev-energy-lifecycle.yml
+  - type: Conformance
+    url: conformance/ev-energy-conformance.yml
+- aid: ev-energy:ev-energy-programs-api
+  name: ev.energy Programs API
+  description: Endpoints related to incentivised charging programs.
+  humanURL: https://developers.ev.energy/ev.energy-api-v2
+  baseURL: https://api.ev.energy/v2
+  tags:
+  - Programs
+  properties:
+  - type: OpenAPI
+    url: openapi/ev-energy-programs-api-openapi.yml
+  - type: Documentation
+    url: https://developers.ev.energy/docs/intro
+  - type: APIReference
+    url: https://developers.ev.energy/ev.energy-api-v2
+  - type: GettingStarted
+    url: https://developers.ev.energy/docs/intro
+  - type: Authentication
+    url: authentication/ev-energy-authentication.yml
+  - type: OAuthScopes
+    url: scopes/ev-energy-scopes.yml
+  - type: RateLimits
+    url: rate-limits/ev-energy-rate-limits.yml
+  - type: ErrorCatalog
+    url: errors/ev-energy-problem-types.yml
+  - type: Conventions
+    url: conventions/ev-energy-conventions.yml
+  - type: DataModel
+    url: data-model/ev-energy-data-model.yml
+  - type: Sandbox
+    url: sandbox/ev-energy-sandbox.yml
+  - type: Webhooks
+    url: asyncapi/ev-energy-webhooks.yml
+  - type: Lifecycle
+    url: lifecycle/ev-energy-lifecycle.yml
+  - type: Conformance
+    url: conformance/ev-energy-conformance.yml
+- aid: ev-energy:ev-energy-rebates-api
+  name: ev.energy Rebates API
+  description: Endpoints for interacting with rebates.
+  humanURL: https://developers.ev.energy/ev.energy-api-v2
+  baseURL: https://api.ev.energy/v2
+  tags:
+  - Rebates
+  properties:
+  - type: OpenAPI
+    url: openapi/ev-energy-rebates-api-openapi.yml
+  - type: Documentation
+    url: https://developers.ev.energy/docs/intro
+  - type: APIReference
+    url: https://developers.ev.energy/ev.energy-api-v2
+  - type: GettingStarted
+    url: https://developers.ev.energy/docs/intro
+  - type: Authentication
+    url: authentication/ev-energy-authentication.yml
+  - type: OAuthScopes
+    url: scopes/ev-energy-scopes.yml
+  - type: RateLimits
+    url: rate-limits/ev-energy-rate-limits.yml
+  - type: ErrorCatalog
+    url: errors/ev-energy-problem-types.yml
+  - type: Conventions
+    url: conventions/ev-energy-conventions.yml
+  - type: DataModel
+    url: data-model/ev-energy-data-model.yml
+  - type: Sandbox
+    url: sandbox/ev-energy-sandbox.yml
+  - type: Webhooks
+    url: asyncapi/ev-energy-webhooks.yml
+  - type: Lifecycle
+    url: lifecycle/ev-energy-lifecycle.yml
+  - type: Conformance
+    url: conformance/ev-energy-conformance.yml
+- aid: ev-energy:ev-energy-reference-data-api
+  name: ev.energy Reference Data API
+  description: The Reference Data API from ev.energy — 2 operation(s) for reference data.
+  humanURL: https://developers.ev.energy/ev.energy-api-v2
+  baseURL: https://api.ev.energy/v2
+  tags:
+  - Reference Data
+  properties:
+  - type: OpenAPI
+    url: openapi/ev-energy-reference-data-api-openapi.yml
+  - type: Documentation
+    url: https://developers.ev.energy/docs/intro
+  - type: APIReference
+    url: https://developers.ev.energy/ev.energy-api-v2
+  - type: GettingStarted
+    url: https://developers.ev.energy/docs/intro
+  - type: Authentication
+    url: authentication/ev-energy-authentication.yml
+  - type: OAuthScopes
+    url: scopes/ev-energy-scopes.yml
+  - type: RateLimits
+    url: rate-limits/ev-energy-rate-limits.yml
+  - type: ErrorCatalog
+    url: errors/ev-energy-problem-types.yml
+  - type: Conventions
+    url: conventions/ev-energy-conventions.yml
+  - type: DataModel
+    url: data-model/ev-energy-data-model.yml
+  - type: Sandbox
+    url: sandbox/ev-energy-sandbox.yml
+  - type: Webhooks
+    url: asyncapi/ev-energy-webhooks.yml
+  - type: Lifecycle
+    url: lifecycle/ev-energy-lifecycle.yml
+  - type: Conformance
+    url: conformance/ev-energy-conformance.yml
+- aid: ev-energy:ev-energy-regions-api
+  name: ev.energy Regions API
+  description: Geographic regions and region groups used for program eligibility and tariffs.
+  humanURL: https://developers.ev.energy/ev.energy-api-v2
+  baseURL: https://api.ev.energy/v2
+  tags:
+  - Regions
+  properties:
+  - type: OpenAPI
+    url: openapi/ev-energy-regions-api-openapi.yml
+  - type: Documentation
+    url: https://developers.ev.energy/docs/intro
+  - type: APIReference
+    url: https://developers.ev.energy/ev.energy-api-v2
+  - type: GettingStarted
+    url: https://developers.ev.energy/docs/intro
+  - type: Authentication
+    url: authentication/ev-energy-authentication.yml
+  - type: OAuthScopes
+    url: scopes/ev-energy-scopes.yml
+  - type: RateLimits
+    url: rate-limits/ev-energy-rate-limits.yml
+  - type: ErrorCatalog
+    url: errors/ev-energy-problem-types.yml
+  - type: Conventions
+    url: conventions/ev-energy-conventions.yml
+  - type: DataModel
+    url: data-model/ev-energy-data-model.yml
+  - type: Sandbox
+    url: sandbox/ev-energy-sandbox.yml
+  - type: Webhooks
+    url: asyncapi/ev-energy-webhooks.yml
+  - type: Lifecycle
+    url: lifecycle/ev-energy-lifecycle.yml
+  - type: Conformance
+    url: conformance/ev-energy-conformance.yml
+- aid: ev-energy:ev-energy-root-api
+  name: ev.energy Root API
+  description: The root endpoint which lists all the top-level collections.
+  humanURL: https://developers.ev.energy/ev.energy-api-v2
+  baseURL: https://api.ev.energy/v2
+  tags:
+  - Root
+  properties:
+  - type: OpenAPI
+    url: openapi/ev-energy-root-api-openapi.yml
+  - type: Documentation
+    url: https://developers.ev.energy/docs/intro
+  - type: APIReference
+    url: https://developers.ev.energy/ev.energy-api-v2
+  - type: GettingStarted
+    url: https://developers.ev.energy/docs/intro
+  - type: Authentication
+    url: authentication/ev-energy-authentication.yml
+  - type: OAuthScopes
+    url: scopes/ev-energy-scopes.yml
+  - type: RateLimits
+    url: rate-limits/ev-energy-rate-limits.yml
+  - type: ErrorCatalog
+    url: errors/ev-energy-problem-types.yml
+  - type: Conventions
+    url: conventions/ev-energy-conventions.yml
+  - type: DataModel
+    url: data-model/ev-energy-data-model.yml
+  - type: Sandbox
+    url: sandbox/ev-energy-sandbox.yml
+  - type: Webhooks
+    url: asyncapi/ev-energy-webhooks.yml
+  - type: Lifecycle
+    url: lifecycle/ev-energy-lifecycle.yml
+  - type: Conformance
+    url: conformance/ev-energy-conformance.yml
+- aid: ev-energy:ev-energy-sites-api
+  name: ev.energy Sites API
+  description: Endpoints for interacting with sites containing multiple EVSEs.
+  humanURL: https://developers.ev.energy/ev.energy-api-v2
+  baseURL: https://api.ev.energy/v2
+  tags:
+  - Sites
+  properties:
+  - type: OpenAPI
+    url: openapi/ev-energy-sites-api-openapi.yml
+  - type: Documentation
+    url: https://developers.ev.energy/docs/intro
+  - type: APIReference
+    url: https://developers.ev.energy/ev.energy-api-v2
+  - type: GettingStarted
+    url: https://developers.ev.energy/docs/intro
+  - type: Authentication
+    url: authentication/ev-energy-authentication.yml
+  - type: OAuthScopes
+    url: scopes/ev-energy-scopes.yml
+  - type: RateLimits
+    url: rate-limits/ev-energy-rate-limits.yml
+  - type: ErrorCatalog
+    url: errors/ev-energy-problem-types.yml
+  - type: Conventions
+    url: conventions/ev-energy-conventions.yml
+  - type: DataModel
+    url: data-model/ev-energy-data-model.yml
+  - type: Sandbox
+    url: sandbox/ev-energy-sandbox.yml
+  - type: Webhooks
+    url: asyncapi/ev-energy-webhooks.yml
+  - type: Lifecycle
+    url: lifecycle/ev-energy-lifecycle.yml
+  - type: Conformance
+    url: conformance/ev-energy-conformance.yml
+- aid: ev-energy:ev-energy-solar-api
+  name: ev.energy Solar API
+  description: Endpoints for interacting with solar arrays and inverters.
+  humanURL: https://developers.ev.energy/ev.energy-api-v2
+  baseURL: https://api.ev.energy/v2
+  tags:
+  - Solar
+  properties:
+  - type: OpenAPI
+    url: openapi/ev-energy-solar-api-openapi.yml
+  - type: Documentation
+    url: https://developers.ev.energy/docs/intro
+  - type: APIReference
+    url: https://developers.ev.energy/ev.energy-api-v2
+  - type: GettingStarted
+    url: https://developers.ev.energy/docs/intro
+  - type: Authentication
+    url: authentication/ev-energy-authentication.yml
+  - type: OAuthScopes
+    url: scopes/ev-energy-scopes.yml
+  - type: RateLimits
+    url: rate-limits/ev-energy-rate-limits.yml
+  - type: ErrorCatalog
+    url: errors/ev-energy-problem-types.yml
+  - type: Conventions
+    url: conventions/ev-energy-conventions.yml
+  - type: DataModel
+    url: data-model/ev-energy-data-model.yml
+  - type: Sandbox
+    url: sandbox/ev-energy-sandbox.yml
+  - type: Webhooks
+    url: asyncapi/ev-energy-webhooks.yml
+  - type: Lifecycle
+    url: lifecycle/ev-energy-lifecycle.yml
+  - type: Conformance
+    url: conformance/ev-energy-conformance.yml
+- aid: ev-energy:ev-energy-solar-forecasts-api
+  name: ev.energy Solar Forecasts API
+  description: Endpoints for interacting with solar forecasts and their logs.
+  humanURL: https://developers.ev.energy/ev.energy-api-v2
+  baseURL: https://api.ev.energy/v2
+  tags:
+  - Solar Forecasts
+  properties:
+  - type: OpenAPI
+    url: openapi/ev-energy-solar-forecasts-api-openapi.yml
+  - type: Documentation
+    url: https://developers.ev.energy/docs/intro
+  - type: APIReference
+    url: https://developers.ev.energy/ev.energy-api-v2
+  - type: GettingStarted
+    url: https://developers.ev.energy/docs/intro
+  - type: Authentication
+    url: authentication/ev-energy-authentication.yml
+  - type: OAuthScopes
+    url: scopes/ev-energy-scopes.yml
+  - type: RateLimits
+    url: rate-limits/ev-energy-rate-limits.yml
+  - type: ErrorCatalog
+    url: errors/ev-energy-problem-types.yml
+  - type: Conventions
+    url: conventions/ev-energy-conventions.yml
+  - type: DataModel
+    url: data-model/ev-energy-data-model.yml
+  - type: Sandbox
+    url: sandbox/ev-energy-sandbox.yml
+  - type: Webhooks
+    url: asyncapi/ev-energy-webhooks.yml
+  - type: Lifecycle
+    url: lifecycle/ev-energy-lifecycle.yml
+  - type: Conformance
+    url: conformance/ev-energy-conformance.yml
+- aid: ev-energy:ev-energy-subscriptions-api
+  name: ev.energy Subscriptions API
+  description: Endpoints for interacting with user subscriptions.
+  humanURL: https://developers.ev.energy/ev.energy-api-v2
+  baseURL: https://api.ev.energy/v2
+  tags:
+  - Subscriptions
+  properties:
+  - type: OpenAPI
+    url: openapi/ev-energy-subscriptions-api-openapi.yml
+  - type: Documentation
+    url: https://developers.ev.energy/docs/intro
+  - type: APIReference
+    url: https://developers.ev.energy/ev.energy-api-v2
+  - type: GettingStarted
+    url: https://developers.ev.energy/docs/intro
+  - type: Authentication
+    url: authentication/ev-energy-authentication.yml
+  - type: OAuthScopes
+    url: scopes/ev-energy-scopes.yml
+  - type: RateLimits
+    url: rate-limits/ev-energy-rate-limits.yml
+  - type: ErrorCatalog
+    url: errors/ev-energy-problem-types.yml
+  - type: Conventions
+    url: conventions/ev-energy-conventions.yml
+  - type: DataModel
+    url: data-model/ev-energy-data-model.yml
+  - type: Sandbox
+    url: sandbox/ev-energy-sandbox.yml
+  - type: Webhooks
+    url: asyncapi/ev-energy-webhooks.yml
+  - type: Lifecycle
+    url: lifecycle/ev-energy-lifecycle.yml
+  - type: Conformance
+    url: conformance/ev-energy-conformance.yml
+- aid: ev-energy:ev-energy-support-tickets-api
+  name: ev.energy Support Tickets API
+  description: Endpoints for interacting with customer support tickets.
+  humanURL: https://developers.ev.energy/ev.energy-api-v2
+  baseURL: https://api.ev.energy/v2
+  tags:
+  - Support Tickets
+  properties:
+  - type: OpenAPI
+    url: openapi/ev-energy-support-tickets-api-openapi.yml
+  - type: Documentation
+    url: https://developers.ev.energy/docs/intro
+  - type: APIReference
+    url: https://developers.ev.energy/ev.energy-api-v2
+  - type: GettingStarted
+    url: https://developers.ev.energy/docs/intro
+  - type: Authentication
+    url: authentication/ev-energy-authentication.yml
+  - type: OAuthScopes
+    url: scopes/ev-energy-scopes.yml
+  - type: RateLimits
+    url: rate-limits/ev-energy-rate-limits.yml
+  - type: ErrorCatalog
+    url: errors/ev-energy-problem-types.yml
+  - type: Conventions
+    url: conventions/ev-energy-conventions.yml
+  - type: DataModel
+    url: data-model/ev-energy-data-model.yml
+  - type: Sandbox
+    url: sandbox/ev-energy-sandbox.yml
+  - type: Webhooks
+    url: asyncapi/ev-energy-webhooks.yml
+  - type: Lifecycle
+    url: lifecycle/ev-energy-lifecycle.yml
+  - type: Conformance
+    url: conformance/ev-energy-conformance.yml
+- aid: ev-energy:ev-energy-tariffs-api
+  name: ev.energy Tariffs API
+  description: Endpoints related to energy suppliers and their tariffs.
+  humanURL: https://developers.ev.energy/ev.energy-api-v2
+  baseURL: https://api.ev.energy/v2
+  tags:
+  - Tariffs
+  properties:
+  - type: OpenAPI
+    url: openapi/ev-energy-tariffs-api-openapi.yml
+  - type: Documentation
+    url: https://developers.ev.energy/docs/intro
+  - type: APIReference
+    url: https://developers.ev.energy/ev.energy-api-v2
+  - type: GettingStarted
+    url: https://developers.ev.energy/docs/intro
+  - type: Authentication
+    url: authentication/ev-energy-authentication.yml
+  - type: OAuthScopes
+    url: scopes/ev-energy-scopes.yml
+  - type: RateLimits
+    url: rate-limits/ev-energy-rate-limits.yml
+  - type: ErrorCatalog
+    url: errors/ev-energy-problem-types.yml
+  - type: Conventions
+    url: conventions/ev-energy-conventions.yml
+  - type: DataModel
+    url: data-model/ev-energy-data-model.yml
+  - type: Sandbox
+    url: sandbox/ev-energy-sandbox.yml
+  - type: Webhooks
+    url: asyncapi/ev-energy-webhooks.yml
+  - type: Lifecycle
+    url: lifecycle/ev-energy-lifecycle.yml
+  - type: Conformance
+    url: conformance/ev-energy-conformance.yml
+- aid: ev-energy:ev-energy-users-api
+  name: ev.energy Users API
+  description: Endpoints for interacting with users.
+  humanURL: https://developers.ev.energy/ev.energy-api-v2
+  baseURL: https://api.ev.energy/v2
+  tags:
+  - Users
+  properties:
+  - type: OpenAPI
+    url: openapi/ev-energy-users-api-openapi.yml
+  - type: Documentation
+    url: https://developers.ev.energy/docs/intro
+  - type: APIReference
+    url: https://developers.ev.energy/ev.energy-api-v2
+  - type: GettingStarted
+    url: https://developers.ev.energy/docs/intro
+  - type: Authentication
+    url: authentication/ev-energy-authentication.yml
+  - type: OAuthScopes
+    url: scopes/ev-energy-scopes.yml
+  - type: RateLimits
+    url: rate-limits/ev-energy-rate-limits.yml
+  - type: ErrorCatalog
+    url: errors/ev-energy-problem-types.yml
+  - type: Conventions
+    url: conventions/ev-energy-conventions.yml
+  - type: DataModel
+    url: data-model/ev-energy-data-model.yml
+  - type: Sandbox
+    url: sandbox/ev-energy-sandbox.yml
+  - type: Webhooks
+    url: asyncapi/ev-energy-webhooks.yml
+  - type: Lifecycle
+    url: lifecycle/ev-energy-lifecycle.yml
+  - type: Conformance
+    url: conformance/ev-energy-conformance.yml
+- aid: ev-energy:ev-energy-vehicles-api
+  name: ev.energy Vehicles API
+  description: Endpoints for interacting with vehicles.
+  humanURL: https://developers.ev.energy/ev.energy-api-v2
+  baseURL: https://api.ev.energy/v2
+  tags:
+  - Vehicles
+  properties:
+  - type: OpenAPI
+    url: openapi/ev-energy-vehicles-api-openapi.yml
+  - type: Documentation
+    url: https://developers.ev.energy/docs/intro
+  - type: APIReference
+    url: https://developers.ev.energy/ev.energy-api-v2
+  - type: GettingStarted
+    url: https://developers.ev.energy/docs/intro
+  - type: Authentication
+    url: authentication/ev-energy-authentication.yml
+  - type: OAuthScopes
+    url: scopes/ev-energy-scopes.yml
+  - type: RateLimits
+    url: rate-limits/ev-energy-rate-limits.yml
+  - type: ErrorCatalog
+    url: errors/ev-energy-problem-types.yml
+  - type: Conventions
+    url: conventions/ev-energy-conventions.yml
+  - type: DataModel
+    url: data-model/ev-energy-data-model.yml
+  - type: Sandbox
+    url: sandbox/ev-energy-sandbox.yml
+  - type: Webhooks
+    url: asyncapi/ev-energy-webhooks.yml
+  - type: Lifecycle
+    url: lifecycle/ev-energy-lifecycle.yml
+  - type: Conformance
+    url: conformance/ev-energy-conformance.yml
+- aid: ev-energy:ev-energy-vpp-api
+  name: ev.energy VPP API
+  description: Endpoints for virtual power plant - dispatch coordination and reporting.
+  humanURL: https://developers.ev.energy/ev.energy-api-v2
+  baseURL: https://api.ev.energy/v2
+  tags:
+  - VPP
+  properties:
+  - type: OpenAPI
+    url: openapi/ev-energy-vpp-api-openapi.yml
+  - type: Documentation
+    url: https://developers.ev.energy/docs/intro
+  - type: APIReference
+    url: https://developers.ev.energy/ev.energy-api-v2
+  - type: GettingStarted
+    url: https://developers.ev.energy/docs/intro
+  - type: Authentication
+    url: authentication/ev-energy-authentication.yml
+  - type: OAuthScopes
+    url: scopes/ev-energy-scopes.yml
+  - type: RateLimits
+    url: rate-limits/ev-energy-rate-limits.yml
+  - type: ErrorCatalog
+    url: errors/ev-energy-problem-types.yml
+  - type: Conventions
+    url: conventions/ev-energy-conventions.yml
+  - type: DataModel
+    url: data-model/ev-energy-data-model.yml
+  - type: Sandbox
+    url: sandbox/ev-energy-sandbox.yml
+  - type: Webhooks
+    url: asyncapi/ev-energy-webhooks.yml
+  - type: Lifecycle
+    url: lifecycle/ev-energy-lifecycle.yml
+  - type: Conformance
+    url: conformance/ev-energy-conformance.yml
+- aid: ev-energy:ev-energy-webhooks-api
+  name: ev.energy Webhooks API
+  description: Endpoints for configuring and managing webhooks.
+  humanURL: https://developers.ev.energy/ev.energy-api-v2
+  baseURL: https://api.ev.energy/v2
+  tags:
+  - Webhooks
+  properties:
+  - type: OpenAPI
+    url: openapi/ev-energy-webhooks-api-openapi.yml
   - type: Documentation
     url: https://developers.ev.energy/docs/intro
   - type: APIReference
@@ -85,6 +939,8 @@ apis:
   - type: Conformance
     url: conformance/ev-energy-conformance.yml
 common:
+- type: Overlay
+  url: overlays/ev-energy-api-v2-overlay.yaml
 - type: Website
   url: https://www.ev.energy/
 - type: DeveloperPortal
