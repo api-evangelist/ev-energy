@@ -23,6 +23,8 @@ deliveryModel:
   method: derived
 image: https://cdn.prod.website-files.com/6278ea1f9c10c9550411fdd7/627a9ce3111e36661da5018c_ev-logo-256px.png
 url: https://raw.githubusercontent.com/api-evangelist/ev-energy/refs/heads/main/apis.yml
+x-api-posture: no-product-api
+x-api-posture-basis: observed
 x-type: company
 x-source: harvest:secondary-market
 specificationVersion: '0.23'
@@ -951,6 +953,9 @@ apis:
   - type: Conformance
     url: conformance/ev-energy-conformance.yml
 common:
+- type: CapabilityMap
+  url: capabilities/ev-energy-capability-edges.yml
+  name: ev.energy Business Capability Map
 - type: Overlay
   url: overlays/ev-energy-api-v2-overlay.yaml
 - type: Website
