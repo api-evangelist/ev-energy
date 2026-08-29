@@ -9,6 +9,18 @@ description: 'ev.energy is a London- and Palo-Alto-based smart electric-vehicle 
   Charge API — a public OpenAPI 3.1 REST contract at api.ev.energy covering vehicles,
   EVSEs, charging sessions, schedules, tariffs, solar, home batteries, VPP dispatch,
   rebates and utility program enrollment.'
+deliveryModel:
+  model: saas
+  open_source: false
+  commercial: true
+  callable_host: true
+  label: Hosted service · you call their endpoint
+  confidence: high
+  source:
+  - openapi
+  - pricing
+  generated: '2026-08-28'
+  method: derived
 image: https://cdn.prod.website-files.com/6278ea1f9c10c9550411fdd7/627a9ce3111e36661da5018c_ev-logo-256px.png
 url: https://raw.githubusercontent.com/api-evangelist/ev-energy/refs/heads/main/apis.yml
 x-type: company
