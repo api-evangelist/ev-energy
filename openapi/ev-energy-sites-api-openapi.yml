@@ -1,0 +1,721 @@
+openapi: 3.2.0
+info:
+  title: ev.energy v2 Sites API
+  version: '2.0'
+  contact:
+    email: developers@ev.energy
+    url: developers.ev.energy
+    name: ev.energy developers
+  description: The official API for ev.energy, version 2.
+  license:
+    name: Proprietary
+    url: https://ev.energy
+  termsOfService: ''
+servers:
+- url: https://api.ev.energy/v2
+  description: Live API for both production and sandbox requests.
+  x-internal: false
+- description: Staging server for internal testing only.
+  url: https://api-staging.ev.energy/v2
+  x-internal: true
+security:
+- oauth2: []
+tags:
+- name: Sites
+  description: Endpoints for interacting with sites containing multiple EVSEs.
+paths:
+  /evse_sites:
+    get:
+      summary: List EVSE Sites
+      tags:
+      - Sites
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EVSESite'
+                readOnly: true
+          headers:
+            Link:
+              $ref: '#/components/headers/link'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-evse_sites
+      description: List all available EVSE Sites
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/user'
+      security:
+      - oauth2:
+        - site:read
+  /evse_sites/{evse_site_id}:
+    parameters:
+    - $ref: '#/components/parameters/evse_site_id'
+    get:
+      summary: Retrieve an EVSE Site
+      tags:
+      - Sites
+      responses:
+        '200':
+          description: Returns a single EVSE Site.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EVSESite'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-evse_sites-evse_site_id
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/user'
+      description: Retrieve a single, specific EVSESite's details.
+      security:
+      - oauth2:
+        - site:read
+  /cpms_providers:
+    get:
+      summary: List CPMS Providers
+      description: Get a list of all the ChargePoint Management System Providers that we integrate with.
+      tags:
+      - Sites
+      responses:
+        '200':
+          description: OK
+          headers:
+            Link:
+              $ref: '#/components/headers/link'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CPMSProvider'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-cpms_providers
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/previous'
+      - $ref: '#/components/parameters/next'
+  /cpms_providers/{cpms_provider_id}:
+    parameters:
+    - schema:
+        type: string
+        enum:
+        - CHARGEPOINT
+      name: cpms_provider_id
+      in: path
+      required: true
+      description: The ID of the specific provider to retrieve.
+    get:
+      summary: Retrieve a CPMS Provider
+      description: Get details on a single CPMS provider.
+      tags:
+      - Sites
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CPMSProvider'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-cpms_providers-provider_id
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+components:
+  responses:
+    Problem404NotFound:
+      description: This resource either does not exist or the client is not authorized to access it.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 404
+              title:
+                type: string
+                example: Not found
+              detail:
+                type: string
+                example: Resource does not exist or cannot be accessed.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem400BadRequestRetrieve:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem429TooManyRequests:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Example 1:
+              value:
+                type: https://api.ev.energy/v2/problems/rate-limit-exceeded/
+                status: 429
+                title: Too Many Requests
+                detail: Request was rate limited. Try again in 42 seconds
+      description: The client has exceeded its rate limit.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        Retry-After:
+          $ref: '#/components/headers/retry-after'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem401Unauthorized:
+      description: You need to authorise requests to access this resource.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 401
+              title:
+                type: string
+                example: Unauthorized
+              detail:
+                type: string
+                example: Authentication credentials were not provided.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem400BadRequestList:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Invalid Pagination Parameter:
+              $ref: '#/components/examples/ProblemInvalidPaginationParameter'
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem403Forbidden:
+      description: You do not have permission to perform this action.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 403
+              title:
+                type: string
+                example: Forbidden
+              detail:
+                type: string
+                example: You do not have permission to perform this action.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem406NotAcceptable:
+      description: Could not satisfy the request Accept header.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 406
+              title:
+                type: string
+                example: Not Acceptable
+              detail:
+                type: string
+                example: Could not satisfy the request Accept header.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+  parameters:
+    user:
+      name: EvEnergy-User
+      description: If the client is authenticated using Client Credentials, setting EvEnergy-User to a valid user ID allows requests to be made as if you were directly authenticated as that user.
+      in: header
+      required: false
+      schema:
+        type: string
+        pattern: user[A-Z\d]{26}
+        example: user01HN2NJ9NMRZBXT1H6FT9N7735
+    version-2:
+      name: EvEnergy-Version
+      description: Specify the version of this endpoint to use.
+      required: false
+      in: header
+      schema:
+        type: number
+        enum:
+        - 2
+    previous:
+      name: page_before
+      description: Return results from the page after this ID.
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[a-z]{4}[A-Z\d]{26}'
+        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
+    evse_site_id:
+      description: Unique identifier for a single EVSE Site.
+      name: evse_site_id
+      in: path
+      required: true
+      schema:
+        type: string
+        example: site01JX2SZ0WAFTDYVYY0JRAYREY7
+        pattern: site[A-Z\d]{26}
+    next:
+      name: page_after
+      description: Return results from the page before this ID.
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[a-z]{4}[A-Z\d]{26}'
+        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
+  schemas:
+    RFC9457ProblemDetail:
+      title: RFC 9457 Problem Detail
+      x-tags:
+      - problems
+      type: object
+      required:
+      - title
+      - detail
+      properties:
+        type:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/problems/example-problem/
+        status:
+          type: number
+          example: 400
+        title:
+          type: string
+          example: Short description
+        detail:
+          type: string
+          example: Long, more specific description.
+        instance:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
+        notification:
+          $ref: '#/components/schemas/Notification'
+      examples:
+      - type: https://api.ev.energy/v2/problems/example-problem/
+        status: 400
+        title: Short description
+        detail: Long, more specific description.
+        instance: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
+        notification:
+          id: notf01HTHKTXVB77901324BCQPF1RB
+          url: https://api.ev.energy/notifications/notf01HTHKTXVB77901324BCQPF1RB
+          message_id: ERR0123
+          category: ACTIONABLE
+          event_time: '2019-08-24T14:15:22Z'
+          short_text_title: Your car is disconnected
+          short_text_body: We need to reconnect to keep smart charging your car
+          detail_page_title: Your car is disconnected
+          detail_page_body: Your car has been disconnected. This happens when your password is reset. We need you to re-authorise ev.energy to access your account in order for us to keep managing your charging. Blah blah blah.
+          external_link: http://example.com
+          external_button_label: More info
+          read_at: '2019-08-24T14:20:22Z'
+          resolved_at: '2019-08-25T14:15:22Z'
+    Notification:
+      title: Notification
+      description: Something that the user should be informed about.
+      type: object
+      examples:
+      - id: notf67O36PLTFDB57M0E5L33JZLGM0
+        url: https://api.ev.energy/notifications/notf67O36PLTFDB57M0E5L33JZLGM0
+        message_id: ERR0123
+        category: ACTIONABLE
+        event_time: '2019-08-24T14:15:22Z'
+        short_text_title: Your car is disconnected
+        short_text_body: We need to reconnect to keep smart charging your car
+        detail_page_title: Your car is disconnected
+        detail_page_body: Your car has been disconnected. This happens when your password is reset. We need you to re-authorise ev.energy to access your account in order for us to keep managing your charging. Blah blah blah.
+        external_link: http://example.com
+        external_button_label: More info
+        read_at: '2019-08-24T14:20:22Z'
+        resolved_at: '2019-08-25T14:15:22Z'
+      required:
+      - id
+      - url
+      - message_id
+      - category
+      - event_time
+      - short_text_title
+      - short_text_body
+      - detail_page_title
+      - detail_page_body
+      - external_link
+      - external_button_label
+      properties:
+        id:
+          type: string
+          pattern: notf[A-Z\d]{26}
+          example: notf67O36PLTFDB57M0E5L33JZLGM0
+          description: Unique identifier for the Notification
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/notifications/notf67O36PLTFDB57M0E5L33JZLGM0
+        message_id:
+          type: string
+          description: Internal identifier for this notification type. E.g. 'ERR0023'
+        category:
+          description: Category of this notification type
+          enum:
+          - ACTIONABLE
+          - SERVICE
+          - RETRY
+          - MARKETING
+          - INTERNAL
+        event_time:
+          type: string
+          format: date-time
+          description: The timestamp of the event described by this notification
+        short_text_title:
+          type: string
+          description: Short title for the notification
+          maxLength: 33
+        short_text_body:
+          type: string
+          description: Short description of the event being notified
+          maxLength: 49
+        detail_page_title:
+          type: string
+          description: Title of a help page giving more information about this notification
+        detail_page_body:
+          type: string
+          description: Text of a help page giving more information about this notification
+        external_link:
+          type:
+          - string
+          - 'null'
+          description: URL of a web page giving further information about this notification
+          format: uri
+        external_button_label:
+          type: string
+          description: Text to be displayed on a button leading to the external_link location
+        read_at:
+          type: string
+          format: date-time
+          description: When the user examined the contents of this notification
+        resolved_at:
+          type: string
+          format: date-time
+          description: When the problem associated with this notification was resolved
+    EVSESite:
+      title: EVSESite
+      type: object
+      description: Represents a place with one or more EVSEs installed which can be accessed by multiple users.
+      required:
+      - id
+      - url
+      - evses
+      - cpms_connection
+      properties:
+        id:
+          type: string
+          pattern: site[A-Z\d]{26}
+          examples:
+          - site01JX2SZ0WAFTDYVYY0JRAYREY7
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/evse_sites/site01JX2SZ0WAFTDYVYY0JRAYREY7
+          readOnly: true
+        evses:
+          type: array
+          description: A list of all EVSEs that are currently associated with this site.
+          items:
+            type: string
+            format: uri
+            examples:
+            - https://api.ev.energy/v2/evses/evse01HSH04KDEWF6Z4DB2J77J74K5
+          readOnly: true
+        cpms_connection:
+          type:
+          - string
+          - 'null'
+          description: The type of ChargePoint Management System that this site is connected to, if there is one.
+          enum:
+          - null
+          - CHARGEPOINT
+          - SWTCH
+          readOnly: true
+        cpms_connection_display_name:
+          type:
+          - string
+          - 'null'
+          description: A human-readable name for the Chargepoint Management System that the site is connected to.
+          example: ChargePoint
+        user_connected:
+          type:
+          - boolean
+          - 'null'
+          description: When authenticated as a specific user (eg. via the Authorisation Code grant type) or when the EvEnergy-User header is set to a valid user ID, this field will indicate whether the user is currently connected to this EVSE Site's CPMS. If the request is not made in the context of a user, or the site does not have a CPMS connection, this field will be null.
+          readOnly: true
+    CPMSProvider:
+      title: CPMSProvider
+      type: object
+      description: Represents a ChargePoint Management System provider.
+      required:
+      - id
+      - url
+      - name
+      - icon
+      properties:
+        id:
+          enum:
+          - CHARGEPOINT
+          - SWTCH
+        url:
+          type: string
+          example: https://api.ev.energy/v2/cpms_providers/CHARGEPOINT/
+        name:
+          type: string
+        icon:
+          type:
+          - string
+          - 'null'
+          format: uri
+  headers:
+    link:
+      description: Provides links to the previous and next pages of data, if they exist.
+      example: <https://api.ev.energy/v2/vehicles?page_size=25&page_before=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="previous", <https://api.ev.energy/v2/vehicles?page_size=25&page_after=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="next"
+      schema:
+        type: string
+    x-ratelimit-remaining:
+      description: The number of requests remaining until this client's rate limit is reached.
+      schema:
+        type: number
+        default: 999
+    version-2:
+      description: Indicates the version of the API that generated this response. If EvEnergy-Version was not specified in the request, this will be your OAuth application's default version.
+      schema:
+        type: number
+        enum:
+        - 2
+    retry-after:
+      description: The number of seconds until this client's requests will not be rate limited.
+      schema:
+        type: number
+        default: 3600
+    x-ratelimit-limit:
+      description: The maximum number of requests that can be made to this endpoint per hour. Defaults to 1000 but may vary per client.
+      schema:
+        type: number
+        default: 1000
+  examples:
+    ProblemInvalidPaginationParameter:
+      value:
+        type: https://api.ev.energy/v2/problems/pagination-parameters/
+        status: 400
+        title: Invalid pagination parameter
+        detail: 'Invalid value for pagination parameter: page_size'
+    ProblemUnsupportedVersion:
+      value:
+        type: https://api.ev.energy/v2/problems/pagination-parameters/
+        status: 400
+        title: Unsupported version
+        detail: 'Unsupported version requested: 3.0'
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.ev.energy/o/token/
+          refreshUrl: https://api.ev.energy/o/token/
+          scopes:
+            carbon:read: ''
+            grid:read: ''
+            evse:read: ''
+            evse:write: ''
+            vehicle:read: ''
+            user:read: ''
+            charging_session:read: ''
+            tariff:read: ''
+            tariff:prices:read: ''
+            user:write: ''
+            inverter:read: ''
+            inverter:write: ''
+            home_battery:read: ''
+            home_energy:read: ''
+            boundary_meter:read: ''
+            vehicle:write: ''
+            vehicle_catalogue:write: Update shared vehicle-catalogue reference data (e.g. a model's default connector type)
+            charging_session:write: ''
+            solar:write: ''
+            solar:read: ''
+            subscription:read: ''
+            debug:read: ''
+            dispatch_coordinator:read: ''
+            dispatch_event:write: ''
+            solar_forecast:read: ''
+            payout_method:read: Read a user's preferred payout method
+            payout_method:write: Set, update, or clear a user's preferred payout method
+            notification_preferences:read: Read a user's notification group opt-in state
+            notification_preferences:write: Update a user's notification group opt-in state
+            route_planner_preferences:read: Read a user's EV Route Planner preferences
+            route_planner_preferences:write: Update a user's EV Route Planner preferences
+            saved_routes:read: Read a user's saved route-planner routes
+            saved_routes:write: Create, update, or delete a user's saved routes
+            region:read: Read region and region group boundary data
+            region:write: Create regions and region groups
+        authorizationCode:
+          authorizationUrl: https://api.ev.energy/o/authorize/
+          tokenUrl: https://api.ev.energy/o/token/
+          refreshUrl: https://api.ev.energy/o/token/
+          scopes: {}
+x-redocly:
+  openapi:
+    hideSchemaTitles: true
+x-internal: false

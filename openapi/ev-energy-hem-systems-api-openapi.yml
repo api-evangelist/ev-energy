@@ -1,0 +1,1017 @@
+openapi: 3.2.0
+info:
+  title: ev.energy v2 HEM Systems API
+  version: '2.0'
+  contact:
+    email: developers@ev.energy
+    url: developers.ev.energy
+    name: ev.energy developers
+  description: The official API for ev.energy, version 2.
+  license:
+    name: Proprietary
+    url: https://ev.energy
+  termsOfService: ''
+servers:
+- url: https://api.ev.energy/v2
+  description: Live API for both production and sandbox requests.
+  x-internal: false
+- description: Staging server for internal testing only.
+  url: https://api-staging.ev.energy/v2
+  x-internal: true
+security:
+- oauth2: []
+tags:
+- name: HEM Systems
+paths:
+  /hem_systems:
+    get:
+      summary: List HEM systems
+      tags:
+      - HEM Systems
+      responses:
+        '200':
+          description: Returns a list of HEM (Home Energy Management) systems.
+          headers:
+            Link:
+              $ref: '#/components/headers/link'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HEMSystem'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-hem_systems
+      description: List all the HEM systems that the authorization token has access to.
+      security:
+      - oauth2:
+        - home_energy:read
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/user'
+      - $ref: '#/components/parameters/previous'
+      - $ref: '#/components/parameters/next'
+      - $ref: '#/components/parameters/page_size'
+  /hem_systems/{hem_system_id}:
+    parameters:
+    - schema:
+        type: string
+      name: hem_system_id
+      in: path
+      required: true
+      description: The ID of the specific HEM system.
+    get:
+      summary: Retrieve a HEM system
+      description: Retrieve a single HEM (Home Energy Management) system by ID.
+      tags:
+      - HEM Systems
+      responses:
+        '200':
+          description: Returns a single HEM system.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HEMSystem'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-hem_systems-hem_system_id
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      security:
+      - oauth2:
+        - home_energy:read
+  /hem_systems/{hem_system_id}/energy_stats:
+    parameters:
+    - schema:
+        type: string
+      name: hem_system_id
+      in: path
+      required: true
+      description: The ID of the specific HEM system.
+    get:
+      summary: Get aggregated energy statistics for a HEM system
+      description: 'Returns aggregated energy statistics for the HEM system over a specified time range and resolution.
+
+
+        Returns 400 Bad Request if query parameters are invalid (missing, malformed timestamps, unsupported resolution, or misaligned boundaries).'
+      tags:
+      - HEM Systems
+      responses:
+        '200':
+          description: Returns aggregated energy statistics for the HEM system.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HEMSystemEnergyStatsResponse'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-hem_systems-hem_system_id-energy_stats
+      parameters:
+      - name: start
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date-time
+          example: '2024-06-01T00:00:00Z'
+        description: 'Start of time range (ISO 8601 with timezone, e.g. 2024-06-01T00:00:00Z or 2024-05-31T23:00:00+01:00). Must be aligned to the resolution in the HEM system''s timezone: :00 or :30 for PT30M, midnight for P1D, 1st of month at midnight for P1M.'
+      - name: end
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date-time
+          example: '2024-07-01T00:00:00Z'
+        description: 'End of time range (ISO 8601 with timezone, e.g. 2024-07-01T00:00:00Z or 2024-06-30T23:00:00+01:00). Must be aligned to the resolution in the HEM system''s timezone: :00 or :30 for PT30M, midnight for P1D, 1st of month at midnight for P1M.'
+      - name: resolution
+        in: query
+        required: true
+        schema:
+          type: string
+          enum:
+          - PT30M
+          - P1D
+          - P1M
+          example: P1D
+        description: 'Aggregation resolution: PT30M (30 minutes, max 24h window), P1D (1 day, max 31 days), or P1M (1 month, max 366 days).'
+      - $ref: '#/components/parameters/version-2'
+      security:
+      - oauth2:
+        - home_energy:read
+  /hem_systems/{hem_system_id}/live_power:
+    parameters:
+    - schema:
+        type: string
+      name: hem_system_id
+      in: path
+      required: true
+      description: The ID of the specific HEM system.
+    get:
+      summary: Get live power data for a HEM system
+      description: Returns live power data for the HEM system. Power values (in watts) are derived from the most recent energy statistics, including raw measurements and calculated power flows between sources (solar, battery, grid) and destinations (home, battery, grid).
+      tags:
+      - HEM Systems
+      responses:
+        '200':
+          description: Returns live power data for the HEM system.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HEMSystemLivePower'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-hem_systems-hem_system_id-live_power
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      security:
+      - oauth2:
+        - home_energy:read
+components:
+  responses:
+    Problem404NotFound:
+      description: This resource either does not exist or the client is not authorized to access it.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 404
+              title:
+                type: string
+                example: Not found
+              detail:
+                type: string
+                example: Resource does not exist or cannot be accessed.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem400BadRequestRetrieve:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem429TooManyRequests:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Example 1:
+              value:
+                type: https://api.ev.energy/v2/problems/rate-limit-exceeded/
+                status: 429
+                title: Too Many Requests
+                detail: Request was rate limited. Try again in 42 seconds
+      description: The client has exceeded its rate limit.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        Retry-After:
+          $ref: '#/components/headers/retry-after'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem401Unauthorized:
+      description: You need to authorise requests to access this resource.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 401
+              title:
+                type: string
+                example: Unauthorized
+              detail:
+                type: string
+                example: Authentication credentials were not provided.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem400BadRequestList:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Invalid Pagination Parameter:
+              $ref: '#/components/examples/ProblemInvalidPaginationParameter'
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem403Forbidden:
+      description: You do not have permission to perform this action.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 403
+              title:
+                type: string
+                example: Forbidden
+              detail:
+                type: string
+                example: You do not have permission to perform this action.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem406NotAcceptable:
+      description: Could not satisfy the request Accept header.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 406
+              title:
+                type: string
+                example: Not Acceptable
+              detail:
+                type: string
+                example: Could not satisfy the request Accept header.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+  parameters:
+    user:
+      name: EvEnergy-User
+      description: If the client is authenticated using Client Credentials, setting EvEnergy-User to a valid user ID allows requests to be made as if you were directly authenticated as that user.
+      in: header
+      required: false
+      schema:
+        type: string
+        pattern: user[A-Z\d]{26}
+        example: user01HN2NJ9NMRZBXT1H6FT9N7735
+    version-2:
+      name: EvEnergy-Version
+      description: Specify the version of this endpoint to use.
+      required: false
+      in: header
+      schema:
+        type: number
+        enum:
+        - 2
+    page_size:
+      name: page_size
+      description: Specify the number of results to return per page.
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 25
+        minimum: 1
+        maximum: 100
+        example: 10
+    previous:
+      name: page_before
+      description: Return results from the page after this ID.
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[a-z]{4}[A-Z\d]{26}'
+        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
+    next:
+      name: page_after
+      description: Return results from the page before this ID.
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[a-z]{4}[A-Z\d]{26}'
+        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
+  schemas:
+    RFC9457ProblemDetail:
+      title: RFC 9457 Problem Detail
+      x-tags:
+      - problems
+      type: object
+      required:
+      - title
+      - detail
+      properties:
+        type:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/problems/example-problem/
+        status:
+          type: number
+          example: 400
+        title:
+          type: string
+          example: Short description
+        detail:
+          type: string
+          example: Long, more specific description.
+        instance:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
+        notification:
+          $ref: '#/components/schemas/Notification'
+      examples:
+      - type: https://api.ev.energy/v2/problems/example-problem/
+        status: 400
+        title: Short description
+        detail: Long, more specific description.
+        instance: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
+        notification:
+          id: notf01HTHKTXVB77901324BCQPF1RB
+          url: https://api.ev.energy/notifications/notf01HTHKTXVB77901324BCQPF1RB
+          message_id: ERR0123
+          category: ACTIONABLE
+          event_time: '2019-08-24T14:15:22Z'
+          short_text_title: Your car is disconnected
+          short_text_body: We need to reconnect to keep smart charging your car
+          detail_page_title: Your car is disconnected
+          detail_page_body: Your car has been disconnected. This happens when your password is reset. We need you to re-authorise ev.energy to access your account in order for us to keep managing your charging. Blah blah blah.
+          external_link: http://example.com
+          external_button_label: More info
+          read_at: '2019-08-24T14:20:22Z'
+          resolved_at: '2019-08-25T14:15:22Z'
+    Notification:
+      title: Notification
+      description: Something that the user should be informed about.
+      type: object
+      examples:
+      - id: notf67O36PLTFDB57M0E5L33JZLGM0
+        url: https://api.ev.energy/notifications/notf67O36PLTFDB57M0E5L33JZLGM0
+        message_id: ERR0123
+        category: ACTIONABLE
+        event_time: '2019-08-24T14:15:22Z'
+        short_text_title: Your car is disconnected
+        short_text_body: We need to reconnect to keep smart charging your car
+        detail_page_title: Your car is disconnected
+        detail_page_body: Your car has been disconnected. This happens when your password is reset. We need you to re-authorise ev.energy to access your account in order for us to keep managing your charging. Blah blah blah.
+        external_link: http://example.com
+        external_button_label: More info
+        read_at: '2019-08-24T14:20:22Z'
+        resolved_at: '2019-08-25T14:15:22Z'
+      required:
+      - id
+      - url
+      - message_id
+      - category
+      - event_time
+      - short_text_title
+      - short_text_body
+      - detail_page_title
+      - detail_page_body
+      - external_link
+      - external_button_label
+      properties:
+        id:
+          type: string
+          pattern: notf[A-Z\d]{26}
+          example: notf67O36PLTFDB57M0E5L33JZLGM0
+          description: Unique identifier for the Notification
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/notifications/notf67O36PLTFDB57M0E5L33JZLGM0
+        message_id:
+          type: string
+          description: Internal identifier for this notification type. E.g. 'ERR0023'
+        category:
+          description: Category of this notification type
+          enum:
+          - ACTIONABLE
+          - SERVICE
+          - RETRY
+          - MARKETING
+          - INTERNAL
+        event_time:
+          type: string
+          format: date-time
+          description: The timestamp of the event described by this notification
+        short_text_title:
+          type: string
+          description: Short title for the notification
+          maxLength: 33
+        short_text_body:
+          type: string
+          description: Short description of the event being notified
+          maxLength: 49
+        detail_page_title:
+          type: string
+          description: Title of a help page giving more information about this notification
+        detail_page_body:
+          type: string
+          description: Text of a help page giving more information about this notification
+        external_link:
+          type:
+          - string
+          - 'null'
+          description: URL of a web page giving further information about this notification
+          format: uri
+        external_button_label:
+          type: string
+          description: Text to be displayed on a button leading to the external_link location
+        read_at:
+          type: string
+          format: date-time
+          description: When the user examined the contents of this notification
+        resolved_at:
+          type: string
+          format: date-time
+          description: When the problem associated with this notification was resolved
+    HEMSystem:
+      title: HEMSystem
+      type: object
+      description: A resource representing a Home Energy Management (HEM) system, which aggregates boundary meters, home batteries, and inverters.
+      x-tags:
+      - HEM Systems
+      required:
+      - id
+      - url
+      - created_at
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given HEM system.
+          pattern: hems[A-Z\d]{26}
+          example: hems01J5DCXX8DMJDJYGVR1DW4J7AA
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/hem_systems/hems01J5DCXX8DMJDJYGVR1DW4J7AA
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          description: The date and time when this HEM system was created.
+          example: '2024-03-15T14:22:33.123456Z'
+          readOnly: true
+    HEMSystemLivePower:
+      title: HEMSystemLivePower
+      type: object
+      description: Live power data for a HEM system, including raw measurements and derived power flows.
+      x-tags:
+      - HEM Systems
+      required:
+      - sampled_at
+      - generation_watts
+      - consumption_watts
+      - import_watts
+      - export_watts
+      - charge_watts
+      - discharge_watts
+      - solar_to_home_watts
+      - solar_to_battery_watts
+      - solar_to_grid_watts
+      - battery_to_home_watts
+      - battery_to_grid_watts
+      - grid_to_home_watts
+      - grid_to_battery_watts
+      - battery_state_of_charge_percentage
+      properties:
+        sampled_at:
+          type: string
+          format: date-time
+          description: The timestamp of the energy statistics period.
+          example: '2024-06-15T12:00:00Z'
+          readOnly: true
+        generation_watts:
+          type:
+          - integer
+          - 'null'
+          description: Solar generation power in watts. Null if inverter stats unavailable.
+          example: 3000
+          readOnly: true
+        consumption_watts:
+          type:
+          - integer
+          - 'null'
+          description: Household consumption power in watts. Null if any required stats unavailable.
+          example: 2400
+          readOnly: true
+        import_watts:
+          type:
+          - integer
+          - 'null'
+          description: Power imported from the grid in watts. Null if any required stats unavailable.
+          example: 1200
+          readOnly: true
+        export_watts:
+          type:
+          - integer
+          - 'null'
+          description: Power exported to the grid in watts. Null if any required stats unavailable.
+          example: 600
+          readOnly: true
+        charge_watts:
+          type:
+          - integer
+          - 'null'
+          description: Battery charging power in watts. Null if any required stats unavailable.
+          example: 1800
+          readOnly: true
+        discharge_watts:
+          type:
+          - integer
+          - 'null'
+          description: Battery discharging power in watts. Null if any required stats unavailable.
+          example: 900
+          readOnly: true
+        solar_to_home_watts:
+          type:
+          - integer
+          - 'null'
+          description: Derived power flow from solar to home in watts. Null if any required stats unavailable.
+          example: 1500
+          readOnly: true
+        solar_to_battery_watts:
+          type:
+          - integer
+          - 'null'
+          description: Derived power flow from solar to battery in watts. Null if any required stats unavailable.
+          example: 1000
+          readOnly: true
+        solar_to_grid_watts:
+          type:
+          - integer
+          - 'null'
+          description: Derived power flow from solar to grid in watts. Null if any required stats unavailable.
+          example: 500
+          readOnly: true
+        battery_to_home_watts:
+          type:
+          - integer
+          - 'null'
+          description: Derived power flow from battery to home in watts. Null if any required stats unavailable.
+          example: 700
+          readOnly: true
+        battery_to_grid_watts:
+          type:
+          - integer
+          - 'null'
+          description: Derived power flow from battery to grid in watts. Null if any required stats unavailable.
+          example: 200
+          readOnly: true
+        grid_to_home_watts:
+          type:
+          - integer
+          - 'null'
+          description: Derived power flow from grid to home in watts. Null if any required stats unavailable.
+          example: 200
+          readOnly: true
+        grid_to_battery_watts:
+          type:
+          - integer
+          - 'null'
+          description: Derived power flow from grid to battery in watts. Null if any required stats unavailable.
+          example: 100
+          readOnly: true
+        battery_state_of_charge_percentage:
+          type:
+          - integer
+          - 'null'
+          description: Battery state of charge as a percentage (0-100). Null if unavailable.
+          example: 82
+          readOnly: true
+    HEMSystemEnergyStatsBucket:
+      title: HEMSystemEnergyStatsBucket
+      type: object
+      description: A single bucket of aggregated energy statistics for a HEM system.
+      x-tags:
+      - HEM Systems
+      required:
+      - period_start
+      - period_end
+      - generation_wh
+      - consumption_wh
+      - import_wh
+      - export_wh
+      - charge_wh
+      - discharge_wh
+      - avg_battery_state_of_charge_percentage
+      - solar_to_home_wh
+      - solar_to_battery_wh
+      - solar_to_grid_wh
+      - battery_to_home_wh
+      - battery_to_grid_wh
+      - grid_to_home_wh
+      - grid_to_battery_wh
+      properties:
+        period_start:
+          type: string
+          format: date-time
+          description: Start of the aggregation period.
+          example: '2024-06-01T00:00:00Z'
+          readOnly: true
+        period_end:
+          type: string
+          format: date-time
+          description: End of the aggregation period.
+          example: '2024-06-01T00:30:00Z'
+          readOnly: true
+        generation_wh:
+          type:
+          - integer
+          - 'null'
+          description: Solar generation energy in watt-hours. Null if unavailable.
+          example: 1500
+          readOnly: true
+        consumption_wh:
+          type:
+          - integer
+          - 'null'
+          description: Household consumption energy in watt-hours. Null if unavailable.
+          example: 1200
+          readOnly: true
+        import_wh:
+          type:
+          - integer
+          - 'null'
+          description: Energy imported from the grid in watt-hours. Null if unavailable.
+          example: 600
+          readOnly: true
+        export_wh:
+          type:
+          - integer
+          - 'null'
+          description: Energy exported to the grid in watt-hours. Null if unavailable.
+          example: 300
+          readOnly: true
+        charge_wh:
+          type:
+          - integer
+          - 'null'
+          description: Battery charging energy in watt-hours. Null if unavailable.
+          example: 900
+          readOnly: true
+        discharge_wh:
+          type:
+          - integer
+          - 'null'
+          description: Battery discharging energy in watt-hours. Null if unavailable.
+          example: 450
+          readOnly: true
+        avg_battery_state_of_charge_percentage:
+          type:
+          - integer
+          - 'null'
+          description: Average battery state of charge as a percentage (0-100). Null if unavailable.
+          example: 75
+          readOnly: true
+        solar_to_home_wh:
+          type:
+          - integer
+          - 'null'
+          description: Energy flow from solar to home in watt-hours. Null if unavailable.
+          example: 750
+          readOnly: true
+        solar_to_battery_wh:
+          type:
+          - integer
+          - 'null'
+          description: Energy flow from solar to battery in watt-hours. Null if unavailable.
+          example: 500
+          readOnly: true
+        solar_to_grid_wh:
+          type:
+          - integer
+          - 'null'
+          description: Energy flow from solar to grid in watt-hours. Null if unavailable.
+          example: 250
+          readOnly: true
+        battery_to_home_wh:
+          type:
+          - integer
+          - 'null'
+          description: Energy flow from battery to home in watt-hours. Null if unavailable.
+          example: 350
+          readOnly: true
+        battery_to_grid_wh:
+          type:
+          - integer
+          - 'null'
+          description: Energy flow from battery to grid in watt-hours. Null if unavailable.
+          example: 100
+          readOnly: true
+        grid_to_home_wh:
+          type:
+          - integer
+          - 'null'
+          description: Energy flow from grid to home in watt-hours. Null if unavailable.
+          example: 100
+          readOnly: true
+        grid_to_battery_wh:
+          type:
+          - integer
+          - 'null'
+          description: Energy flow from grid to battery in watt-hours. Null if unavailable.
+          example: 50
+          readOnly: true
+    HEMSystemEnergyStatsResponse:
+      title: HEMSystemEnergyStatsResponse
+      type: object
+      description: Aggregated energy statistics response for a HEM system.
+      x-tags:
+      - HEM Systems
+      required:
+      - resolution
+      - start
+      - end
+      - buckets
+      properties:
+        resolution:
+          type: string
+          enum:
+          - PT30M
+          - P1D
+          - P1M
+          description: 'The aggregation resolution: PT30M (30 minutes), P1D (1 day), or P1M (1 month).'
+          example: P1D
+          readOnly: true
+        start:
+          type: string
+          format: date-time
+          description: Start of the requested time range.
+          example: '2024-06-01T00:00:00Z'
+          readOnly: true
+        end:
+          type: string
+          format: date-time
+          description: End of the requested time range.
+          example: '2024-06-30T23:59:59Z'
+          readOnly: true
+        buckets:
+          type: array
+          items:
+            $ref: '#/components/schemas/HEMSystemEnergyStatsBucket'
+          description: List of aggregated energy statistics buckets.
+          readOnly: true
+  headers:
+    link:
+      description: Provides links to the previous and next pages of data, if they exist.
+      example: <https://api.ev.energy/v2/vehicles?page_size=25&page_before=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="previous", <https://api.ev.energy/v2/vehicles?page_size=25&page_after=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="next"
+      schema:
+        type: string
+    x-ratelimit-remaining:
+      description: The number of requests remaining until this client's rate limit is reached.
+      schema:
+        type: number
+        default: 999
+    version-2:
+      description: Indicates the version of the API that generated this response. If EvEnergy-Version was not specified in the request, this will be your OAuth application's default version.
+      schema:
+        type: number
+        enum:
+        - 2
+    retry-after:
+      description: The number of seconds until this client's requests will not be rate limited.
+      schema:
+        type: number
+        default: 3600
+    x-ratelimit-limit:
+      description: The maximum number of requests that can be made to this endpoint per hour. Defaults to 1000 but may vary per client.
+      schema:
+        type: number
+        default: 1000
+  examples:
+    ProblemInvalidPaginationParameter:
+      value:
+        type: https://api.ev.energy/v2/problems/pagination-parameters/
+        status: 400
+        title: Invalid pagination parameter
+        detail: 'Invalid value for pagination parameter: page_size'
+    ProblemUnsupportedVersion:
+      value:
+        type: https://api.ev.energy/v2/problems/pagination-parameters/
+        status: 400
+        title: Unsupported version
+        detail: 'Unsupported version requested: 3.0'
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.ev.energy/o/token/
+          refreshUrl: https://api.ev.energy/o/token/
+          scopes:
+            carbon:read: ''
+            grid:read: ''
+            evse:read: ''
+            evse:write: ''
+            vehicle:read: ''
+            user:read: ''
+            charging_session:read: ''
+            tariff:read: ''
+            tariff:prices:read: ''
+            user:write: ''
+            inverter:read: ''
+            inverter:write: ''
+            home_battery:read: ''
+            home_energy:read: ''
+            boundary_meter:read: ''
+            vehicle:write: ''
+            vehicle_catalogue:write: Update shared vehicle-catalogue reference data (e.g. a model's default connector type)
+            charging_session:write: ''
+            solar:write: ''
+            solar:read: ''
+            subscription:read: ''
+            debug:read: ''
+            dispatch_coordinator:read: ''
+            dispatch_event:write: ''
+            solar_forecast:read: ''
+            payout_method:read: Read a user's preferred payout method
+            payout_method:write: Set, update, or clear a user's preferred payout method
+            notification_preferences:read: Read a user's notification group opt-in state
+            notification_preferences:write: Update a user's notification group opt-in state
+            route_planner_preferences:read: Read a user's EV Route Planner preferences
+            route_planner_preferences:write: Update a user's EV Route Planner preferences
+            saved_routes:read: Read a user's saved route-planner routes
+            saved_routes:write: Create, update, or delete a user's saved routes
+            region:read: Read region and region group boundary data
+            region:write: Create regions and region groups
+        authorizationCode:
+          authorizationUrl: https://api.ev.energy/o/authorize/
+          tokenUrl: https://api.ev.energy/o/token/
+          refreshUrl: https://api.ev.energy/o/token/
+          scopes: {}
+x-redocly:
+  openapi:
+    hideSchemaTitles: true
+x-internal: false

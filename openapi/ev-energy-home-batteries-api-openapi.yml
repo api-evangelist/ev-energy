@@ -1,0 +1,1178 @@
+openapi: 3.2.0
+info:
+  title: ev.energy v2 Home Batteries API
+  version: '2.0'
+  contact:
+    email: developers@ev.energy
+    url: developers.ev.energy
+    name: ev.energy developers
+  description: The official API for ev.energy, version 2.
+  license:
+    name: Proprietary
+    url: https://ev.energy
+  termsOfService: ''
+servers:
+- url: https://api.ev.energy/v2
+  description: Live API for both production and sandbox requests.
+  x-internal: false
+- description: Staging server for internal testing only.
+  url: https://api-staging.ev.energy/v2
+  x-internal: true
+security:
+- oauth2: []
+tags:
+- name: Home Batteries
+  description: Endpoints for interacting with home batteries.
+paths:
+  /home_battery_makes:
+    get:
+      summary: List home battery makes
+      tags:
+      - Home Batteries
+      responses:
+        '200':
+          description: Return a list of Home Battery Makes.
+          headers:
+            Link:
+              $ref: '#/components/headers/link'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HomeBatteryMake'
+              examples:
+                Example 1:
+                  value:
+                  - id: bmakK7XDPL63NNBDQ5DPB6K3TP87JA
+                    url: https://api.ev.energy/v2/home_battery_makes/bmakK7XDPL63NNBDQ5DPB6K3TP87JA
+                    name: Rivendell
+                    icon: null
+                    onboarding_url: https://api.ev.energy/v2/home_battery_onboarding?make_id=bmakK7XDPL63NNBDQ5DPB6K3TP87JA&client_id=clntK7XDPL63NNBDQ5DPB6K3TP87JA
+                    models: https://api.ev.energy/v2/home_battery_models?make_id=bmakK7XDPL63NNBDQ5DPB6K3TP87JA
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-home_battery_makes
+      description: List all the home battery makes known by the ev.energy system.
+      security:
+      - oauth2:
+        - home_battery:read
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/previous'
+      - $ref: '#/components/parameters/next'
+      - $ref: '#/components/parameters/page_size'
+      - $ref: '#/components/parameters/Accept-Language'
+  /home_battery_makes/{home_battery_make_id}:
+    parameters:
+    - schema:
+        type: string
+      name: home_battery_make_id
+      in: path
+      required: true
+      description: The ID of the specific home battery make to retrieve.
+    get:
+      summary: Retrieve a home battery make
+      tags:
+      - Home Batteries
+      responses:
+        '200':
+          description: Return a single home battery make.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HomeBatteryMake'
+              examples:
+                Example 1:
+                  value:
+                    id: bmakK7XDPL63NNBDQ5DPB6K3TP87JA
+                    url: https://api.ev.energy/v2/home_battery_makes/bmakK7XDPL63NNBDQ5DPB6K3TP87JA
+                    name: Rivendell
+                    icon: null
+                    onboarding_url: https://api.ev.energy/v2/home_battery_onboarding?make_id=bmakK7XDPL63NNBDQ5DPB6K3TP87JA&client_id=clntK7XDPL63NNBDQ5DPB6K3TP87JA
+                    models: https://api.ev.energy/v2/home_battery_models?make_id=bmakK7XDPL63NNBDQ5DPB6K3TP87JA
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-home_battery_makes-home_battery_make_id
+      description: Retrieve details for a single, specific home battery make.
+      security:
+      - oauth2:
+        - home_battery:read
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/Accept-Language'
+  /home_battery_models:
+    get:
+      summary: List home battery models
+      tags:
+      - Home Batteries
+      responses:
+        '200':
+          description: Returns a list of home battery models.
+          headers:
+            Link:
+              $ref: '#/components/headers/link'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HomeBatteryModel'
+              examples:
+                Example 1:
+                  value:
+                  - id: bmod7XL7Q5294J6TUZARBQT2D1EOHY
+                    url: https://api.ev.energy/v2/home_battery_models/bmod7XL7Q5294J6TUZARBQT2D1EOHY
+                    name: Narsil
+                    make: https://api.ev.energy/v2/home_battery_makes/bmakK7XDPL63NNBDQ5DPB6K3TP87JA
+                    onboarding_url: https://api.ev.energy/v2/home_battery_onboarding?model_id=bmod7XL7Q5294J6TUZARBQT2D1EOHY&client_id=clntK7XDPL63NNBDQ5DPB6K3TP87JA
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-home_battery_models
+      description: List all the home battery models known by the ev.energy system.
+      security:
+      - oauth2:
+        - home_battery:read
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/previous'
+      - $ref: '#/components/parameters/next'
+      - $ref: '#/components/parameters/page_size'
+      - $ref: '#/components/parameters/expand-on-homebatterymodel'
+      - $ref: '#/components/parameters/Accept-Language'
+      - $ref: '#/components/parameters/home_battery_make_id_q'
+  /home_battery_models/{home_battery_model_id}:
+    parameters:
+    - schema:
+        type: string
+      name: home_battery_model_id
+      in: path
+      required: true
+      description: The ID of the specific home battery model to retrieve.
+    get:
+      summary: Retrieve a home battery model
+      tags:
+      - Home Batteries
+      responses:
+        '200':
+          description: Return a single home battery model.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HomeBatteryModel'
+              examples:
+                Example 1:
+                  value:
+                    id: bmod7XL7Q5294J6TUZARBQT2D1EOHY
+                    url: https://api.ev.energy/v2/home_battery_models/bmod7XL7Q5294J6TUZARBQT2D1EOHY
+                    name: Narsil
+                    make:
+                      id: bmakK7XDPL63NNBDQ5DPB6K3TP87JA
+                      url: https://api.ev.energy/v2/home_battery_makes/bmakK7XDPL63NNBDQ5DPB6K3TP87JA
+                      name: Rivendell
+                    onboarding_url: https://api.ev.energy/v2/home_battery_onboarding?model_id=bmod7XL7Q5294J6TUZARBQT2D1EOHY&client_id=clntK7XDPL63NNBDQ5DPB6K3TP87JA
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-home_battery_models-home_battery_model_id
+      description: Retrieve details for a single, specific home battery model.
+      security:
+      - oauth2:
+        - home_battery:read
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/expand-on-homebatterymodel'
+      - $ref: '#/components/parameters/Accept-Language'
+  /home_batteries:
+    get:
+      summary: List home batteries
+      tags:
+      - Home Batteries
+      responses:
+        '200':
+          description: Returns a list of home batteries.
+          headers:
+            Link:
+              $ref: '#/components/headers/link'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HomeBattery'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-home_batteries
+      description: List all the home batteries that the authorization token has access to.
+      security:
+      - oauth2:
+        - home_battery:read
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/user'
+      - $ref: '#/components/parameters/previous'
+      - $ref: '#/components/parameters/next'
+      - $ref: '#/components/parameters/page_size'
+      - $ref: '#/components/parameters/expand-on-homebattery'
+  /home_batteries/{home_battery_id}:
+    parameters:
+    - schema:
+        type: string
+      name: home_battery_id
+      in: path
+      required: true
+      description: The ID of the specific Home Battery to retrieve.
+    get:
+      summary: Retrieve a home battery
+      tags:
+      - Home Batteries
+      responses:
+        '200':
+          description: Returns a single home battery.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HomeBattery'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-home_batteries-home_battery_id
+      description: Retrieve a single, specific home battery's details.
+      security:
+      - oauth2:
+        - home_battery:read
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/user'
+      - $ref: '#/components/parameters/expand-on-homebattery'
+  /home_batteries/{home_battery_id}/status_logs:
+    parameters:
+    - schema:
+        type: string
+      name: home_battery_id
+      in: path
+      required: true
+      description: The ID of the specific Home Battery to retrieve status logs for.
+    get:
+      summary: List status logs for a home battery
+      description: List the historical status logs for a specific home battery. Used to find out the state of the battery at each point it reported in to ev.energy.
+      tags:
+      - Home Batteries
+      responses:
+        '200':
+          description: List all status logs for a specific home battery, sorted newest first.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HomeBatteryStatusLog'
+          headers:
+            Link:
+              $ref: '#/components/headers/link-timestamps'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-home_batteries-home_battery_id-status_logs
+      parameters:
+      - $ref: '#/components/parameters/previous'
+      - $ref: '#/components/parameters/next'
+      - $ref: '#/components/parameters/page_size'
+      - $ref: '#/components/parameters/sampled_at__gte'
+      - $ref: '#/components/parameters/sampled_at__lte'
+      - $ref: '#/components/parameters/expand-on-homebatterystatuslog'
+      - $ref: '#/components/parameters/version-2'
+      security:
+      - oauth2:
+        - home_battery:read
+  /home_batteries/{home_battery_id}/status_logs/{sampled_at}:
+    parameters:
+    - schema:
+        type: string
+      name: home_battery_id
+      in: path
+      required: true
+      description: The ID of the specific Home Battery.
+    - schema:
+        type: string
+        format: date-time
+      name: sampled_at
+      in: path
+      required: true
+      description: The time the log's data was recorded on the device.
+      example: '2024-04-17T09:39:45.984584Z'
+    get:
+      summary: Retrieve a status log for a home battery
+      description: A home battery status log is uniquely identified by the combination of home battery ID and the time it was sampled at.
+      tags:
+      - Home Batteries
+      responses:
+        '200':
+          description: Retrieve a single status log for a specific home battery.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HomeBatteryStatusLog'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-home_batteries-home_battery_id-status_logs-timestamp
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/expand-on-homebatterystatuslog'
+      security:
+      - oauth2:
+        - home_battery:read
+components:
+  parameters:
+    user:
+      name: EvEnergy-User
+      description: If the client is authenticated using Client Credentials, setting EvEnergy-User to a valid user ID allows requests to be made as if you were directly authenticated as that user.
+      in: header
+      required: false
+      schema:
+        type: string
+        pattern: user[A-Z\d]{26}
+        example: user01HN2NJ9NMRZBXT1H6FT9N7735
+    Accept-Language:
+      name: Accept-Language
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Indicates the natural language and locale that the client prefers.
+    home_battery_make_id_q:
+      name: make_id
+      in: query
+      required: false
+      schema:
+        type: string
+        example: bmakK7XDPL63NNBDQ5DPB6K3TP87JA
+      description: The ID of a Home Battery Make to filter by.
+    expand-on-homebattery:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - model
+          - model.make
+          - latest_status_log
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    sampled_at__lte:
+      name: sampled_at__lte
+      in: query
+      schema:
+        type: string
+        format: date-time
+        example: '2024-04-17T09:39:45.984584Z'
+      description: Filters for logs sampled at or before this datetime.
+    sampled_at__gte:
+      name: sampled_at__gte
+      in: query
+      schema:
+        type: string
+        format: date-time
+        example: '2024-04-17T09:39:45.984584Z'
+      description: Filters for logs sampled at or after this datetime.
+    version-2:
+      name: EvEnergy-Version
+      description: Specify the version of this endpoint to use.
+      required: false
+      in: header
+      schema:
+        type: number
+        enum:
+        - 2
+    page_size:
+      name: page_size
+      description: Specify the number of results to return per page.
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 25
+        minimum: 1
+        maximum: 100
+        example: 10
+    previous:
+      name: page_before
+      description: Return results from the page after this ID.
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[a-z]{4}[A-Z\d]{26}'
+        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
+    expand-on-homebatterystatuslog:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - home_battery
+          - home_battery.model
+          - home_battery.model.make
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    next:
+      name: page_after
+      description: Return results from the page before this ID.
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[a-z]{4}[A-Z\d]{26}'
+        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
+    expand-on-homebatterymodel:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - make
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+  responses:
+    Problem404NotFound:
+      description: This resource either does not exist or the client is not authorized to access it.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 404
+              title:
+                type: string
+                example: Not found
+              detail:
+                type: string
+                example: Resource does not exist or cannot be accessed.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem400BadRequestRetrieve:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem429TooManyRequests:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Example 1:
+              value:
+                type: https://api.ev.energy/v2/problems/rate-limit-exceeded/
+                status: 429
+                title: Too Many Requests
+                detail: Request was rate limited. Try again in 42 seconds
+      description: The client has exceeded its rate limit.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        Retry-After:
+          $ref: '#/components/headers/retry-after'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem401Unauthorized:
+      description: You need to authorise requests to access this resource.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 401
+              title:
+                type: string
+                example: Unauthorized
+              detail:
+                type: string
+                example: Authentication credentials were not provided.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem400BadRequestList:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Invalid Pagination Parameter:
+              $ref: '#/components/examples/ProblemInvalidPaginationParameter'
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem403Forbidden:
+      description: You do not have permission to perform this action.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 403
+              title:
+                type: string
+                example: Forbidden
+              detail:
+                type: string
+                example: You do not have permission to perform this action.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem406NotAcceptable:
+      description: Could not satisfy the request Accept header.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 406
+              title:
+                type: string
+                example: Not Acceptable
+              detail:
+                type: string
+                example: Could not satisfy the request Accept header.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+  schemas:
+    RFC9457ProblemDetail:
+      title: RFC 9457 Problem Detail
+      x-tags:
+      - problems
+      type: object
+      required:
+      - title
+      - detail
+      properties:
+        type:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/problems/example-problem/
+        status:
+          type: number
+          example: 400
+        title:
+          type: string
+          example: Short description
+        detail:
+          type: string
+          example: Long, more specific description.
+        instance:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
+        notification:
+          $ref: '#/components/schemas/Notification'
+      examples:
+      - type: https://api.ev.energy/v2/problems/example-problem/
+        status: 400
+        title: Short description
+        detail: Long, more specific description.
+        instance: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
+        notification:
+          id: notf01HTHKTXVB77901324BCQPF1RB
+          url: https://api.ev.energy/notifications/notf01HTHKTXVB77901324BCQPF1RB
+          message_id: ERR0123
+          category: ACTIONABLE
+          event_time: '2019-08-24T14:15:22Z'
+          short_text_title: Your car is disconnected
+          short_text_body: We need to reconnect to keep smart charging your car
+          detail_page_title: Your car is disconnected
+          detail_page_body: Your car has been disconnected. This happens when your password is reset. We need you to re-authorise ev.energy to access your account in order for us to keep managing your charging. Blah blah blah.
+          external_link: http://example.com
+          external_button_label: More info
+          read_at: '2019-08-24T14:20:22Z'
+          resolved_at: '2019-08-25T14:15:22Z'
+    Notification:
+      title: Notification
+      description: Something that the user should be informed about.
+      type: object
+      examples:
+      - id: notf67O36PLTFDB57M0E5L33JZLGM0
+        url: https://api.ev.energy/notifications/notf67O36PLTFDB57M0E5L33JZLGM0
+        message_id: ERR0123
+        category: ACTIONABLE
+        event_time: '2019-08-24T14:15:22Z'
+        short_text_title: Your car is disconnected
+        short_text_body: We need to reconnect to keep smart charging your car
+        detail_page_title: Your car is disconnected
+        detail_page_body: Your car has been disconnected. This happens when your password is reset. We need you to re-authorise ev.energy to access your account in order for us to keep managing your charging. Blah blah blah.
+        external_link: http://example.com
+        external_button_label: More info
+        read_at: '2019-08-24T14:20:22Z'
+        resolved_at: '2019-08-25T14:15:22Z'
+      required:
+      - id
+      - url
+      - message_id
+      - category
+      - event_time
+      - short_text_title
+      - short_text_body
+      - detail_page_title
+      - detail_page_body
+      - external_link
+      - external_button_label
+      properties:
+        id:
+          type: string
+          pattern: notf[A-Z\d]{26}
+          example: notf67O36PLTFDB57M0E5L33JZLGM0
+          description: Unique identifier for the Notification
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/notifications/notf67O36PLTFDB57M0E5L33JZLGM0
+        message_id:
+          type: string
+          description: Internal identifier for this notification type. E.g. 'ERR0023'
+        category:
+          description: Category of this notification type
+          enum:
+          - ACTIONABLE
+          - SERVICE
+          - RETRY
+          - MARKETING
+          - INTERNAL
+        event_time:
+          type: string
+          format: date-time
+          description: The timestamp of the event described by this notification
+        short_text_title:
+          type: string
+          description: Short title for the notification
+          maxLength: 33
+        short_text_body:
+          type: string
+          description: Short description of the event being notified
+          maxLength: 49
+        detail_page_title:
+          type: string
+          description: Title of a help page giving more information about this notification
+        detail_page_body:
+          type: string
+          description: Text of a help page giving more information about this notification
+        external_link:
+          type:
+          - string
+          - 'null'
+          description: URL of a web page giving further information about this notification
+          format: uri
+        external_button_label:
+          type: string
+          description: Text to be displayed on a button leading to the external_link location
+        read_at:
+          type: string
+          format: date-time
+          description: When the user examined the contents of this notification
+        resolved_at:
+          type: string
+          format: date-time
+          description: When the problem associated with this notification was resolved
+    HomeBattery:
+      title: HomeBattery
+      type: object
+      description: A resource that represents a single, physical home battery.
+      x-tags:
+      - Home Batteries
+      required:
+      - id
+      - url
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given Home Battery.
+          pattern: hoba[A-Z\d]{26}
+          example: hoba01J5DCXX8DMJDJYGVR1DW4J7AA
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/home_batteries/hoba01J5DCXX8DMJDJYGVR1DW4J7AA
+          readOnly: true
+        model:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/home_battery_models/bmod7XL7Q5294J6TUZARBQT2D1EOHY
+          - $ref: '#/components/schemas/HomeBatteryModel'
+        created_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: When this home battery was connected to the platform.
+          example: '2024-03-15T14:22:33.123456Z'
+          readOnly: true
+        latest_status_log:
+          oneOf:
+          - $ref: '#/components/schemas/HomeBatteryStatusLog'
+          - type:
+            - string
+            - 'null'
+            example: https://api.ev.energy/v2/home_batteries/hoba01J5DCXX8DMJDJYGVR1DW4J7AA/status_logs/2024-04-17T09:39:45.984584Z/
+          description: Link by default, expanded data when ?expand=latest_status_log is used.
+    HomeBatteryMake:
+      title: HomeBatteryMake
+      description: A resource representing a manufacturer of home batteries.
+      type: object
+      x-tags:
+      - Home Batteries
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given Home Battery Make.
+          pattern: bmak[A-Z\d]{26}
+          example: bmakK7XDPL63NNBDQ5DPB6K3TP87JA
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/home_battery_makes/bmakK7XDPL63NNBDQ5DPB6K3TP87JA
+          readOnly: true
+        name:
+          type: string
+          example: Rivendell
+          readOnly: true
+        icon:
+          type:
+          - string
+          - 'null'
+          format: uri
+          example: https://cdn.example.com/rivendell.png
+          description: A url for an image of the make's logo.
+          readOnly: true
+        onboarding_url:
+          type:
+          - string
+          - 'null'
+          example: https://api.ev.energy/v2/home_battery_onboarding?make_id=bmakK7XDPL63NNBDQ5DPB6K3TP87JA&user_id=user01HN2NJ9NMRZBXT1H6FT9N7735&client_id=your_client_id
+          description: 'A pre-constructed link to initiate onboarding for a home battery of this make. If it is null, then it cannot be onboarded with make alone. You should filter the list of [home battery models](ev.energy-API-v2.yaml/paths/~1home_battery_models/get) by this make and then have the user select their model.
+
+
+            Your `client_id` and the user''s `user_id` are automatically included based on your authentication token. If you are using client credentials authentication, the user ID will not be automatically included unless you set the EvEnergy-User header on your request.'
+          readOnly: true
+        models:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/home_battery_models?make_id=bmakK7XDPL63NNBDQ5DPB6K3TP87JA
+          description: A pre-constructed link to a list of home battery models filtered for this make.
+          readOnly: true
+    HomeBatteryStatusLog:
+      title: HomeBatteryStatusLog
+      type: object
+      description: Records the state of a home battery at a particular point in time.
+      x-tags:
+      - Home Batteries
+      properties:
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/home_batteries/hoba01J5DCXX8DMJDJYGVR1DW4J7AA/status_logs/2024-04-17T09:39:45.984584Z/
+        sampled_at:
+          type: string
+          format: date-time
+        home_battery:
+          oneOf:
+          - $ref: '#/components/schemas/HomeBattery'
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/home_batteries/hoba01J5DCXX8DMJDJYGVR1DW4J7AA
+        capacity_watt_hours:
+          type:
+          - integer
+          - 'null'
+          description: The total capacity of the battery in Wh.
+          example: 13500
+        state_of_charge_percentage:
+          type:
+          - integer
+          - 'null'
+          description: Remaining battery charge level as a whole percentage (0-100).
+          example: 82
+        charge_rate_watts:
+          type:
+          - integer
+          - 'null'
+          description: Current charge rate in W. A positive value indicates charging.
+          example: 2200
+        discharge_limit_percentage:
+          type:
+          - integer
+          - 'null'
+          description: Minimum reserve charge level as a whole percentage (0-100).
+          example: 20
+        status:
+          type: string
+          readOnly: true
+          description: Derived operating state of the battery.
+          enum:
+          - CHARGING
+          - DISCHARGING
+          - IDLE
+          - FAULT
+          - UNKNOWN
+          example: CHARGING
+        operation_mode:
+          type: string
+          readOnly: true
+          description: Current operation mode of the battery.
+          enum:
+          - EXPORT_FOCUS
+          - IMPORT_FOCUS
+          - TIME_OF_USE
+          - SELF_RELIANCE
+          - IDLE
+          - UNKNOWN
+          example: SELF_RELIANCE
+    HomeBatteryModel:
+      title: HomeBatteryModel
+      description: A resource representing a home battery model.
+      type: object
+      x-tags:
+      - Home Batteries
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given Home Battery Model.
+          pattern: bmod[A-Z\d]{26}
+          example: bmod7XL7Q5294J6TUZARBQT2D1EOHY
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/home_battery_models/bmod7XL7Q5294J6TUZARBQT2D1EOHY
+          readOnly: true
+        name:
+          type: string
+          example: Narsil
+          readOnly: true
+        make:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/home_battery_makes/bmakK7XDPL63NNBDQ5DPB6K3TP87JA
+          - $ref: '#/components/schemas/HomeBatteryMake'
+        onboarding_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+          example: https://api.ev.energy/v2/home_battery_onboarding?model_id=bmod7XL7Q5294J6TUZARBQT2D1EOHY&user_id=user01HN2NJ9NMRZBXT1H6FT9N7735&client_id=your_client_id
+          description: 'A pre-constructed link to initiate onboarding for a home battery of this model.
+
+
+            Your `client_id` and the user''s `user_id` are automatically included based on your authentication token. If you are using client credentials authentication, the user ID will not be automatically included unless you set the EvEnergy-User header on your request.'
+          readOnly: true
+  headers:
+    link:
+      description: Provides links to the previous and next pages of data, if they exist.
+      example: <https://api.ev.energy/v2/vehicles?page_size=25&page_before=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="previous", <https://api.ev.energy/v2/vehicles?page_size=25&page_after=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="next"
+      schema:
+        type: string
+    x-ratelimit-remaining:
+      description: The number of requests remaining until this client's rate limit is reached.
+      schema:
+        type: number
+        default: 999
+    version-2:
+      description: Indicates the version of the API that generated this response. If EvEnergy-Version was not specified in the request, this will be your OAuth application's default version.
+      schema:
+        type: number
+        enum:
+        - 2
+    retry-after:
+      description: The number of seconds until this client's requests will not be rate limited.
+      schema:
+        type: number
+        default: 3600
+    x-ratelimit-limit:
+      description: The maximum number of requests that can be made to this endpoint per hour. Defaults to 1000 but may vary per client.
+      schema:
+        type: number
+        default: 1000
+    link-timestamps:
+      description: Provides links to the previous and next pages of data, if they exist.
+      example: <https://api.ev.energy/v2/vehicles?page_size=25&page_before=2024-04-18T08:53:52.225655Z>; rel="previous", <https://api.ev.energy/v2/vehicles?page_size=25&page_after=2024-04-18T08:53:52.225655Z>; rel="next"
+      schema:
+        type: string
+  examples:
+    ProblemInvalidPaginationParameter:
+      value:
+        type: https://api.ev.energy/v2/problems/pagination-parameters/
+        status: 400
+        title: Invalid pagination parameter
+        detail: 'Invalid value for pagination parameter: page_size'
+    ProblemUnsupportedVersion:
+      value:
+        type: https://api.ev.energy/v2/problems/pagination-parameters/
+        status: 400
+        title: Unsupported version
+        detail: 'Unsupported version requested: 3.0'
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.ev.energy/o/token/
+          refreshUrl: https://api.ev.energy/o/token/
+          scopes:
+            carbon:read: ''
+            grid:read: ''
+            evse:read: ''
+            evse:write: ''
+            vehicle:read: ''
+            user:read: ''
+            charging_session:read: ''
+            tariff:read: ''
+            tariff:prices:read: ''
+            user:write: ''
+            inverter:read: ''
+            inverter:write: ''
+            home_battery:read: ''
+            home_energy:read: ''
+            boundary_meter:read: ''
+            vehicle:write: ''
+            vehicle_catalogue:write: Update shared vehicle-catalogue reference data (e.g. a model's default connector type)
+            charging_session:write: ''
+            solar:write: ''
+            solar:read: ''
+            subscription:read: ''
+            debug:read: ''
+            dispatch_coordinator:read: ''
+            dispatch_event:write: ''
+            solar_forecast:read: ''
+            payout_method:read: Read a user's preferred payout method
+            payout_method:write: Set, update, or clear a user's preferred payout method
+            notification_preferences:read: Read a user's notification group opt-in state
+            notification_preferences:write: Update a user's notification group opt-in state
+            route_planner_preferences:read: Read a user's EV Route Planner preferences
+            route_planner_preferences:write: Update a user's EV Route Planner preferences
+            saved_routes:read: Read a user's saved route-planner routes
+            saved_routes:write: Create, update, or delete a user's saved routes
+            region:read: Read region and region group boundary data
+            region:write: Create regions and region groups
+        authorizationCode:
+          authorizationUrl: https://api.ev.energy/o/authorize/
+          tokenUrl: https://api.ev.energy/o/token/
+          refreshUrl: https://api.ev.energy/o/token/
+          scopes: {}
+x-redocly:
+  openapi:
+    hideSchemaTitles: true
+x-internal: false

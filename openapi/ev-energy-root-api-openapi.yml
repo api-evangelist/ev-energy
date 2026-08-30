@@ -1,0 +1,410 @@
+openapi: 3.2.0
+info:
+  title: ev.energy v2 Root API
+  version: '2.0'
+  contact:
+    email: developers@ev.energy
+    url: developers.ev.energy
+    name: ev.energy developers
+  description: The official API for ev.energy, version 2.
+  license:
+    name: Proprietary
+    url: https://ev.energy
+  termsOfService: ''
+servers:
+- url: https://api.ev.energy/v2
+  description: Live API for both production and sandbox requests.
+  x-internal: false
+- description: Staging server for internal testing only.
+  url: https://api-staging.ev.energy/v2
+  x-internal: true
+security:
+- oauth2: []
+tags:
+- name: Root
+  description: The root endpoint which lists all the top-level collections.
+paths:
+  /:
+    get:
+      summary: API root
+      description: Get links to resources accessible in the API.
+      operationId: get-root
+      responses:
+        '200':
+          description: Returns a list of all top-level collection URLs in the API.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: string
+                    format: uri
+                  carbon_feeds:
+                    type: string
+                    format: uri
+                  evses:
+                    type: string
+                    format: uri
+                  evse_models:
+                    type: string
+                    format: uri
+                  evse_makes:
+                    type: string
+                    format: uri
+                  vehicles:
+                    type: string
+                    format: uri
+                  vehicle_trims:
+                    type: string
+                    format: uri
+                  vehicle_models:
+                    type: string
+                    format: uri
+                  vehicle_makes:
+                    type: string
+                    format: uri
+                  suppliers:
+                    type: string
+                    format: uri
+                  tariffs:
+                    type: string
+                    format: uri
+                  support_tickets:
+                    type: string
+                    format: uri
+                  dispatch_coordinators:
+                    type: string
+                    format: uri
+                  grid_feeds:
+                    type: string
+                    format: uri
+              examples:
+                Example:
+                  value:
+                    users: https://api.ev.energy/v2/users/
+                    carbon_feeds: https://api.ev.energy/v2/carbon_feeds/
+                    evses: https://api.ev.energy/v2/evses/
+                    evse_models: https://api.ev.energy/v2/evse_models/
+                    evse_makes: https://api.ev.energy/v2/evse_makes/
+                    vehicles: https://api.ev.energy/v2/vehicles/
+                    vehicle_trims: https://api.ev.energy/v2/vehicle_trims/
+                    vehicle_models: https://api.ev.energy/v2/vehicle_models/
+                    vehicle_makes: https://api.ev.energy/v2/vehicle_makes/
+                    suppliers: https://api.ev.energy/v2/suppliers/
+                    tariffs: https://api.ev.energy/v2/tariffs/
+                    support_tickets: https://api.ev.energy/v2/support_tickets/
+                    dispatch_coordinators: https://api.ev.energy/v2/dispatch_coordinators/
+                    grid_feeds: https://api.ev.energy/v2/grid_feeds/
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      security: []
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      tags:
+      - Root
+components:
+  headers:
+    x-ratelimit-limit:
+      description: The maximum number of requests that can be made to this endpoint per hour. Defaults to 1000 but may vary per client.
+      schema:
+        type: number
+        default: 1000
+    x-ratelimit-remaining:
+      description: The number of requests remaining until this client's rate limit is reached.
+      schema:
+        type: number
+        default: 999
+    version-2:
+      description: Indicates the version of the API that generated this response. If EvEnergy-Version was not specified in the request, this will be your OAuth application's default version.
+      schema:
+        type: number
+        enum:
+        - 2
+    retry-after:
+      description: The number of seconds until this client's requests will not be rate limited.
+      schema:
+        type: number
+        default: 3600
+  schemas:
+    RFC9457ProblemDetail:
+      title: RFC 9457 Problem Detail
+      x-tags:
+      - problems
+      type: object
+      required:
+      - title
+      - detail
+      properties:
+        type:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/problems/example-problem/
+        status:
+          type: number
+          example: 400
+        title:
+          type: string
+          example: Short description
+        detail:
+          type: string
+          example: Long, more specific description.
+        instance:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
+        notification:
+          $ref: '#/components/schemas/Notification'
+      examples:
+      - type: https://api.ev.energy/v2/problems/example-problem/
+        status: 400
+        title: Short description
+        detail: Long, more specific description.
+        instance: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
+        notification:
+          id: notf01HTHKTXVB77901324BCQPF1RB
+          url: https://api.ev.energy/notifications/notf01HTHKTXVB77901324BCQPF1RB
+          message_id: ERR0123
+          category: ACTIONABLE
+          event_time: '2019-08-24T14:15:22Z'
+          short_text_title: Your car is disconnected
+          short_text_body: We need to reconnect to keep smart charging your car
+          detail_page_title: Your car is disconnected
+          detail_page_body: Your car has been disconnected. This happens when your password is reset. We need you to re-authorise ev.energy to access your account in order for us to keep managing your charging. Blah blah blah.
+          external_link: http://example.com
+          external_button_label: More info
+          read_at: '2019-08-24T14:20:22Z'
+          resolved_at: '2019-08-25T14:15:22Z'
+    Notification:
+      title: Notification
+      description: Something that the user should be informed about.
+      type: object
+      examples:
+      - id: notf67O36PLTFDB57M0E5L33JZLGM0
+        url: https://api.ev.energy/notifications/notf67O36PLTFDB57M0E5L33JZLGM0
+        message_id: ERR0123
+        category: ACTIONABLE
+        event_time: '2019-08-24T14:15:22Z'
+        short_text_title: Your car is disconnected
+        short_text_body: We need to reconnect to keep smart charging your car
+        detail_page_title: Your car is disconnected
+        detail_page_body: Your car has been disconnected. This happens when your password is reset. We need you to re-authorise ev.energy to access your account in order for us to keep managing your charging. Blah blah blah.
+        external_link: http://example.com
+        external_button_label: More info
+        read_at: '2019-08-24T14:20:22Z'
+        resolved_at: '2019-08-25T14:15:22Z'
+      required:
+      - id
+      - url
+      - message_id
+      - category
+      - event_time
+      - short_text_title
+      - short_text_body
+      - detail_page_title
+      - detail_page_body
+      - external_link
+      - external_button_label
+      properties:
+        id:
+          type: string
+          pattern: notf[A-Z\d]{26}
+          example: notf67O36PLTFDB57M0E5L33JZLGM0
+          description: Unique identifier for the Notification
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/notifications/notf67O36PLTFDB57M0E5L33JZLGM0
+        message_id:
+          type: string
+          description: Internal identifier for this notification type. E.g. 'ERR0023'
+        category:
+          description: Category of this notification type
+          enum:
+          - ACTIONABLE
+          - SERVICE
+          - RETRY
+          - MARKETING
+          - INTERNAL
+        event_time:
+          type: string
+          format: date-time
+          description: The timestamp of the event described by this notification
+        short_text_title:
+          type: string
+          description: Short title for the notification
+          maxLength: 33
+        short_text_body:
+          type: string
+          description: Short description of the event being notified
+          maxLength: 49
+        detail_page_title:
+          type: string
+          description: Title of a help page giving more information about this notification
+        detail_page_body:
+          type: string
+          description: Text of a help page giving more information about this notification
+        external_link:
+          type:
+          - string
+          - 'null'
+          description: URL of a web page giving further information about this notification
+          format: uri
+        external_button_label:
+          type: string
+          description: Text to be displayed on a button leading to the external_link location
+        read_at:
+          type: string
+          format: date-time
+          description: When the user examined the contents of this notification
+        resolved_at:
+          type: string
+          format: date-time
+          description: When the problem associated with this notification was resolved
+  responses:
+    Problem429TooManyRequests:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Example 1:
+              value:
+                type: https://api.ev.energy/v2/problems/rate-limit-exceeded/
+                status: 429
+                title: Too Many Requests
+                detail: Request was rate limited. Try again in 42 seconds
+      description: The client has exceeded its rate limit.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        Retry-After:
+          $ref: '#/components/headers/retry-after'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem400BadRequestRetrieve:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem406NotAcceptable:
+      description: Could not satisfy the request Accept header.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 406
+              title:
+                type: string
+                example: Not Acceptable
+              detail:
+                type: string
+                example: Could not satisfy the request Accept header.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+  examples:
+    ProblemUnsupportedVersion:
+      value:
+        type: https://api.ev.energy/v2/problems/pagination-parameters/
+        status: 400
+        title: Unsupported version
+        detail: 'Unsupported version requested: 3.0'
+  parameters:
+    version-2:
+      name: EvEnergy-Version
+      description: Specify the version of this endpoint to use.
+      required: false
+      in: header
+      schema:
+        type: number
+        enum:
+        - 2
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.ev.energy/o/token/
+          refreshUrl: https://api.ev.energy/o/token/
+          scopes:
+            carbon:read: ''
+            grid:read: ''
+            evse:read: ''
+            evse:write: ''
+            vehicle:read: ''
+            user:read: ''
+            charging_session:read: ''
+            tariff:read: ''
+            tariff:prices:read: ''
+            user:write: ''
+            inverter:read: ''
+            inverter:write: ''
+            home_battery:read: ''
+            home_energy:read: ''
+            boundary_meter:read: ''
+            vehicle:write: ''
+            vehicle_catalogue:write: Update shared vehicle-catalogue reference data (e.g. a model's default connector type)
+            charging_session:write: ''
+            solar:write: ''
+            solar:read: ''
+            subscription:read: ''
+            debug:read: ''
+            dispatch_coordinator:read: ''
+            dispatch_event:write: ''
+            solar_forecast:read: ''
+            payout_method:read: Read a user's preferred payout method
+            payout_method:write: Set, update, or clear a user's preferred payout method
+            notification_preferences:read: Read a user's notification group opt-in state
+            notification_preferences:write: Update a user's notification group opt-in state
+            route_planner_preferences:read: Read a user's EV Route Planner preferences
+            route_planner_preferences:write: Update a user's EV Route Planner preferences
+            saved_routes:read: Read a user's saved route-planner routes
+            saved_routes:write: Create, update, or delete a user's saved routes
+            region:read: Read region and region group boundary data
+            region:write: Create regions and region groups
+        authorizationCode:
+          authorizationUrl: https://api.ev.energy/o/authorize/
+          tokenUrl: https://api.ev.energy/o/token/
+          refreshUrl: https://api.ev.energy/o/token/
+          scopes: {}
+x-redocly:
+  openapi:
+    hideSchemaTitles: true
+x-internal: false

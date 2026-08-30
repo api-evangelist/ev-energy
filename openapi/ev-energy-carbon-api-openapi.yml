@@ -1,0 +1,720 @@
+openapi: 3.2.0
+info:
+  title: ev.energy v2 Carbon API
+  version: '2.0'
+  contact:
+    email: developers@ev.energy
+    url: developers.ev.energy
+    name: ev.energy developers
+  description: The official API for ev.energy, version 2.
+  license:
+    name: Proprietary
+    url: https://ev.energy
+  termsOfService: ''
+servers:
+- url: https://api.ev.energy/v2
+  description: Live API for both production and sandbox requests.
+  x-internal: false
+- description: Staging server for internal testing only.
+  url: https://api-staging.ev.energy/v2
+  x-internal: true
+security:
+- oauth2: []
+tags:
+- name: Carbon
+  description: Endpoints for interacting with carbon intensity data.
+paths:
+  /carbon_feeds:
+    get:
+      summary: List carbon feeds
+      description: List all carbon feeds visible to the authenticated client. Carbon feeds represent sources of carbon intensity data for specific regions or grids.
+      tags:
+      - Carbon
+      responses:
+        '200':
+          description: Returns a list of carbon feeds, sorted by name.
+          headers:
+            Link:
+              $ref: '#/components/headers/link'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CarbonFeed'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-carbon_feeds
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/previous'
+      - $ref: '#/components/parameters/next'
+      - $ref: '#/components/parameters/page_size'
+      security:
+      - oauth2:
+        - carbon:read
+  /carbon_feeds/{carbon_feed_id}:
+    parameters:
+    - $ref: '#/components/parameters/carbon_feed_id'
+    get:
+      summary: Retrieve a carbon feed
+      description: Retrieve a specific carbon feed, representing a source of carbon intensity data for a region or grid.
+      tags:
+      - Carbon
+      responses:
+        '200':
+          description: Returns information about a single carbon feed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CarbonFeed'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-carbon_feeds-carbon_feed_id
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      security:
+      - oauth2:
+        - carbon:read
+  /carbon_feeds/{carbon_feed_id}/carbon_intensities:
+    parameters:
+    - $ref: '#/components/parameters/carbon_feed_id'
+    get:
+      summary: List carbon intensity data
+      description: 'Returns a paginated list of carbon intensity data points for a specific carbon feed. Carbon intensity represents the amount of CO2 emissions per unit of electricity generated, measured in grams of CO2 per kilowatt-hour (gCO2/kWh).
+
+
+        Use `started_at__gte` and `started_at__lte` to filter by time range.'
+      tags:
+      - Carbon
+      responses:
+        '200':
+          description: Returns a list of carbon intensity data points, sorted by started_at descending.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CarbonIntensities'
+          headers:
+            Link:
+              $ref: '#/components/headers/link'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-carbon_feeds-carbon_feed_id-carbon_intensities
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/previous'
+      - $ref: '#/components/parameters/next'
+      - $ref: '#/components/parameters/page_size'
+      - $ref: '#/components/parameters/expand-on-carbonintensity'
+      - name: started_at__gte
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+          example: '2024-01-15T10:00:00Z'
+        description: Filter for entries on or after this datetime (ISO 8601).
+      - name: started_at__lte
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+          example: '2024-01-15T12:00:00Z'
+        description: Filter for entries on or before this datetime (ISO 8601).
+      security:
+      - oauth2:
+        - carbon:read
+components:
+  responses:
+    Problem404NotFound:
+      description: This resource either does not exist or the client is not authorized to access it.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 404
+              title:
+                type: string
+                example: Not found
+              detail:
+                type: string
+                example: Resource does not exist or cannot be accessed.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem400BadRequestRetrieve:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem429TooManyRequests:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Example 1:
+              value:
+                type: https://api.ev.energy/v2/problems/rate-limit-exceeded/
+                status: 429
+                title: Too Many Requests
+                detail: Request was rate limited. Try again in 42 seconds
+      description: The client has exceeded its rate limit.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        Retry-After:
+          $ref: '#/components/headers/retry-after'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem401Unauthorized:
+      description: You need to authorise requests to access this resource.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 401
+              title:
+                type: string
+                example: Unauthorized
+              detail:
+                type: string
+                example: Authentication credentials were not provided.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem400BadRequestList:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Invalid Pagination Parameter:
+              $ref: '#/components/examples/ProblemInvalidPaginationParameter'
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem403Forbidden:
+      description: You do not have permission to perform this action.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 403
+              title:
+                type: string
+                example: Forbidden
+              detail:
+                type: string
+                example: You do not have permission to perform this action.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem406NotAcceptable:
+      description: Could not satisfy the request Accept header.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 406
+              title:
+                type: string
+                example: Not Acceptable
+              detail:
+                type: string
+                example: Could not satisfy the request Accept header.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+  schemas:
+    RFC9457ProblemDetail:
+      title: RFC 9457 Problem Detail
+      x-tags:
+      - problems
+      type: object
+      required:
+      - title
+      - detail
+      properties:
+        type:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/problems/example-problem/
+        status:
+          type: number
+          example: 400
+        title:
+          type: string
+          example: Short description
+        detail:
+          type: string
+          example: Long, more specific description.
+        instance:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
+        notification:
+          $ref: '#/components/schemas/Notification'
+      examples:
+      - type: https://api.ev.energy/v2/problems/example-problem/
+        status: 400
+        title: Short description
+        detail: Long, more specific description.
+        instance: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
+        notification:
+          id: notf01HTHKTXVB77901324BCQPF1RB
+          url: https://api.ev.energy/notifications/notf01HTHKTXVB77901324BCQPF1RB
+          message_id: ERR0123
+          category: ACTIONABLE
+          event_time: '2019-08-24T14:15:22Z'
+          short_text_title: Your car is disconnected
+          short_text_body: We need to reconnect to keep smart charging your car
+          detail_page_title: Your car is disconnected
+          detail_page_body: Your car has been disconnected. This happens when your password is reset. We need you to re-authorise ev.energy to access your account in order for us to keep managing your charging. Blah blah blah.
+          external_link: http://example.com
+          external_button_label: More info
+          read_at: '2019-08-24T14:20:22Z'
+          resolved_at: '2019-08-25T14:15:22Z'
+    CarbonIntensities:
+      title: CarbonIntensities
+      type: object
+      description: A collection of carbon intensity data points for a specific carbon feed.
+      properties:
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/carbon_feeds/cabf01HN2NJ9NMRZBXT1H6FT9N7735/carbon_intensities
+          readOnly: true
+        carbon_feed:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/carbon_feeds/cabf01HN2NJ9NMRZBXT1H6FT9N7735
+          readOnly: true
+        carbon_intensities:
+          type: array
+          description: A list of carbon intensity data points.
+          items:
+            $ref: '#/components/schemas/CarbonIntensity'
+          readOnly: true
+    Notification:
+      title: Notification
+      description: Something that the user should be informed about.
+      type: object
+      examples:
+      - id: notf67O36PLTFDB57M0E5L33JZLGM0
+        url: https://api.ev.energy/notifications/notf67O36PLTFDB57M0E5L33JZLGM0
+        message_id: ERR0123
+        category: ACTIONABLE
+        event_time: '2019-08-24T14:15:22Z'
+        short_text_title: Your car is disconnected
+        short_text_body: We need to reconnect to keep smart charging your car
+        detail_page_title: Your car is disconnected
+        detail_page_body: Your car has been disconnected. This happens when your password is reset. We need you to re-authorise ev.energy to access your account in order for us to keep managing your charging. Blah blah blah.
+        external_link: http://example.com
+        external_button_label: More info
+        read_at: '2019-08-24T14:20:22Z'
+        resolved_at: '2019-08-25T14:15:22Z'
+      required:
+      - id
+      - url
+      - message_id
+      - category
+      - event_time
+      - short_text_title
+      - short_text_body
+      - detail_page_title
+      - detail_page_body
+      - external_link
+      - external_button_label
+      properties:
+        id:
+          type: string
+          pattern: notf[A-Z\d]{26}
+          example: notf67O36PLTFDB57M0E5L33JZLGM0
+          description: Unique identifier for the Notification
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/notifications/notf67O36PLTFDB57M0E5L33JZLGM0
+        message_id:
+          type: string
+          description: Internal identifier for this notification type. E.g. 'ERR0023'
+        category:
+          description: Category of this notification type
+          enum:
+          - ACTIONABLE
+          - SERVICE
+          - RETRY
+          - MARKETING
+          - INTERNAL
+        event_time:
+          type: string
+          format: date-time
+          description: The timestamp of the event described by this notification
+        short_text_title:
+          type: string
+          description: Short title for the notification
+          maxLength: 33
+        short_text_body:
+          type: string
+          description: Short description of the event being notified
+          maxLength: 49
+        detail_page_title:
+          type: string
+          description: Title of a help page giving more information about this notification
+        detail_page_body:
+          type: string
+          description: Text of a help page giving more information about this notification
+        external_link:
+          type:
+          - string
+          - 'null'
+          description: URL of a web page giving further information about this notification
+          format: uri
+        external_button_label:
+          type: string
+          description: Text to be displayed on a button leading to the external_link location
+        read_at:
+          type: string
+          format: date-time
+          description: When the user examined the contents of this notification
+        resolved_at:
+          type: string
+          format: date-time
+          description: When the problem associated with this notification was resolved
+    CarbonFeed:
+      title: CarbonFeed
+      type: object
+      description: A carbon feed representing a source of carbon intensity data for a specific region or grid.
+      x-tags:
+      - Carbon
+      required:
+      - id
+      - url
+      - name
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the carbon feed.
+          pattern: cabf[A-Z\d]{26}
+          example: cabf01HN2NJ9NMRZBXT1H6FT9N7735
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/carbon_feeds/cabf01HN2NJ9NMRZBXT1H6FT9N7735
+          readOnly: true
+        name:
+          type: string
+          description: Human-readable name for the carbon feed.
+          example: UK National Grid
+          readOnly: true
+    CarbonIntensity:
+      title: CarbonIntensity
+      type: object
+      description: A carbon intensity data point representing CO2 emissions per unit of electricity generated.
+      x-tags:
+      - Carbon
+      required:
+      - started_at
+      - interval_seconds
+      - co2_intensity_grams_per_kilowatt_hour
+      - created_at
+      properties:
+        started_at:
+          type: string
+          format: date-time
+          description: When this interval began.
+          example: '2024-01-15T10:00:00Z'
+          readOnly: true
+        interval_seconds:
+          type: integer
+          description: The number of seconds that this interval lasts for.
+          example: 1800
+          readOnly: true
+        co2_intensity_grams_per_kilowatt_hour:
+          type: integer
+          description: Carbon intensity in gCO2/kWh.
+          example: 245
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          description: When this record was created (ISO 8601 datetime).
+          example: '2024-01-15T09:45:00Z'
+          readOnly: true
+  examples:
+    ProblemInvalidPaginationParameter:
+      value:
+        type: https://api.ev.energy/v2/problems/pagination-parameters/
+        status: 400
+        title: Invalid pagination parameter
+        detail: 'Invalid value for pagination parameter: page_size'
+    ProblemUnsupportedVersion:
+      value:
+        type: https://api.ev.energy/v2/problems/pagination-parameters/
+        status: 400
+        title: Unsupported version
+        detail: 'Unsupported version requested: 3.0'
+  headers:
+    link:
+      description: Provides links to the previous and next pages of data, if they exist.
+      example: <https://api.ev.energy/v2/vehicles?page_size=25&page_before=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="previous", <https://api.ev.energy/v2/vehicles?page_size=25&page_after=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="next"
+      schema:
+        type: string
+    x-ratelimit-remaining:
+      description: The number of requests remaining until this client's rate limit is reached.
+      schema:
+        type: number
+        default: 999
+    version-2:
+      description: Indicates the version of the API that generated this response. If EvEnergy-Version was not specified in the request, this will be your OAuth application's default version.
+      schema:
+        type: number
+        enum:
+        - 2
+    retry-after:
+      description: The number of seconds until this client's requests will not be rate limited.
+      schema:
+        type: number
+        default: 3600
+    x-ratelimit-limit:
+      description: The maximum number of requests that can be made to this endpoint per hour. Defaults to 1000 but may vary per client.
+      schema:
+        type: number
+        default: 1000
+  parameters:
+    carbon_feed_id:
+      name: carbon_feed_id
+      description: Uniquely identify a specific carbon feed.
+      in: path
+      schema:
+        type: string
+        pattern: cabf[A-Z\d]{26}
+        example: cabf01HN2NJ9NMRZBXT1H6FT9N7735
+      required: true
+    version-2:
+      name: EvEnergy-Version
+      description: Specify the version of this endpoint to use.
+      required: false
+      in: header
+      schema:
+        type: number
+        enum:
+        - 2
+    page_size:
+      name: page_size
+      description: Specify the number of results to return per page.
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 25
+        minimum: 1
+        maximum: 100
+        example: 10
+    previous:
+      name: page_before
+      description: Return results from the page after this ID.
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[a-z]{4}[A-Z\d]{26}'
+        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
+    next:
+      name: page_after
+      description: Return results from the page before this ID.
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[a-z]{4}[A-Z\d]{26}'
+        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
+    expand-on-carbonintensity:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - carbon_feed
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.ev.energy/o/token/
+          refreshUrl: https://api.ev.energy/o/token/
+          scopes:
+            carbon:read: ''
+            grid:read: ''
+            evse:read: ''
+            evse:write: ''
+            vehicle:read: ''
+            user:read: ''
+            charging_session:read: ''
+            tariff:read: ''
+            tariff:prices:read: ''
+            user:write: ''
+            inverter:read: ''
+            inverter:write: ''
+            home_battery:read: ''
+            home_energy:read: ''
+            boundary_meter:read: ''
+            vehicle:write: ''
+            vehicle_catalogue:write: Update shared vehicle-catalogue reference data (e.g. a model's default connector type)
+            charging_session:write: ''
+            solar:write: ''
+            solar:read: ''
+            subscription:read: ''
+            debug:read: ''
+            dispatch_coordinator:read: ''
+            dispatch_event:write: ''
+            solar_forecast:read: ''
+            payout_method:read: Read a user's preferred payout method
+            payout_method:write: Set, update, or clear a user's preferred payout method
+            notification_preferences:read: Read a user's notification group opt-in state
+            notification_preferences:write: Update a user's notification group opt-in state
+            route_planner_preferences:read: Read a user's EV Route Planner preferences
+            route_planner_preferences:write: Update a user's EV Route Planner preferences
+            saved_routes:read: Read a user's saved route-planner routes
+            saved_routes:write: Create, update, or delete a user's saved routes
+            region:read: Read region and region group boundary data
+            region:write: Create regions and region groups
+        authorizationCode:
+          authorizationUrl: https://api.ev.energy/o/authorize/
+          tokenUrl: https://api.ev.energy/o/token/
+          refreshUrl: https://api.ev.energy/o/token/
+          scopes: {}
+x-redocly:
+  openapi:
+    hideSchemaTitles: true
+x-internal: false

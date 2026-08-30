@@ -1,0 +1,1988 @@
+openapi: 3.2.0
+info:
+  title: ev.energy v2 CT Clamps API
+  version: '2.0'
+  contact:
+    email: developers@ev.energy
+    url: developers.ev.energy
+    name: ev.energy developers
+  description: The official API for ev.energy, version 2.
+  license:
+    name: Proprietary
+    url: https://ev.energy
+  termsOfService: ''
+servers:
+- url: https://api.ev.energy/v2
+  description: Live API for both production and sandbox requests.
+  x-internal: false
+- description: Staging server for internal testing only.
+  url: https://api-staging.ev.energy/v2
+  x-internal: true
+security:
+- oauth2: []
+tags:
+- name: CT Clamps
+paths:
+  /ct_clamps:
+    get:
+      summary: List CT Clamps
+      tags:
+      - CT Clamps
+      responses:
+        '200':
+          description: Returns a list of CT clamps.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CTClamp'
+          headers:
+            Link:
+              $ref: '#/components/headers/link'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-ct-clamps
+      parameters:
+      - $ref: '#/components/parameters/previous'
+      - $ref: '#/components/parameters/next'
+      - $ref: '#/components/parameters/page_size'
+      - $ref: '#/components/parameters/expand-on-ctclamp'
+      - $ref: '#/components/parameters/version-2'
+      description: List all CT clamps that the authorization token has access to.
+      security:
+      - oauth2:
+        - evse:read
+  /ct_clamps/{ct_clamp_id}:
+    parameters:
+    - $ref: '#/components/parameters/ct_clamp_id'
+    get:
+      summary: Retrieve a CT Clamp
+      tags:
+      - CT Clamps
+      responses:
+        '200':
+          description: Returns a single CT clamp.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CTClamp'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-ct-clamps-ct_clamp_id
+      parameters:
+      - $ref: '#/components/parameters/expand-on-ctclamp'
+      - $ref: '#/components/parameters/version-2'
+      description: Retrieve a single CT clamp's details.
+      security:
+      - oauth2:
+        - evse:read
+  /ct_clamps/{ct_clamp_id}/logs:
+    parameters:
+    - $ref: '#/components/parameters/ct_clamp_id'
+    get:
+      summary: List logs for a CT Clamp
+      description: List the historical current measurement logs for a specific CT clamp.
+      tags:
+      - CT Clamps
+      responses:
+        '200':
+          description: Returns a list of CT clamp logs.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CTClampLog'
+          headers:
+            Link:
+              $ref: '#/components/headers/link'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-ct-clamps-ct_clamp_id-logs
+      parameters:
+      - $ref: '#/components/parameters/previous'
+      - $ref: '#/components/parameters/next'
+      - $ref: '#/components/parameters/page_size'
+      - $ref: '#/components/parameters/sampled_at__gte'
+      - $ref: '#/components/parameters/sampled_at__lte'
+      - $ref: '#/components/parameters/expand-on-ctclamplog'
+      - $ref: '#/components/parameters/version-2'
+      security:
+      - oauth2:
+        - evse:read
+  /ct_clamps/{ct_clamp_id}/logs/{sampled_at}:
+    parameters:
+    - $ref: '#/components/parameters/ct_clamp_id'
+    - schema:
+        type: string
+        format: date-time
+      name: sampled_at
+      in: path
+      required: true
+      description: The time the log's data was recorded on the device.
+      example: '2024-04-17T09:39:45.984584Z'
+    get:
+      summary: Retrieve a log for a CT Clamp
+      tags:
+      - CT Clamps
+      responses:
+        '200':
+          description: Returns a single CT clamp log.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CTClampLog'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-ct-clamps-ct_clamp_id-logs-sampled_at
+      parameters:
+      - $ref: '#/components/parameters/expand-on-ctclamplog'
+      - $ref: '#/components/parameters/version-2'
+      description: Retrieve a single CT clamp log entry.
+      security:
+      - oauth2:
+        - evse:read
+components:
+  responses:
+    Problem404NotFound:
+      description: This resource either does not exist or the client is not authorized to access it.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 404
+              title:
+                type: string
+                example: Not found
+              detail:
+                type: string
+                example: Resource does not exist or cannot be accessed.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem400BadRequestRetrieve:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem429TooManyRequests:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Example 1:
+              value:
+                type: https://api.ev.energy/v2/problems/rate-limit-exceeded/
+                status: 429
+                title: Too Many Requests
+                detail: Request was rate limited. Try again in 42 seconds
+      description: The client has exceeded its rate limit.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        Retry-After:
+          $ref: '#/components/headers/retry-after'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem401Unauthorized:
+      description: You need to authorise requests to access this resource.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 401
+              title:
+                type: string
+                example: Unauthorized
+              detail:
+                type: string
+                example: Authentication credentials were not provided.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem400BadRequestList:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Invalid Pagination Parameter:
+              $ref: '#/components/examples/ProblemInvalidPaginationParameter'
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem403Forbidden:
+      description: You do not have permission to perform this action.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 403
+              title:
+                type: string
+                example: Forbidden
+              detail:
+                type: string
+                example: You do not have permission to perform this action.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem406NotAcceptable:
+      description: Could not satisfy the request Accept header.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 406
+              title:
+                type: string
+                example: Not Acceptable
+              detail:
+                type: string
+                example: Could not satisfy the request Accept header.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+  schemas:
+    RFC9457ProblemDetail:
+      title: RFC 9457 Problem Detail
+      x-tags:
+      - problems
+      type: object
+      required:
+      - title
+      - detail
+      properties:
+        type:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/problems/example-problem/
+        status:
+          type: number
+          example: 400
+        title:
+          type: string
+          example: Short description
+        detail:
+          type: string
+          example: Long, more specific description.
+        instance:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
+        notification:
+          $ref: '#/components/schemas/Notification'
+      examples:
+      - type: https://api.ev.energy/v2/problems/example-problem/
+        status: 400
+        title: Short description
+        detail: Long, more specific description.
+        instance: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
+        notification:
+          id: notf01HTHKTXVB77901324BCQPF1RB
+          url: https://api.ev.energy/notifications/notf01HTHKTXVB77901324BCQPF1RB
+          message_id: ERR0123
+          category: ACTIONABLE
+          event_time: '2019-08-24T14:15:22Z'
+          short_text_title: Your car is disconnected
+          short_text_body: We need to reconnect to keep smart charging your car
+          detail_page_title: Your car is disconnected
+          detail_page_body: Your car has been disconnected. This happens when your password is reset. We need you to re-authorise ev.energy to access your account in order for us to keep managing your charging. Blah blah blah.
+          external_link: http://example.com
+          external_button_label: More info
+          read_at: '2019-08-24T14:20:22Z'
+          resolved_at: '2019-08-25T14:15:22Z'
+    Supplier:
+      title: Supplier
+      type: object
+      description: An energy company who supplies electricity tariffs.
+      required:
+      - id
+      - url
+      - name
+      - icon
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given user.
+          pattern: supl[A-Z\d]{26}
+          example: supl01HN2NJ9NMRZBXT1H6FT9N7735
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/suppliers/supl01HN2NJ9NMRZBXT1H6FT9N7735
+        name:
+          type: string
+          example: Rivendell Renewables
+        icon:
+          type:
+          - string
+          - 'null'
+          format: uri
+          example: https://cdn.example.com/rivendell_renewables.jpg
+        highlighted:
+          type: boolean
+          description: A highlighted supplier is one that is often selected by users.
+      x-tags:
+      - Tariffs
+    DailyPrices:
+      title: DailyPrices
+      description: Information about the tariff's prices for different parts of the day.
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      maxProperties: 3
+      required:
+      - peak
+      properties:
+        peak:
+          $ref: '#/components/schemas/PriceSummary'
+        mid_peak:
+          $ref: '#/components/schemas/PriceSummary'
+        off_peak:
+          $ref: '#/components/schemas/PriceSummary'
+      x-tags:
+      - Tariffs
+    Notification:
+      title: Notification
+      description: Something that the user should be informed about.
+      type: object
+      examples:
+      - id: notf67O36PLTFDB57M0E5L33JZLGM0
+        url: https://api.ev.energy/notifications/notf67O36PLTFDB57M0E5L33JZLGM0
+        message_id: ERR0123
+        category: ACTIONABLE
+        event_time: '2019-08-24T14:15:22Z'
+        short_text_title: Your car is disconnected
+        short_text_body: We need to reconnect to keep smart charging your car
+        detail_page_title: Your car is disconnected
+        detail_page_body: Your car has been disconnected. This happens when your password is reset. We need you to re-authorise ev.energy to access your account in order for us to keep managing your charging. Blah blah blah.
+        external_link: http://example.com
+        external_button_label: More info
+        read_at: '2019-08-24T14:20:22Z'
+        resolved_at: '2019-08-25T14:15:22Z'
+      required:
+      - id
+      - url
+      - message_id
+      - category
+      - event_time
+      - short_text_title
+      - short_text_body
+      - detail_page_title
+      - detail_page_body
+      - external_link
+      - external_button_label
+      properties:
+        id:
+          type: string
+          pattern: notf[A-Z\d]{26}
+          example: notf67O36PLTFDB57M0E5L33JZLGM0
+          description: Unique identifier for the Notification
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/notifications/notf67O36PLTFDB57M0E5L33JZLGM0
+        message_id:
+          type: string
+          description: Internal identifier for this notification type. E.g. 'ERR0023'
+        category:
+          description: Category of this notification type
+          enum:
+          - ACTIONABLE
+          - SERVICE
+          - RETRY
+          - MARKETING
+          - INTERNAL
+        event_time:
+          type: string
+          format: date-time
+          description: The timestamp of the event described by this notification
+        short_text_title:
+          type: string
+          description: Short title for the notification
+          maxLength: 33
+        short_text_body:
+          type: string
+          description: Short description of the event being notified
+          maxLength: 49
+        detail_page_title:
+          type: string
+          description: Title of a help page giving more information about this notification
+        detail_page_body:
+          type: string
+          description: Text of a help page giving more information about this notification
+        external_link:
+          type:
+          - string
+          - 'null'
+          description: URL of a web page giving further information about this notification
+          format: uri
+        external_button_label:
+          type: string
+          description: Text to be displayed on a button leading to the external_link location
+        read_at:
+          type: string
+          format: date-time
+          description: When the user examined the contents of this notification
+        resolved_at:
+          type: string
+          format: date-time
+          description: When the problem associated with this notification was resolved
+    Tariff:
+      title: Tariff
+      examples:
+      - id: tari01HN2NJ9NMRZBXT1H6FT9N7735
+        url: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7735
+        supplier: https://api.ev.energy/v2/suppliers/supl01HN2NJ9NMRZBXT1H6FT9N7735
+        name: Fangorn Biomass
+        currency: GBP
+        gsp_group: _C
+        valid_from: '2026-03-17'
+        valid_until: '2027-03-17'
+        daily_prices:
+          peak:
+            price: '0.30'
+            times:
+            - start: '18:00:00'
+              end: 00:00:00
+          mid_peak:
+            price: '0.20'
+            times:
+            - start: '10:00:00'
+              end: 08:00:00
+          off_peak:
+            price: '0.10'
+            times:
+            - start: 08:00:00
+              end: '18:00:00'
+        scheduler_tariff: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7835
+      description: 'Note: daily_prices and type are only available under contract. Please reach out to your account manager to find out more.'
+      x-tags:
+      - Tariffs
+      allOf:
+      - $ref: '#/components/schemas/TariffBase'
+      - type: object
+        properties:
+          scheduler_tariff:
+            oneOf:
+            - type: string
+              format: uri
+              example: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7835
+            - type: object
+              required:
+              - id
+              - url
+              - supplier
+              - name
+              - currency
+              properties:
+                id:
+                  type: string
+                  pattern: tari[A-Z\d]{26}
+                url:
+                  type: string
+                  format: uri
+                supplier:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+                currency:
+                  type: string
+              additionalProperties: true
+            - type: 'null'
+            description: The tariff used by the scheduler for charge optimisation, which may differ from the billing tariff. Returns a URL by default, or null if not set. Expandable with ?expand=scheduler_tariff to return a TariffBase object (additional fields may be present beyond those listed here).
+    EVSESite:
+      title: EVSESite
+      type: object
+      description: Represents a place with one or more EVSEs installed which can be accessed by multiple users.
+      required:
+      - id
+      - url
+      - evses
+      - cpms_connection
+      properties:
+        id:
+          type: string
+          pattern: site[A-Z\d]{26}
+          examples:
+          - site01JX2SZ0WAFTDYVYY0JRAYREY7
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/evse_sites/site01JX2SZ0WAFTDYVYY0JRAYREY7
+          readOnly: true
+        evses:
+          type: array
+          description: A list of all EVSEs that are currently associated with this site.
+          items:
+            type: string
+            format: uri
+            examples:
+            - https://api.ev.energy/v2/evses/evse01HSH04KDEWF6Z4DB2J77J74K5
+          readOnly: true
+        cpms_connection:
+          type:
+          - string
+          - 'null'
+          description: The type of ChargePoint Management System that this site is connected to, if there is one.
+          enum:
+          - null
+          - CHARGEPOINT
+          - SWTCH
+          readOnly: true
+        cpms_connection_display_name:
+          type:
+          - string
+          - 'null'
+          description: A human-readable name for the Chargepoint Management System that the site is connected to.
+          example: ChargePoint
+        user_connected:
+          type:
+          - boolean
+          - 'null'
+          description: When authenticated as a specific user (eg. via the Authorisation Code grant type) or when the EvEnergy-User header is set to a valid user ID, this field will indicate whether the user is currently connected to this EVSE Site's CPMS. If the request is not made in the context of a user, or the site does not have a CPMS connection, this field will be null.
+          readOnly: true
+    EVSE:
+      title: EVSE
+      description: A resource that represents a single, physical piece of hardware for supplying electricity to an electric vehicle.
+      type: object
+      x-tags:
+      - EVSEs
+      required:
+      - id
+      - url
+      - cpid
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given EVSE.
+          pattern: evse[A-Z\d]{26}
+          example: evse01HSH04KDEWF6Z4DB2J77J74K5
+          readOnly: true
+        url:
+          type: string
+          example: https://api.ev.energy/v2/evses/evse01HSH04KDEWF6Z4DB2J77J74K5
+          format: uri
+          readOnly: true
+        cpid:
+          type: string
+          description: A unique identifier for the chargepoint. The format varies by manufacturer and model.
+          example: SHIR100001
+          readOnly: true
+        model:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/evse_models/emod01HS9A004X5TB5JCMHENB5Z446
+          - $ref: '#/components/schemas/EVSEModel'
+          readOnly: true
+        user:
+          example: https://api.ev.energy/v2/users/user01HN2NJ9NMRZBXT1H6FT9N7735
+          oneOf:
+          - type: string
+            example: https://api.ev.energy/v2/users/user01HN2NJ9NMRZBXT1H6FT9N7735
+            format: uri
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        latest_status_log:
+          example: https://api.ev.energy/v2/evse/evse01HSH04KDEWF6Z4DB2J77J74K5/status_logs/2024-01-01T11:11:11.1111Z/
+          oneOf:
+          - type:
+            - string
+            - 'null'
+            example: https://api.ev.energy/v2/evse/evse01HSH04KDEWF6Z4DB2J77J74K5/status_logs/2024-01-01T11:11:11.1111Z/
+            format: uri
+          - $ref: '#/components/schemas/EVSEStatusLog'
+          description: 'An expandable reference to the most recent status log for this EVSE. This can be requested or expanded to get the most accurate information we have on the device''s current status.
+
+
+            **Inferring reachability:** v2 deliberately does not expose a discrete `online`/`offline` state on the EVSE resource — the boundary is fuzzy and prone to misuse. To decide whether an EVSE is currently reachable, expand `latest_status_log` (or fetch it separately) and compare its `sampled_at` timestamp against your own staleness threshold (for example: a charger silent for more than 15 minutes is likely unreachable).'
+          readOnly: true
+        ct_clamp:
+          oneOf:
+          - type:
+            - string
+            - 'null'
+            format: uri
+            example: https://api.ev.energy/v2/ct_clamps/ctcl01HSH04KDEWF6Z4DB2J77J74K5
+          - $ref: '#/components/schemas/CTClamp'
+          description: An expandable reference to the CT clamp associated with this EVSE. Will be null if no CT clamp is installed.
+          readOnly: true
+        lock_mode:
+          type:
+          - string
+          - 'null'
+          enum:
+          - UNLOCKED
+          - SMART
+          - LOCKED
+          - null
+          example: UNLOCKED
+          description: Lock mode of the EVSE. ``UNLOCKED`` allows free charging, ``SMART`` only allows charging within smart-charging hours, ``LOCKED`` blocks all charging.
+          readOnly: true
+        location:
+          type:
+          - object
+          - 'null'
+          properties:
+            latitude:
+              type: number
+              format: double
+              example: 51.5074
+            longitude:
+              type: number
+              format: double
+              example: -0.1278
+          required:
+          - latitude
+          - longitude
+          example:
+            latitude: 51.5074
+            longitude: -0.1278
+          description: 'The geographic location of the EVSE as a latitude/longitude point.
+
+
+            **Why smart charging needs it:** the location tells ev.energy which electricity grid the charger sits on, which drives the core smart-charging decisions:
+
+
+            - **Carbon optimisation** — selects the local carbon-intensity feed so charging is shifted to the lowest-carbon periods.
+
+            - **Timezone** — resolves the charger''s timezone so time-of-day charging schedules and tariff windows are applied in local time.
+
+            - **Programs and solar** — determines the eligible grid/demand-response programs and the relevant solar forecast.
+
+
+            Without an accurate location the scheduler cannot reliably optimise charging for cost and carbon.
+
+
+            **When it is set:** during commissioning, where the supplied postcode/address is geocoded to a latitude/longitude (or, for app-linked chargers, copied from the owner''s home location). It can be corrected later via `PATCH`. Null when the location has not yet been determined.'
+        lifecycle_state:
+          type:
+          - string
+          - 'null'
+          enum:
+          - CREATED_LINKED
+          - INSTALLED
+          - COMMISSIONED
+          - DECOMMISSIONED
+          - UNKNOWN
+          - PROBABLY_INSTALLED
+          - UNPAIRED
+          - PENDING
+          - ENROLLED
+          - null
+          example: COMMISSIONED
+          description: The most recently recorded stage of the EVSE's onboarding lifecycle. Null when no stage has been recorded for it yet, which is normal for a charger that has only just been created.
+          readOnly: true
+        charging_sub_sessions:
+          type: string
+          format: uri
+          example: https://api.ev.energy/charging_sub_sessions/?evse_id=evse01HSH04KDEWF6Z4DB2J77J74K5
+          description: Provides a pre-constructed URL to list charging sub-sessions involving this EVSE.
+    CountryCode:
+      description: ISO 3166-1 2 letter Country Codes.
+      type: string
+      enum:
+      - AD
+      - AE
+      - AF
+      - AG
+      - AI
+      - AL
+      - AM
+      - AO
+      - AQ
+      - AR
+      - AS
+      - AT
+      - AU
+      - AW
+      - AX
+      - AZ
+      - BA
+      - BB
+      - BD
+      - BE
+      - BF
+      - BG
+      - BH
+      - BI
+      - BJ
+      - BL
+      - BM
+      - BN
+      - BO
+      - BQ
+      - BR
+      - BS
+      - BT
+      - BV
+      - BW
+      - BY
+      - BZ
+      - CA
+      - CC
+      - CD
+      - CF
+      - CG
+      - CH
+      - CI
+      - CK
+      - CL
+      - CM
+      - CN
+      - CO
+      - CR
+      - CU
+      - CV
+      - CW
+      - CX
+      - CY
+      - CZ
+      - DE
+      - DJ
+      - DK
+      - DM
+      - DO
+      - DZ
+      - EC
+      - EE
+      - EG
+      - EH
+      - ER
+      - ES
+      - ET
+      - FI
+      - FJ
+      - FK
+      - FM
+      - FO
+      - FR
+      - GA
+      - GB
+      - GD
+      - GE
+      - GF
+      - GG
+      - GH
+      - GI
+      - GL
+      - GM
+      - GN
+      - GP
+      - GQ
+      - GR
+      - GS
+      - GT
+      - GU
+      - GW
+      - GY
+      - HK
+      - HM
+      - HN
+      - HR
+      - HT
+      - HU
+      - ID
+      - IE
+      - IL
+      - IM
+      - IN
+      - IO
+      - IQ
+      - IR
+      - IS
+      - IT
+      - JE
+      - JM
+      - JO
+      - JP
+      - KE
+      - KG
+      - KH
+      - KI
+      - KM
+      - KN
+      - KP
+      - KR
+      - KW
+      - KY
+      - KZ
+      - LA
+      - LB
+      - LC
+      - LI
+      - LK
+      - LR
+      - LS
+      - LT
+      - LU
+      - LV
+      - LY
+      - MA
+      - MC
+      - MD
+      - ME
+      - MF
+      - MG
+      - MH
+      - MK
+      - ML
+      - MM
+      - MN
+      - MO
+      - MP
+      - MQ
+      - MR
+      - MS
+      - MT
+      - MU
+      - MV
+      - MW
+      - MX
+      - MY
+      - MZ
+      - NA
+      - NC
+      - NE
+      - NF
+      - NG
+      - NI
+      - NL
+      - 'NO'
+      - NP
+      - NR
+      - NU
+      - NZ
+      - OM
+      - PA
+      - PE
+      - PF
+      - PG
+      - PH
+      - PK
+      - PL
+      - PM
+      - PN
+      - PR
+      - PS
+      - PT
+      - PW
+      - PY
+      - QA
+      - RE
+      - RO
+      - RS
+      - RU
+      - RW
+      - SA
+      - SB
+      - SC
+      - SD
+      - SE
+      - SG
+      - SH
+      - SI
+      - SJ
+      - SK
+      - SL
+      - SM
+      - SN
+      - SO
+      - SR
+      - SS
+      - ST
+      - SV
+      - SX
+      - SY
+      - SZ
+      - TC
+      - TD
+      - TF
+      - TG
+      - TH
+      - TJ
+      - TK
+      - TL
+      - TM
+      - TN
+      - TO
+      - TR
+      - TT
+      - TV
+      - TW
+      - TZ
+      - UA
+      - UG
+      - UM
+      - US
+      - UY
+      - UZ
+      - VA
+      - VC
+      - VE
+      - VG
+      - VI
+      - VN
+      - VU
+      - WF
+      - WS
+      - YE
+      - YT
+      - ZA
+      - ZM
+      - ZW
+    EVSEStatusLog:
+      title: EVSEStatusLog
+      description: Records the state of an EVSE at a particular point in time.
+      type: object
+      x-tags:
+      - EVSEs
+      properties:
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/evse/evse01HSH04KDEWF6Z4DB2J77J74K5/status_logs/2024-01-01T11:11:11.1111Z/
+          readOnly: true
+        sampled_at:
+          type: string
+          format: date-time
+          description: The date and time this status information was sampled on the EVSE.
+        logged_at:
+          type: string
+          format: date-time
+          description: The date and time when this data was recorded. Likely to be later than `sampled_at`, but how much later depends on the integration and other factors.
+        evse:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/evses/evse01HSH04KDEWF6Z4DB2J77J74K5
+          - $ref: '#/components/schemas/EVSE'
+        is_plugged_in:
+          type:
+          - boolean
+          - 'null'
+          description: Is there currently a vehicle connected to the EVSE? Will be null if we are unable to get this information from the EVSE integration.
+        is_charging:
+          type:
+          - boolean
+          - 'null'
+          description: Is the EVSE currently delivering charge? Will be null if we are unable to get this information from the EVSE integration.
+        charge_rate_watts:
+          type:
+          - integer
+          - 'null'
+          description: The current rate of charge delivery, in watts. Will be null if we are unable to get this information from the EVSE integration.
+        export_power_watts:
+          type:
+          - integer
+          - 'null'
+          description: Power flowing from the vehicle to the grid (V2X), in watts. Will be null when the EVSE does not report export power or is not bidirectional.
+          readOnly: true
+        control_pilot_status:
+          type:
+          - string
+          - 'null'
+          enum:
+          - A
+          - B
+          - C
+          - D
+          - E
+          - F
+          - null
+          description: "The SAE J1772 Control Pilot state of the EVSE. Will be null if we are unable to get this information from the EVSE integration.\n - `A`: Standby (no vehicle connected).\n - `B`: Vehicle detected (plugged in, not charging).\n - `C`: Ready / charging (drawing power, no ventilation required).\n - `D`: Charging with ventilation required.\n - `E`: No power (shut off).\n - `F`: Error / fault."
+          readOnly: true
+        meter_reading_watt_hours:
+          type:
+          - integer
+          - 'null'
+          description: The meter reading in watt hours. Will be null if we are unable to get this information from the EVSE integration.
+          readOnly: true
+        is_enabled:
+          type:
+          - boolean
+          - 'null'
+          description: Whether the EVSE is enabled (free-vend mode). Will be null if we are unable to get this information from the EVSE integration.
+          readOnly: true
+        max_current_rating_milliamps:
+          type:
+          - integer
+          - 'null'
+          description: The maximum current the EVSE will allow the car to draw, in milliamps. Will be null if we are unable to get this information from the EVSE integration.
+          readOnly: true
+        cable_current_rating_milliamps:
+          type:
+          - integer
+          - 'null'
+          description: The maximum current the cable is rated for, in milliamps. Will be null if we are unable to get this information from the EVSE integration.
+          readOnly: true
+        signal_strength_rssi_dbm:
+          type:
+          - integer
+          - 'null'
+          description: The signal strength (RSSI) the EVSE reported, in dBm. Will be null if we are unable to get this information from the EVSE integration.
+          readOnly: true
+        inlet_power_watts:
+          type:
+          - integer
+          - 'null'
+          description: Power measured by the EVSE at the property supply inlet, in watts. Will be null if we are unable to get this information from the EVSE integration.
+          readOnly: true
+        voltage_millivolts:
+          type:
+          - integer
+          - 'null'
+          description: Voltage measured by the EVSE, in millivolts. Will be null if we are unable to get this information from the EVSE integration.
+          readOnly: true
+        state_of_charge_percentage:
+          type:
+          - integer
+          - 'null'
+          description: Battery charge level as a percentage, as received via the EVSE. Will be null if we are unable to get this information from the EVSE integration.
+          readOnly: true
+        mode:
+          type:
+          - string
+          - 'null'
+          enum:
+          - null
+          - Unknown
+          - Idle
+          - Delay
+          - Charge
+          - Discharge
+          - FFR
+          - Load match
+          - Export match
+          - Peak time
+          - Deep sleep
+          description: Operating mode reported by the EVSE. Will be null if we are unable to get this information from the EVSE integration.
+          readOnly: true
+    LocationDetail:
+      title: Location
+      description: Extra fields only included when a single location is requested but omitted when locations are listed.
+      allOf:
+      - type: object
+        properties:
+          current_carbon_intensity_grams_per_kilowatt_hour:
+            type:
+            - integer
+            - 'null'
+            example: 300
+            description: The current carbon intensity associated with the location in gCO2/kWh.
+      - $ref: '#/components/schemas/Location'
+    PriceSummary:
+      title: PriceSummary
+      description: A single price for a certain time range.
+      type: object
+      examples:
+      - price: '0.10'
+        times:
+        - start: '18:00:00'
+          end: 00:00:00
+      x-tags:
+      - Tariffs
+      properties:
+        price:
+          type: string
+          example: '0.10'
+          description: The price is in major currency units e.g. 0.10 means £0.10.
+        times:
+          type: array
+          items:
+            $ref: '#/components/schemas/Times'
+    EVSEModel:
+      title: Model
+      description: A resource representing a model of EVSEs.
+      type: object
+      required:
+      - id
+      - url
+      - name
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given EVSE Model.
+          pattern: emod[A-Z\d]{26}
+          example: emod01HS9A004X5TB5JCMHENB5Z446
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/evse_models/emod01HS9A004X5TB5JCMHENB5Z446
+          readOnly: true
+        name:
+          type: string
+          example: EVWC2S22
+          readOnly: true
+        make:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/evse_makes/emak01HS8FRMXGE3566EDXCMWGW5W4
+          - $ref: '#/components/schemas/EVSEMake'
+        display_name:
+          type:
+          - string
+          - 'null'
+          example: EVWC2S22
+          description: The EVSE model name for in-app display. May be null if no display name has been set.
+          readOnly: true
+        onboarding_url:
+          type:
+          - string
+          - 'null'
+          example: https://api.ev.energy/v2/evse_onboarding?model_id=emod01HN2NJHAJJAQD32QJ4QXTDSGW&user_id=user01HN2NJ9NMRZBXT1H6FT9N7735&client_id=your_client_id
+          format: uri
+          description: 'A pre-constructed link to initiate onboarding for an EVSE with this model. If it is null, then we do not support intergrating with this EVSE and the user will need an integrated vehicle in order for us to be able to track their charging.
+
+
+            Your `client_id` and the user''s `user_id` are automatically included based on your authentication token. If you are using client credentials authentication, the user ID will not be automatically included unless you set the EvEnergy-User header on your request.'
+          readOnly: true
+      x-tags:
+      - EVSEs
+    Location:
+      title: Location
+      type: object
+      description: 'Location model for charging locations.
+
+
+        **Address validation:** Address fields are optional as a group, but each field independently triggers the requirement. If any of `address_1`, `address_2`, `city`, `state`, `postal_code`, `country_code`, or `coordinates` is provided with a non-null value, then `address_1`, `city`, `postal_code`, and `country_code` must all be provided as non-null values. Sending the keys with explicit `null` values is allowed and does not trigger the requirement (this is how addresses are cleared via `PATCH`). Partial addresses are rejected with a 400.
+
+        '
+      properties:
+        address_1:
+          type:
+          - string
+          - 'null'
+          description: First line of address.
+        address_2:
+          type:
+          - string
+          - 'null'
+          description: Second line of address.
+        postal_code:
+          type:
+          - string
+          - 'null'
+          description: Postal Code.
+        country_code:
+          anyOf:
+          - $ref: '#/components/schemas/CountryCode'
+          - type: 'null'
+          $ref: '#/components/schemas/CountryCode'
+        coordinates:
+          anyOf:
+          - $ref: '#/components/schemas/LatLong'
+          - type: 'null'
+        tariff:
+          oneOf:
+          - format: uri
+            type:
+            - string
+            - 'null'
+            example: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7735
+          - $ref: '#/components/schemas/Tariff'
+        city:
+          type:
+          - string
+          - 'null'
+        state:
+          type:
+          - string
+          - 'null'
+        evse_site:
+          oneOf:
+          - type:
+            - string
+            - 'null'
+          - $ref: '#/components/schemas/EVSESite'
+          description: If null, the user's location is not an EVSE Site. Otherwise, this field references the site they are a part of.
+      dependentSchemas:
+        address_1:
+          if:
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - city
+            - postal_code
+            - country_code
+            properties:
+              city:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+        address_2:
+          if:
+            properties:
+              address_2:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - city
+            - postal_code
+            - country_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              city:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+        city:
+          if:
+            properties:
+              city:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - postal_code
+            - country_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+        state:
+          if:
+            properties:
+              state:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - city
+            - postal_code
+            - country_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              city:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+        postal_code:
+          if:
+            properties:
+              postal_code:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - city
+            - country_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              city:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+        country_code:
+          if:
+            properties:
+              country_code:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - city
+            - postal_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              city:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+        coordinates:
+          if:
+            properties:
+              coordinates:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - city
+            - postal_code
+            - country_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              city:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+    CTClamp:
+      title: CTClamp
+      description: A CT (Current Transformer) clamp used to measure grid current, typically for solar charging logic.
+      type: object
+      x-tags:
+      - CT Clamps
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given CT clamp.
+          pattern: ctcl[A-Z\d]{26}
+          example: ctcl01HSH04KDEWF6Z4DB2J77J74K5
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/ct_clamps/ctcl01HSH04KDEWF6Z4DB2J77J74K5
+          readOnly: true
+        evse:
+          oneOf:
+          - type:
+            - string
+            - 'null'
+            format: uri
+            example: https://api.ev.energy/v2/evses/evse01HSH04KDEWF6Z4DB2J77J74K5
+          - $ref: '#/components/schemas/EVSE'
+          description: The EVSE associated with this CT clamp. Will be null if not linked to an EVSE.
+          readOnly: true
+        calibration_factor:
+          type: integer
+          description: Calibration multiplier for current readings. A value of -1 indicates the clamp was fitted the wrong way around.
+          example: 1
+          readOnly: true
+    TariffBase:
+      title: TariffBase
+      type: object
+      description: 'Core tariff properties shared by Tariff and expanded scheduler_tariff. Note: daily_prices and type are only available under contract. Please reach out to your account manager to find out more.'
+      x-tags:
+      - Tariffs
+      required:
+      - id
+      - url
+      - supplier
+      - name
+      - currency
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given user.
+          pattern: tari[A-Z\d]{26}
+          example: tari01HN2NJ9NMRZBXT1H6FT9N7735
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7735
+        supplier:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/suppliers/supl01HN2NJ9NMRZBXT1H6FT9N7735
+          - $ref: '#/components/schemas/Supplier'
+          description: The energy company that supplies this tariff.
+        name:
+          type: string
+          example: Fangorn Biomass
+        currency:
+          type: string
+          example: GBP
+        highlighted:
+          type: boolean
+          description: A highlighted tariff is one that is often selected by users.
+        type:
+          enum:
+          - FLAT_RATE
+          - DUAL_RATE
+          - THREE_RATE
+          - DYNAMIC
+          - EXTERNALLY_MANAGED
+          - OTHER
+        daily_prices:
+          $ref: '#/components/schemas/DailyPrices'
+          description: 'The times returned here are localised to the timezone the tariff is in.
+
+            The timezone is returned in `timezone_name`.'
+        timezone_name:
+          type: string
+          example: Europe/London
+        price_chart_url:
+          type:
+          - string
+          - 'null'
+          description: The url of a website which can display a chart of prices for the tariff. This website is an external resource and is not affiliated with ev.energy.
+          example: https://www.example.com/
+        gsp_group:
+          type:
+          - string
+          - 'null'
+          description: The GB Grid Supply Point (DNO region) the tariff applies to. Suppliers publish region-specific rates, so the same named tariff can appear once per region with differing prices; this field distinguishes them. `null` for tariffs that are not region-specific.
+          example: _C
+        valid_from:
+          type: string
+          format: date
+          description: The date from which this tariff became available to new customers.
+          example: '2026-03-17'
+        valid_until:
+          type:
+          - string
+          - 'null'
+          format: date
+          description: The date after which this tariff is no longer available to new customers (it has been superseded). `null` if the tariff is still open to new sign-ups. Use the `valid` query parameter to filter the list to only currently-available tariffs.
+          example: '2027-03-17'
+    Times:
+      title: Times
+      description: Defines a period of time.
+      type: object
+      x-tags:
+      - Tariffs
+      properties:
+        start:
+          type: string
+          example: '18:00:00'
+          pattern: \d\d:\d\d:\d\d
+        end:
+          type: string
+          example: 00:00:00
+          pattern: \d\d:\d\d:\d\d
+    User:
+      title: User
+      description: A resource that represents an individual user in the ev.energy system.
+      type: object
+      x-tags:
+      - Users
+      required:
+      - id
+      - url
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given user.
+          pattern: user[A-Z\d]{26}
+          example: user01HN2NJ9NMRZBXT1H6FT9N7735
+          readOnly: true
+        url:
+          type: string
+          example: https://api.ev.energy/v2/users/user01HN2NJ9NMRZBXT1H6FT9N7735
+          format: uri
+          readOnly: true
+        email:
+          type: string
+          format: email
+        full_name:
+          type: string
+          readOnly: true
+          description: The user's full name.
+          example: Frodo Baggins
+        joined_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: The date and time when the user joined the platform.
+          example: '2023-06-15T10:00:00Z'
+        terms_consent_datetime:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+          description: When the user gave their terms and conditions consent, or null if they have not.
+          example: '2023-06-15T10:00:00Z'
+        default_location:
+          anyOf:
+          - $ref: '#/components/schemas/Location'
+          - $ref: '#/components/schemas/LocationDetail'
+          description: LocationDetail is served when a single user is requested, otherwise Location is served for user lists.
+        vehicles:
+          type: array
+          items:
+            type: string
+            format: uri
+            example: https://api.ev.energy/v2/vehicles/vhcl01HRFF3SEVSCRAV9B3CHVDFN0H
+            readOnly: true
+          readOnly: true
+        evses:
+          type: array
+          items:
+            type: string
+            format: uri
+            example: https://api.ev.energy/v2/evses/evse01HSH04XHZCT92RN018F0236ZM
+            readOnly: true
+          readOnly: true
+    CTClampLog:
+      title: CTClampLog
+      description: Records the current measurement from a CT clamp at a particular point in time.
+      type: object
+      x-tags:
+      - CT Clamps
+      properties:
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/ct_clamps/ctcl01HSH04KDEWF6Z4DB2J77J74K5/logs/2024-04-17T09:39:45.984584Z
+          readOnly: true
+        sampled_at:
+          type: string
+          format: date-time
+          description: The date and time the current measurement was taken on the CT clamp.
+        logged_at:
+          type: string
+          format: date-time
+          description: The date and time when this data was recorded on the server.
+        ct_clamp:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/ct_clamps/ctcl01HSH04KDEWF6Z4DB2J77J74K5
+          - $ref: '#/components/schemas/CTClamp'
+          description: The CT clamp this log entry belongs to.
+        current_milliamps:
+          type: integer
+          description: The current reading in milliamps. Positive values indicate import from grid, negative values indicate export (e.g. solar generation).
+          example: 5200
+    LatLong:
+      title: LatLong
+      type: object
+      description: Coordinates model used for locations.
+      required:
+      - latitude
+      - longitude
+      properties:
+        latitude:
+          type: number
+          format: float
+          example: 51.52576576674041
+        longitude:
+          type: number
+          format: float
+          example: -0.08366433371722264
+    EVSEMake:
+      title: Make
+      description: A resource representing a manufacturer of EVSEs.
+      type: object
+      x-tags:
+      - EVSEs
+      required:
+      - id
+      - url
+      - name
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given EVSE Make.
+          pattern: emak[A-Z\d]{26}
+          example: emak01HS8FRXKJD5JZZ7ZN6W8H21P8
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/evse_makes/emak01HS8FRXKJD5JZZ7ZN6W8H21P8
+          readOnly: true
+        name:
+          type: string
+          example: BG SyncEV
+          readOnly: true
+        display_name:
+          type:
+          - string
+          - 'null'
+          example: BG SyncEV
+          description: The EVSE make name for in-app display. May be null if no display name has been set.
+          readOnly: true
+        icon:
+          type:
+          - string
+          - 'null'
+          format: uri
+          example: https://cdn.example.com/volvo.png
+          description: A url for an image of the make's logo.
+          readOnly: true
+        onboarding_url:
+          type:
+          - string
+          - 'null'
+          example: https://api.ev.energy/v2/evse_onboarding?make_id=emak01HN2NJQRGDQP0GBE1F7R6PB3D&user_id=user01HN2NJ9NMRZBXT1H6FT9N7735&client_id=your_client_id
+          description: 'A pre-constructed link to initiate onboarding for an EVSE of this make. If it is null, then it cannot be onboarded with model alone. You should filter the list of [EVSE models](ev.energy-API-v2.yaml/paths/~1evse_models/get) by this make and then have the user select their model.
+
+
+            Your `client_id` and the user''s `user_id` are automatically included based on your authentication token. If you are using client credentials authentication, the user ID will not be automatically included unless you set the EvEnergy-User header on your request.'
+          readOnly: true
+        is_beta:
+          type: boolean
+          example: false
+          description: Whether this EVSE make integration is in beta.
+          readOnly: true
+        evse_models:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/evse_models/?make_id=emak01HN2NJQRGDQP0GBE1F7R6PB3D
+          description: A pre-constructed link to a list of EVSE models filtered for this make.
+          readOnly: true
+  examples:
+    ProblemInvalidPaginationParameter:
+      value:
+        type: https://api.ev.energy/v2/problems/pagination-parameters/
+        status: 400
+        title: Invalid pagination parameter
+        detail: 'Invalid value for pagination parameter: page_size'
+    ProblemUnsupportedVersion:
+      value:
+        type: https://api.ev.energy/v2/problems/pagination-parameters/
+        status: 400
+        title: Unsupported version
+        detail: 'Unsupported version requested: 3.0'
+  headers:
+    link:
+      description: Provides links to the previous and next pages of data, if they exist.
+      example: <https://api.ev.energy/v2/vehicles?page_size=25&page_before=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="previous", <https://api.ev.energy/v2/vehicles?page_size=25&page_after=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="next"
+      schema:
+        type: string
+    x-ratelimit-remaining:
+      description: The number of requests remaining until this client's rate limit is reached.
+      schema:
+        type: number
+        default: 999
+    version-2:
+      description: Indicates the version of the API that generated this response. If EvEnergy-Version was not specified in the request, this will be your OAuth application's default version.
+      schema:
+        type: number
+        enum:
+        - 2
+    retry-after:
+      description: The number of seconds until this client's requests will not be rate limited.
+      schema:
+        type: number
+        default: 3600
+    x-ratelimit-limit:
+      description: The maximum number of requests that can be made to this endpoint per hour. Defaults to 1000 but may vary per client.
+      schema:
+        type: number
+        default: 1000
+  parameters:
+    expand-on-ctclamp:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - evse
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    sampled_at__gte:
+      name: sampled_at__gte
+      in: query
+      schema:
+        type: string
+        format: date-time
+        example: '2024-04-17T09:39:45.984584Z'
+      description: Filters for logs sampled at or after this datetime.
+    sampled_at__lte:
+      name: sampled_at__lte
+      in: query
+      schema:
+        type: string
+        format: date-time
+        example: '2024-04-17T09:39:45.984584Z'
+      description: Filters for logs sampled at or before this datetime.
+    version-2:
+      name: EvEnergy-Version
+      description: Specify the version of this endpoint to use.
+      required: false
+      in: header
+      schema:
+        type: number
+        enum:
+        - 2
+    page_size:
+      name: page_size
+      description: Specify the number of results to return per page.
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 25
+        minimum: 1
+        maximum: 100
+        example: 10
+    previous:
+      name: page_before
+      description: Return results from the page after this ID.
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[a-z]{4}[A-Z\d]{26}'
+        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
+    next:
+      name: page_after
+      description: Return results from the page before this ID.
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[a-z]{4}[A-Z\d]{26}'
+        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
+    expand-on-ctclamplog:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - ct_clamp
+          - ct_clamp.evse
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    ct_clamp_id:
+      name: ct_clamp_id
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: ctcl[A-Z\d]{26}
+        example: ctcl01HSH04KDEWF6Z4DB2J77J74K5
+      description: The ID of the specific CT clamp.
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.ev.energy/o/token/
+          refreshUrl: https://api.ev.energy/o/token/
+          scopes:
+            carbon:read: ''
+            grid:read: ''
+            evse:read: ''
+            evse:write: ''
+            vehicle:read: ''
+            user:read: ''
+            charging_session:read: ''
+            tariff:read: ''
+            tariff:prices:read: ''
+            user:write: ''
+            inverter:read: ''
+            inverter:write: ''
+            home_battery:read: ''
+            home_energy:read: ''
+            boundary_meter:read: ''
+            vehicle:write: ''
+            vehicle_catalogue:write: Update shared vehicle-catalogue reference data (e.g. a model's default connector type)
+            charging_session:write: ''
+            solar:write: ''
+            solar:read: ''
+            subscription:read: ''
+            debug:read: ''
+            dispatch_coordinator:read: ''
+            dispatch_event:write: ''
+            solar_forecast:read: ''
+            payout_method:read: Read a user's preferred payout method
+            payout_method:write: Set, update, or clear a user's preferred payout method
+            notification_preferences:read: Read a user's notification group opt-in state
+            notification_preferences:write: Update a user's notification group opt-in state
+            route_planner_preferences:read: Read a user's EV Route Planner preferences
+            route_planner_preferences:write: Update a user's EV Route Planner preferences
+            saved_routes:read: Read a user's saved route-planner routes
+            saved_routes:write: Create, update, or delete a user's saved routes
+            region:read: Read region and region group boundary data
+            region:write: Create regions and region groups
+        authorizationCode:
+          authorizationUrl: https://api.ev.energy/o/authorize/
+          tokenUrl: https://api.ev.energy/o/token/
+          refreshUrl: https://api.ev.energy/o/token/
+          scopes: {}
+x-redocly:
+  openapi:
+    hideSchemaTitles: true
+x-internal: false

@@ -1,0 +1,4611 @@
+openapi: 3.2.0
+info:
+  title: ev.energy v2 Charging Sessions API
+  version: '2.0'
+  contact:
+    email: developers@ev.energy
+    url: developers.ev.energy
+    name: ev.energy developers
+  description: The official API for ev.energy, version 2.
+  license:
+    name: Proprietary
+    url: https://ev.energy
+  termsOfService: ''
+servers:
+- url: https://api.ev.energy/v2
+  description: Live API for both production and sandbox requests.
+  x-internal: false
+- description: Staging server for internal testing only.
+  url: https://api-staging.ev.energy/v2
+  x-internal: true
+security:
+- oauth2: []
+tags:
+- name: Charging Sessions
+  description: Endpoints related to records of charging. See [Understanding charging data](docs/understanding/charging_sessions.md) for how charging sessions (plug-in episodes), charging sub-sessions (per-mode segments) and energy usage intervals (actual energy delivery) relate to each other.
+paths:
+  /charging_sessions:
+    get:
+      summary: List charging sessions
+      description: 'List all charging sessions visible to the authenticated client. Each session represents one physical plug-in episode: its start/end are the plug-in and unplug times. A session contains one or more charging sub-sessions — one per contiguous period in a single charging mode.
+
+
+        Charging sessions are recorded from the feature''s release (July 2026) onwards; earlier charging history is not backfilled and is available only as charging sub-sessions.
+
+
+        See [Understanding charging data](docs/understanding/charging_sessions.md) for how charging sessions, sub-sessions and energy usage intervals relate.'
+      tags:
+      - Charging Sessions
+      responses:
+        '200':
+          description: Returns a list of charging sessions, sorted newest first.
+          headers:
+            Link:
+              $ref: '#/components/headers/link'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChargingSession'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-charging_sessions
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/previous'
+      - $ref: '#/components/parameters/next'
+      - $ref: '#/components/parameters/page_size'
+      - $ref: '#/components/parameters/expand-on-chargingsession'
+      - $ref: '#/components/parameters/user'
+      security:
+      - oauth2:
+        - charging_session:read
+  /charging_sessions/{charging_session_id}:
+    parameters:
+    - $ref: '#/components/parameters/charging_session_id'
+    get:
+      summary: Retrieve a charging session
+      description: 'Retrieve a specific charging session representing one physical plug-in episode: its start/end are the plug-in and unplug times. See [Understanding charging data](docs/understanding/charging_sessions.md).'
+      tags:
+      - Charging Sessions
+      responses:
+        '200':
+          description: Returns a single charging session.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargingSession'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-charging_sessions-charging_session_id
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/expand-on-chargingsession'
+      - $ref: '#/components/parameters/user'
+      security:
+      - oauth2:
+        - charging_session:read
+  /charging_sessions/{charging_session_id}/boost_start:
+    parameters:
+    - $ref: '#/components/parameters/charging_session_id'
+    post:
+      summary: Start boost charging
+      tags:
+      - Charging Sessions
+      responses:
+        '200':
+          description: Boost charging was started. Returns the charging session resource.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargingSession'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '409':
+          $ref: '#/components/responses/Problem409Conflict'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+        '503':
+          $ref: '#/components/responses/Problem503ServiceUnavailable'
+      operationId: post-charging_sessions-charging_session_id-boost_start
+      description: 'Start boost charging on this charging session''s vehicle. Finishes the
+
+        in-progress smart charging sub-session and starts a replacement boost
+
+        sub-session, charging the vehicle continuously rather than around the
+
+        cheapest/greenest times. The plug-in episode (this resource) continues
+
+        unchanged.
+
+
+        Returns `409 Conflict` if smart charging is turned off for the
+
+        vehicle, or if this session''s current sub-session is not an
+
+        in-progress smart charging session that can be boosted.'
+      security:
+      - oauth2:
+        - charging_session:write
+  /charging_sessions/{charging_session_id}/boost_end:
+    parameters:
+    - $ref: '#/components/parameters/charging_session_id'
+    post:
+      summary: End boost charging
+      tags:
+      - Charging Sessions
+      responses:
+        '200':
+          description: Boost charging was ended. Returns the charging session resource.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargingSession'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '409':
+          $ref: '#/components/responses/Problem409Conflict'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+        '503':
+          $ref: '#/components/responses/Problem503ServiceUnavailable'
+      operationId: post-charging_sessions-charging_session_id-boost_end
+      description: 'End boost charging on this charging session''s vehicle. Finishes the
+
+        in-progress boost sub-session and starts a replacement smart charging
+
+        sub-session, returning the vehicle to charging around the
+
+        cheapest/greenest times. The plug-in episode (this resource) continues
+
+        unchanged.
+
+
+        Returns `409 Conflict` if smart charging is turned off for the
+
+        vehicle, or if this session''s current sub-session is not currently
+
+        boosting.'
+      security:
+      - oauth2:
+        - charging_session:write
+  /charging_sub_sessions:
+    get:
+      summary: List charging sub sessions
+      description: 'List all charging sub sessions visible to the authenticated client.
+
+
+        A charging sub-session is a segment of a plug-in episode during which a single charging mode (SMART, BOOST, etc.) was active. Its start/end mark when that mode started and stopped being active — they are not plug-in/plug-out times (see the charging_sessions resource for those), and they are not the times energy was actually flowing (see the sub-session''s energy_usage endpoint for those).
+
+
+        See [Understanding charging data](docs/understanding/charging_sessions.md) for how charging sessions, sub-sessions and energy usage intervals relate.'
+      tags:
+      - Charging Sessions
+      responses:
+        '200':
+          description: Returns a list of charging sub sessions, sorted newest first.
+          headers:
+            Link:
+              $ref: '#/components/headers/link'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChargingSubSession'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-charging_sub_sessions
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/previous'
+      - $ref: '#/components/parameters/next'
+      - $ref: '#/components/parameters/page_size'
+      - $ref: '#/components/parameters/expand-on-chargingsubsession'
+      - $ref: '#/components/parameters/evse_id_q'
+      - $ref: '#/components/parameters/vehicle_id_q'
+      - $ref: '#/components/parameters/user_id_q'
+      - $ref: '#/components/parameters/user'
+      - $ref: '#/components/parameters/energy_delivered_watt_hours__gte'
+      - $ref: '#/components/parameters/energy_delivered_watt_hours__lte'
+      - $ref: '#/components/parameters/is_finished'
+      - $ref: '#/components/parameters/mode'
+      - schema:
+          type: string
+          format: date-time
+        in: query
+        name: start__gt
+        description: Only return sessions that started after the passed date
+      - schema:
+          type: string
+          format: date-time
+        in: query
+        name: start__lt
+        description: Only return sessions that started before the passed date
+      - schema:
+          type: string
+          format: date-time
+        in: query
+        name: end__gt
+        description: Only return sessions that ended after the passed date
+      - schema:
+          type: string
+          format: date-time
+        in: query
+        name: end__lt
+        description: Only return sessions that ended before the passed date
+      security:
+      - oauth2:
+        - charging_session:read
+  /charging_sub_sessions/{charging_sub_session_id}:
+    parameters:
+    - $ref: '#/components/parameters/charging_sub_session_id'
+    get:
+      summary: Retrieve a charging sub-session
+      description: Retrieve a specific charging sub-session, representing a period of a plug-in episode during which a single charging mode was active. Its start/end mark when the mode started and stopped being active — not plug-in/plug-out times, and not when energy was actually flowing. See [Understanding charging data](docs/understanding/charging_sessions.md).
+      tags:
+      - Charging Sessions
+      responses:
+        '200':
+          description: Returns information about a single charging sub-session.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargingSubSession'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-charging_sub_sessions-charging_sub_session_id
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/expand-on-chargingsubsession'
+      security:
+      - oauth2:
+        - charging_session:read
+  /charging_sub_sessions/{charging_sub_session_id}/energy_usage:
+    parameters:
+    - $ref: '#/components/parameters/charging_sub_session_id'
+    get:
+      summary: Retrieve periodic energy usage intervals for a charging sub-session
+      description: 'Retrieve periodic energy usage intervals for a specific charging sub-session. This is the endpoint to use to find out when energy was actually delivered to the vehicle.
+
+
+        A sub-session''s start/end only mark when its charging mode was active — within that window, energy delivery may begin late (e.g. smart charging waiting for an off-peak period), finish early (e.g. the target charge level was reached), or occur in several separate bursts. The intervals returned here report the actual delivery.
+
+
+        By default, intervals are regular fixed-length periods. If you are looking for intervals that cover the whole time energy is being delivered (which are therefore of irregular length) — for example to find the actual charging windows — use the `merge_consecutive_intervals` query parameter. Gaps where no energy flowed are returned as intervals with zero energy delivered; filter them out with `energy_delivered_watt_hours__gt=0` if you only want the charging windows.
+
+
+        See [Understanding charging data](docs/understanding/charging_sessions.md) for how charging sessions, sub-sessions and energy usage intervals relate.'
+      tags:
+      - Charging Sessions
+      responses:
+        '200':
+          description: Returns information about a single charging sub-session's energy usage.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnergyUsage'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-charging_sub_sessions-charging_sub_session_id-energy_usage
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/expand-on-chargingsubsession-energyusage'
+      - $ref: '#/components/parameters/energy_delivered_watt_hours__gt'
+      - schema:
+          type: boolean
+        in: query
+        name: merge_consecutive_intervals
+        description: 'Request consecutive intervals of energy delivery (and intervals of no delivery) to be merged into combined periods of irregular length. '
+      security:
+      - oauth2:
+        - charging_session:read
+  /charging_sub_sessions/{charging_sub_session_id}/flags:
+    parameters:
+    - $ref: '#/components/parameters/charging_sub_session_id'
+    get:
+      summary: Retrieve flags for a charging sub-session
+      description: 'Retrieve flags associated with a specific charging sub-session.
+
+
+        Flags highlight particular types of issues or anomalies detected during a charging session, along with their root causes.'
+      tags:
+      - Charging Sessions
+      responses:
+        '200':
+          description: Returns the flags associated with this charging sub-session.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargingSubSessionFlags'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-charging_sub_sessions-charging_sub_session_id-flags
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/expand-on-chargingsubsession-flags'
+      security:
+      - oauth2:
+        - charging_session:read
+  /charging_sub_sessions/{charging_sub_session_id}/debug_metadata:
+    parameters:
+    - $ref: '#/components/parameters/charging_sub_session_id'
+    get:
+      summary: Retrieve debug metadata for a charging sub-session
+      description: 'Retrieve debug metadata for a specific charging sub-session.
+
+
+        Debug metadata exposes session-level diagnostic information such as start/finish reasons, the energy usage calculation and interpolation methods used, whether energy delivery was capped, and the solar integration type of the paired EVSE.'
+      tags:
+      - Charging Sessions
+      responses:
+        '200':
+          description: Returns the debug metadata associated with this charging sub-session.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargingSubSessionDebugMetadata'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-charging_sub_sessions-charging_sub_session_id-debug_metadata
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/expand-on-chargingsubsession-debug-metadata'
+      security:
+      - oauth2:
+        - debug:read
+  /charging_sub_sessions/{charging_sub_session_id}/schedules:
+    parameters:
+    - $ref: '#/components/parameters/charging_sub_session_id'
+    get:
+      summary: Retrieve schedules for a charging sub-session
+      description: 'Retrieve schedules for a specific charging sub-session.
+
+
+        Schedules represent charging instructions for a charging session. Each schedule specifies a current (in milliamps) and a time period during which that current should be applied.'
+      tags:
+      - Charging Sessions
+      responses:
+        '200':
+          description: Returns information about a single charging sub-session's schedules.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Schedules'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-charging_sub_sessions-charging_sub_session_id-schedules
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/expand-on-chargingsubsession-schedules'
+      - schema:
+          type: string
+          format: date-time
+        in: query
+        name: started_at__gte
+        description: Filter schedules with started_at greater than or equal to this datetime.
+      - schema:
+          type: string
+          format: date-time
+        in: query
+        name: started_at__lte
+        description: Filter schedules with started_at less than or equal to this datetime.
+      - schema:
+          type: string
+          pattern: scpl[A-Z\d]{26}
+          example: scpl01HSH04KDEWF6Z4DB2J77J74K5
+        in: query
+        name: schedule_plan_id
+        description: Filter schedules generated from a specific schedule plan.
+      - schema:
+          type: boolean
+          default: true
+        in: query
+        required: false
+        name: only_most_recently_created
+        description: Only show the most recently created schedule for each time period
+      security:
+      - oauth2:
+        - chargingsession:read
+  /charging_sub_sessions/{charging_sub_session_id}/schedule_plans:
+    parameters:
+    - $ref: '#/components/parameters/charging_sub_session_id'
+    get:
+      summary: Retrieve schedule plans for a charging sub-session
+      description: 'Retrieve schedule plans for a specific charging sub-session.
+
+
+        Schedule plans represent the charging plan parameters used to generate schedules for a charging session. Each plan contains information about the ready-by time, charging requirements, and constraints that were used to create the charging schedule.'
+      tags:
+      - Charging Sessions
+      responses:
+        '200':
+          description: Returns schedule plans for a charging sub-session.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchedulePlans'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-charging_sub_sessions-charging_sub_session_id-schedule_plans
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/expand-on-chargingsubsession-scheduleplans'
+      - schema:
+          type: string
+          format: date-time
+        in: query
+        name: created_at__gte
+        description: Filter schedule plans with created_at greater than or equal to this datetime.
+      - schema:
+          type: string
+          format: date-time
+        in: query
+        name: created_at__lte
+        description: Filter schedule plans with created_at less than or equal to this datetime.
+      security:
+      - oauth2:
+        - debug:read
+  /charging_sub_sessions/{charging_sub_session_id}/assessment:
+    parameters:
+    - $ref: '#/components/parameters/charging_sub_session_id'
+    get:
+      summary: Retrieve assessment for a charging sub-session
+      description: 'Retrieve the performance assessment for a specific charging sub-session.
+
+
+        The assessment contains performance metrics for completed charging sessions, including energy delivery ratios, charge rates, and detailed quality metrics.'
+      tags:
+      - Charging Sessions
+      responses:
+        '200':
+          description: Returns the assessment for a charging sub-session.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargingSubSessionAssessment'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-charging_sub_sessions-charging_sub_session_id-assessment
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/expand-on-chargingsubsession-assessment'
+      security:
+      - oauth2:
+        - debug:read
+      x-stoplight:
+        id: chargingsubsession-assessment-endpoint
+  /charging_sub_sessions/{charging_sub_session_id}/recalculate_energy_usages:
+    parameters:
+    - $ref: '#/components/parameters/charging_sub_session_id'
+    post:
+      summary: Recalculate energy usages for a charging sub-session
+      description: 'Triggers a recalculation of energy usages (and performance assessment) for a completed
+
+        charging sub-session. Use `dry_run` to preview the recalculation without persisting
+
+        changes, and `cap_overages` to control whether energy overages are capped.
+
+        '
+      tags:
+      - Charging Sessions
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dry_run:
+                  type: boolean
+                  default: false
+                  description: If true, the recalculation is simulated and no changes are persisted.
+                cap_overages:
+                  type: boolean
+                  default: true
+                  description: If true, energy overages are capped during recalculation.
+      responses:
+        '200':
+          description: 'Recalculation has been triggered (or simulated if `dry_run` was true). The
+
+            response includes the total energy delivered for the session both before and
+
+            after the recalculation so the caller can see the effect. When `dry_run` is
+
+            true, `new_energy_delivered_watt_hours` reflects the prospective value that
+
+            would result from the recalculation (no persistence).
+
+            '
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - status
+                - previous_energy_delivered_watt_hours
+                - new_energy_delivered_watt_hours
+                properties:
+                  status:
+                    type: string
+                    enum:
+                    - recalculation_triggered
+                    - dry_run_completed
+                    example: recalculation_triggered
+                  previous_energy_delivered_watt_hours:
+                    type: integer
+                    description: Total energy delivered for the session before the recalculation, in watt-hours.
+                    example: 3500
+                  new_energy_delivered_watt_hours:
+                    type: integer
+                    description: Total energy delivered for the session after the recalculation, in watt-hours. When `dry_run` is true, this is the prospective value that would result from committing.
+                    example: 4250
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: post-charging_sub_sessions-charging_sub_session_id-recalculate_energy_usages
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      security:
+      - oauth2:
+        - charging_session:write
+      x-stoplight:
+        id: chargingsubsession-recalculate-energy-usages-endpoint
+  /dispatcher_logs:
+    get:
+      summary: List dispatcher logs
+      description: List all dispatcher logs for a charging session. These logs record Dispatch Command attempts to EVSEs or Vehicles.
+      tags:
+      - Charging Sessions
+      responses:
+        '200':
+          description: Returns a list of dispatcher logs, sorted newest first.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DispatcherLog'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-dispatcher_logs
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/expand-on-dispatcherlog'
+      - name: charging_sub_session_id
+        in: query
+        required: true
+        schema:
+          type: string
+          pattern: csub[A-Z\d]{26}
+          example: csub01HSH04KDEWF6Z4DB2J77J74K5
+        description: Filter dispatcher logs to a specific charging sub-session.
+      - schema:
+          type: string
+          format: date-time
+        in: query
+        name: logged_at__gte
+        description: Only return logs that were logged at or after the passed date.
+      - schema:
+          type: string
+          format: date-time
+        in: query
+        name: logged_at__lte
+        description: Only return logs that were logged at or before the passed date.
+      security:
+      - oauth2:
+        - debug:read
+webhooks:
+  charging_sub_session.created:
+    post:
+      summary: Charging sub-session created
+      description: A charging sub-session is created, representing a period of charging in a single mode.
+      tags:
+      - Charging Sessions
+      parameters:
+      - name: svix-event-type
+        in: header
+        required: true
+        description: The event type for this webhook, always `charging_sub_session.created` for this endpoint. This matches the `type` field in the body envelope, so you can route on the header without parsing the body.
+        schema:
+          type: string
+          enum:
+          - charging_sub_session.created
+      - $ref: '#/components/parameters/svix-id'
+      - $ref: '#/components/parameters/svix-timestamp'
+      - $ref: '#/components/parameters/svix-signature'
+      requestBody:
+        description: A `{type, timestamp, data}` envelope. `data` is the created charging sub-session resource, in exactly the same format returned by `GET /v2/charging_sub_sessions/{id}`. The event type is also delivered in the `svix-event-type` header.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChargingSubSessionCreatedWebhook'
+      responses:
+        '200':
+          description: Return a 200 status to indicate that the data was received successfully.
+  charging_sub_session.ended:
+    post:
+      summary: Charging sub-session ended
+      description: A charging sub-session has ended, representing a period of charging in a single mode.
+      tags:
+      - Charging Sessions
+      parameters:
+      - name: svix-event-type
+        in: header
+        required: true
+        description: The event type for this webhook, always `charging_sub_session.ended` for this endpoint. This matches the `type` field in the body envelope, so you can route on the header without parsing the body.
+        schema:
+          type: string
+          enum:
+          - charging_sub_session.ended
+      - $ref: '#/components/parameters/svix-id'
+      - $ref: '#/components/parameters/svix-timestamp'
+      - $ref: '#/components/parameters/svix-signature'
+      requestBody:
+        description: A `{type, timestamp, data}` envelope. `data` is the ended charging sub-session resource, in exactly the same format returned by `GET /v2/charging_sub_sessions/{id}`. The event type is also delivered in the `svix-event-type` header.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChargingSubSessionEndedWebhook'
+      responses:
+        '200':
+          description: Return a 200 status to indicate that the data was received successfully.
+components:
+  parameters:
+    expand-on-chargingsession:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - vehicle
+          - evse
+          - sub_sessions
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    evse_id_q:
+      name: evse_id
+      in: query
+      schema:
+        type: string
+        pattern: evse[A-Z\d]{26}
+        example: evse01HSH04KDEWF6Z4DB2J77J74K5
+      description: Filter to only resources related to the given EVSE.
+    is_finished:
+      name: is_finished
+      in: query
+      required: false
+      schema:
+        type: boolean
+        example: false
+      description: Filters for sessions that are finished.
+    svix-id:
+      name: svix-id
+      in: header
+      required: true
+      description: Unique identifier for this webhook message. It remains stable across delivery retries of the same event, so receivers can use it to deduplicate.
+      schema:
+        type: string
+        example: msg_2eoqqPZwMlztxZbIXr0eeqYTscI
+    energy_delivered_watt_hours__gte:
+      name: energy_delivered_watt_hours__gte
+      in: query
+      schema:
+        type: integer
+        example: 500
+      description: Filters for values greater than or equal to a value.
+    user:
+      name: EvEnergy-User
+      description: If the client is authenticated using Client Credentials, setting EvEnergy-User to a valid user ID allows requests to be made as if you were directly authenticated as that user.
+      in: header
+      required: false
+      schema:
+        type: string
+        pattern: user[A-Z\d]{26}
+        example: user01HN2NJ9NMRZBXT1H6FT9N7735
+    energy_delivered_watt_hours__gt:
+      name: energy_delivered_watt_hours__gt
+      in: query
+      schema:
+        type: integer
+        example: 0
+      description: Filters for values greater than a value.
+    user_id_q:
+      name: user_id
+      in: query
+      required: false
+      schema:
+        type: string
+        example: me
+      description: Filter collection to only resources owned by a specific user.
+    expand-on-chargingsubsession-flags:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - charging_sub_session
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    charging_session_id:
+      name: charging_session_id
+      description: Uniquely identify a specific charging session.
+      in: path
+      schema:
+        type: string
+        pattern: cses[A-Z\d]{26}
+        example: cses01HSH04KDEWF6Z4DB2J77J74K5
+      required: true
+    svix-timestamp:
+      name: svix-timestamp
+      in: header
+      required: true
+      description: The time at which this webhook message was dispatched, as a Unix epoch timestamp in seconds.
+      schema:
+        type: string
+        example: '1674087231'
+    mode:
+      name: mode
+      in: query
+      required: false
+      schema:
+        type: string
+        example: SMART
+        enum:
+        - SMART
+        - BOOST
+        - UNMANAGED_HOME
+        - UNMANAGED_OTG
+        - MANAGED_OTG
+      description: Filters sessions to only return sessions with this mode.
+    expand-on-chargingsubsession-assessment:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - charging_sub_session
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    vehicle_id_q:
+      name: vehicle_id
+      in: query
+      schema:
+        type: string
+        pattern: vhcl[A-Z\d]{26}
+        example: vhcl01HRFF3SEVSCRAV9B3CHVDFN0H
+      description: Filter to only resources related to the given Vehicle.
+    expand-on-chargingsubsession-schedules:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - charging_sub_session
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    expand-on-chargingsubsession:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - evse
+          - evse.latest_status_log
+          - evse.model
+          - evse.model.make
+          - evse.user
+          - vehicle
+          - vehicle.latest_status_log
+          - vehicle.trim
+          - vehicle.trim.model
+          - vehicle.trim.model.make
+          - vehicle.user
+          - energy_usage
+          - schedules
+          - assessment
+          - flags
+          - debug_metadata
+          - tariff
+          - tariff.supplier
+          - carbon_feed
+          - grid_feeds
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    page_size:
+      name: page_size
+      description: Specify the number of results to return per page.
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 25
+        minimum: 1
+        maximum: 100
+        example: 10
+    previous:
+      name: page_before
+      description: Return results from the page after this ID.
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[a-z]{4}[A-Z\d]{26}'
+        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
+    next:
+      name: page_after
+      description: Return results from the page before this ID.
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[a-z]{4}[A-Z\d]{26}'
+        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
+    expand-on-dispatcherlog:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - charging_sub_session
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    expand-on-chargingsubsession-scheduleplans:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - charging_sub_session
+          - price_data
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    svix-signature:
+      name: svix-signature
+      in: header
+      required: true
+      description: Space-separated list of HMAC signatures used to verify that the payload was sent by ev.energy and was not tampered with. See https://docs.svix.com/receiving/verifying-payloads/how for how to verify.
+      schema:
+        type: string
+        example: v1,g0hM9SsE+OTPJTGt/tmIKtSyZlE3uFJELVlNIOLJ1OE=
+    charging_sub_session_id:
+      name: charging_sub_session_id
+      description: Uniquely identify a specific charging sub-session.
+      in: path
+      schema:
+        type: string
+        pattern: csub[A-Z\d]{26}
+        example: csub01HSH04KDEWF6Z4DB2J77J74K5
+      required: true
+    expand-on-chargingsubsession-energyusage:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - charging_sub_session
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    version-2:
+      name: EvEnergy-Version
+      description: Specify the version of this endpoint to use.
+      required: false
+      in: header
+      schema:
+        type: number
+        enum:
+        - 2
+    energy_delivered_watt_hours__lte:
+      name: energy_delivered_watt_hours__lte
+      in: query
+      schema:
+        type: integer
+        example: 500
+      description: Filters for values less than or equal to a value.
+    expand-on-chargingsubsession-debug-metadata:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - charging_sub_session
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+  schemas:
+    ChargingSubSessionAssessment:
+      title: ChargingSubSessionAssessment
+      type: object
+      description: Performance assessment for a completed charging sub-session.
+      properties:
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/charging_sub_sessions/csub01HSH04KDEWF6Z4DB2J77J74K5/assessment
+          readOnly: true
+        charging_sub_session:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/charging_sub_sessions/csub01HSH04KDEWF6Z4DB2J77J74K5
+          - $ref: '#/components/schemas/ChargingSubSession'
+          description: The parent charging sub-session. Defaults to a url, but can be expanded to the full ChargingSubSession resource via the `expand` query parameter.
+          readOnly: true
+        energy_delivered_to_capacity_percentage:
+          type:
+          - integer
+          - 'null'
+          description: Energy delivered as a percentage of battery capacity. Values above 100 indicate overdelivery.
+          example: 85
+          readOnly: true
+        energy_delivery_percentage:
+          type:
+          - integer
+          - 'null'
+          description: Energy delivered as a percentage of energy required.
+          example: 92
+          readOnly: true
+        average_charge_rate_watts:
+          type:
+          - integer
+          - 'null'
+          description: Average charge rate in watts throughout the session.
+          example: 7200
+          readOnly: true
+        max_charge_rate_watts:
+          type:
+          - integer
+          - 'null'
+          description: Maximum charge rate in watts throughout the session.
+          example: 11000
+          readOnly: true
+        metrics:
+          $ref: '#/components/schemas/ChargingSubSessionAssessmentMetrics'
+          readOnly: true
+        ratings:
+          $ref: '#/components/schemas/ChargingSubSessionAssessmentRatings'
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          description: When the assessment was last updated.
+          readOnly: true
+    Supplier:
+      title: Supplier
+      type: object
+      description: An energy company who supplies electricity tariffs.
+      required:
+      - id
+      - url
+      - name
+      - icon
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given user.
+          pattern: supl[A-Z\d]{26}
+          example: supl01HN2NJ9NMRZBXT1H6FT9N7735
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/suppliers/supl01HN2NJ9NMRZBXT1H6FT9N7735
+        name:
+          type: string
+          example: Rivendell Renewables
+        icon:
+          type:
+          - string
+          - 'null'
+          format: uri
+          example: https://cdn.example.com/rivendell_renewables.jpg
+        highlighted:
+          type: boolean
+          description: A highlighted supplier is one that is often selected by users.
+      x-tags:
+      - Tariffs
+    GridFeed:
+      title: GridFeed
+      type: object
+      description: A grid feed representing a source of grid signal data used for smart charging decisions.
+      x-tags:
+      - Grid
+      required:
+      - id
+      - url
+      - name
+      - reference_code
+      - priority
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the grid feed.
+          pattern: grfd[A-Z\d]{26}
+          example: grfd01HN2NJ9NMRZBXT1H6FT9N7735
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/grid_feeds/grfd01HN2NJ9NMRZBXT1H6FT9N7735
+          readOnly: true
+        name:
+          type: string
+          description: Human-readable name for the grid feed.
+          example: CAISO Peak Demand
+          readOnly: true
+        reference_code:
+          type: string
+          description: Machine-readable reference code for the grid feed, consistent across environments.
+          example: CAISO_PEAK
+          readOnly: true
+        priority:
+          type: integer
+          description: Priority level (1-10) used to resolve conflicts when a user has multiple overlapping grid feeds.
+          minimum: 1
+          maximum: 10
+          example: 8
+          readOnly: true
+    CarbonFeed:
+      title: CarbonFeed
+      type: object
+      description: A carbon feed representing a source of carbon intensity data for a specific region or grid.
+      x-tags:
+      - Carbon
+      required:
+      - id
+      - url
+      - name
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the carbon feed.
+          pattern: cabf[A-Z\d]{26}
+          example: cabf01HN2NJ9NMRZBXT1H6FT9N7735
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/carbon_feeds/cabf01HN2NJ9NMRZBXT1H6FT9N7735
+          readOnly: true
+        name:
+          type: string
+          description: Human-readable name for the carbon feed.
+          example: UK National Grid
+          readOnly: true
+    ChargingSubSessionAssessmentRatings:
+      title: ChargingSubSessionAssessmentRatings
+      type: object
+      description: RAG (Red/Amber/Green) quality ratings for assessment metrics. Includes an overall quality rating.
+      additionalProperties:
+        type: string
+        enum:
+        - RED
+        - AMBER
+        - GREEN
+        - NOT_APPLICABLE
+      example:
+        overall: RED
+        energy_delivered_to_capacity_ratio: RED
+        energy_delivery_ratio: RED
+        average_charge_rate_watts: AMBER
+        max_charge_rate_watts: AMBER
+        vehicle_data_uptime: GREEN
+        schedule_quality: GREEN
+        session_duration: GREEN
+    CTClamp:
+      title: CTClamp
+      description: A CT (Current Transformer) clamp used to measure grid current, typically for solar charging logic.
+      type: object
+      x-tags:
+      - CT Clamps
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given CT clamp.
+          pattern: ctcl[A-Z\d]{26}
+          example: ctcl01HSH04KDEWF6Z4DB2J77J74K5
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/ct_clamps/ctcl01HSH04KDEWF6Z4DB2J77J74K5
+          readOnly: true
+        evse:
+          oneOf:
+          - type:
+            - string
+            - 'null'
+            format: uri
+            example: https://api.ev.energy/v2/evses/evse01HSH04KDEWF6Z4DB2J77J74K5
+          - $ref: '#/components/schemas/EVSE'
+          description: The EVSE associated with this CT clamp. Will be null if not linked to an EVSE.
+          readOnly: true
+        calibration_factor:
+          type: integer
+          description: Calibration multiplier for current readings. A value of -1 indicates the clamp was fitted the wrong way around.
+          example: 1
+          readOnly: true
+    Times:
+      title: Times
+      description: Defines a period of time.
+      type: object
+      x-tags:
+      - Tariffs
+      properties:
+        start:
+          type: string
+          example: '18:00:00'
+          pattern: \d\d:\d\d:\d\d
+        end:
+          type: string
+          example: 00:00:00
+          pattern: \d\d:\d\d:\d\d
+    ChargingSession:
+      title: ChargingSession
+      type: object
+      description: Represents a single physical plug-in episode (plug in → unplug). A session may contain multiple charging sub-sessions if the charging mode changed while the vehicle was plugged in. Only recorded from the feature's release (July 2026) onwards — earlier charging history is not backfilled. See [Understanding charging data](docs/understanding/charging_sessions.md).
+      x-tags:
+      - Charging sessions
+      required:
+      - id
+      - url
+      - start
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the charging session.
+          pattern: cses[A-Z\d]{26}
+          example: cses01HSH04KDEWF6Z4DB2J77J74K5
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/charging_sessions/cses01HSH04KDEWF6Z4DB2J77J74K5
+        start:
+          type: string
+          format: date-time
+          description: When the plug-in episode began, i.e. when the vehicle was plugged in.
+          readOnly: true
+        end:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: When the plug-in episode ended, i.e. when the vehicle was unplugged. Null while the vehicle is still plugged in.
+          readOnly: true
+        vehicle:
+          oneOf:
+          - type:
+            - string
+            - 'null'
+            format: uri
+            example: https://api.ev.energy/v2/vehicles/vhcl01HRFF3SEVSCRAV9B3CHVDFN0H
+          - $ref: '#/components/schemas/Vehicle'
+        evse:
+          oneOf:
+          - type:
+            - string
+            - 'null'
+            format: uri
+            example: https://api.ev.energy/v2/evses/evse01HSH04KDEWF6Z4DB2J77J74K5
+          - $ref: '#/components/schemas/EVSE'
+        sub_sessions:
+          oneOf:
+          - type: array
+            items:
+              type: string
+              format: uri
+            example:
+            - https://api.ev.energy/v2/charging_sub_sessions/csub01HSH08F2YWBKZ9NXR7P3QD5VT
+            - https://api.ev.energy/v2/charging_sub_sessions/csub01HSH04KDEWF6Z4DB2J77J74K5
+            description: Links to sub-sessions by default.
+          - type: array
+            items:
+              $ref: '#/components/schemas/ChargingSubSession'
+            description: Expanded sub-sessions when ?expand=sub_sessions is used, ordered newest first.
+          description: Links by default, expanded data when ?expand=sub_sessions is used. Ordered newest first.
+    DailyPrices:
+      title: DailyPrices
+      description: Information about the tariff's prices for different parts of the day.
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      maxProperties: 3
+      required:
+      - peak
+      properties:
+        peak:
+          $ref: '#/components/schemas/PriceSummary'
+        mid_peak:
+          $ref: '#/components/schemas/PriceSummary'
+        off_peak:
+          $ref: '#/components/schemas/PriceSummary'
+      x-tags:
+      - Tariffs
+    Tariff:
+      title: Tariff
+      examples:
+      - id: tari01HN2NJ9NMRZBXT1H6FT9N7735
+        url: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7735
+        supplier: https://api.ev.energy/v2/suppliers/supl01HN2NJ9NMRZBXT1H6FT9N7735
+        name: Fangorn Biomass
+        currency: GBP
+        gsp_group: _C
+        valid_from: '2026-03-17'
+        valid_until: '2027-03-17'
+        daily_prices:
+          peak:
+            price: '0.30'
+            times:
+            - start: '18:00:00'
+              end: 00:00:00
+          mid_peak:
+            price: '0.20'
+            times:
+            - start: '10:00:00'
+              end: 08:00:00
+          off_peak:
+            price: '0.10'
+            times:
+            - start: 08:00:00
+              end: '18:00:00'
+        scheduler_tariff: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7835
+      description: 'Note: daily_prices and type are only available under contract. Please reach out to your account manager to find out more.'
+      x-tags:
+      - Tariffs
+      allOf:
+      - $ref: '#/components/schemas/TariffBase'
+      - type: object
+        properties:
+          scheduler_tariff:
+            oneOf:
+            - type: string
+              format: uri
+              example: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7835
+            - type: object
+              required:
+              - id
+              - url
+              - supplier
+              - name
+              - currency
+              properties:
+                id:
+                  type: string
+                  pattern: tari[A-Z\d]{26}
+                url:
+                  type: string
+                  format: uri
+                supplier:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+                currency:
+                  type: string
+              additionalProperties: true
+            - type: 'null'
+            description: The tariff used by the scheduler for charge optimisation, which may differ from the billing tariff. Returns a URL by default, or null if not set. Expandable with ?expand=scheduler_tariff to return a TariffBase object (additional fields may be present beyond those listed here).
+    EVSESite:
+      title: EVSESite
+      type: object
+      description: Represents a place with one or more EVSEs installed which can be accessed by multiple users.
+      required:
+      - id
+      - url
+      - evses
+      - cpms_connection
+      properties:
+        id:
+          type: string
+          pattern: site[A-Z\d]{26}
+          examples:
+          - site01JX2SZ0WAFTDYVYY0JRAYREY7
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/evse_sites/site01JX2SZ0WAFTDYVYY0JRAYREY7
+          readOnly: true
+        evses:
+          type: array
+          description: A list of all EVSEs that are currently associated with this site.
+          items:
+            type: string
+            format: uri
+            examples:
+            - https://api.ev.energy/v2/evses/evse01HSH04KDEWF6Z4DB2J77J74K5
+          readOnly: true
+        cpms_connection:
+          type:
+          - string
+          - 'null'
+          description: The type of ChargePoint Management System that this site is connected to, if there is one.
+          enum:
+          - null
+          - CHARGEPOINT
+          - SWTCH
+          readOnly: true
+        cpms_connection_display_name:
+          type:
+          - string
+          - 'null'
+          description: A human-readable name for the Chargepoint Management System that the site is connected to.
+          example: ChargePoint
+        user_connected:
+          type:
+          - boolean
+          - 'null'
+          description: When authenticated as a specific user (eg. via the Authorisation Code grant type) or when the EvEnergy-User header is set to a valid user ID, this field will indicate whether the user is currently connected to this EVSE Site's CPMS. If the request is not made in the context of a user, or the site does not have a CPMS connection, this field will be null.
+          readOnly: true
+    Schedules:
+      title: Schedules
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/charging_sub_sessions/csub01HSH04KDEWF6Z4DB2J77J74K5/schedules
+          readOnly: true
+        charging_sub_session:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/charging_sub_sessions/csub01HSH04KDEWF6Z4DB2J77J74K5
+          - $ref: '#/components/schemas/ChargingSubSession'
+          description: The charging sub-session these schedules belong to. Defaults to a url, but can be expanded to the full ChargingSubSession resource via the `expand` query parameter.
+          readOnly: true
+        schedules:
+          type: array
+          description: A list of schedule intervals for this charging sub-session.
+          items:
+            $ref: '#/components/schemas/ScheduleInterval'
+          readOnly: true
+    VehicleStatusLog:
+      title: VehicleStatusLog
+      description: Records the state of a Vehicle at a particular point in time.
+      type: object
+      x-tags:
+      - Vehicles
+      properties:
+        url:
+          type: string
+          example: https://api.ev.energy/v2/vehicles/vhcl01HRFF3SEVSCRAV9B3CHVDFN0H/status_logs/2024-01-01T11:11:11.1111Z/
+          format: uri
+          readOnly: true
+        logged_at:
+          type: string
+          description: The date and time this status information was received and stored.
+          format: date-time
+          readOnly: true
+        sampled_at:
+          type: string
+          format: date-time
+          description: The date and time when this data was recorded. Likely to be earlier than `logged_at`, but how much earlier depends on the integration and other factors.
+        vehicle:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/vehicles/vhcl01HRFF3SEVSCRAV9B3CHVDFN0H
+          - $ref: '#/components/schemas/Vehicle'
+        state_of_charge_percentage:
+          type:
+          - integer
+          - 'null'
+          example: 70
+          description: How full the vehicle's battery is, as a percentage. Will be null if we are unable to get this information from the vehicle's telematics.
+          readOnly: true
+        is_charging:
+          type:
+          - boolean
+          - 'null'
+          default: false
+          description: Is the vehicle currently receiving charge? Will be null if we are unable to get this information from the vehicle's telematics.
+          readOnly: true
+        is_plugged_in:
+          type:
+          - boolean
+          - 'null'
+          default: false
+          description: Is the vehicle currently connected to an EVSE? Will be null if we are unable to get this information from the vehicle's telematics.
+          readOnly: true
+        charge_rate_watts:
+          type:
+          - integer
+          - 'null'
+          description: The current rate of charge being received, in watts. Will be null if we are unable to get this information from the Vehicle integration.
+        estimated_charge_rate_watts:
+          type:
+          - integer
+          - 'null'
+          description: The charge rate in watts estimated from the change in battery charge level. Useful when the Vehicle integration does not report charge_rate_watts directly. Will be null if it cannot be estimated.
+          readOnly: true
+        charge_level_watt_hours:
+          type:
+          - integer
+          - 'null'
+          description: The battery charge level in watt hours. Will be null if we are unable to get this information from the Vehicle integration.
+          readOnly: true
+        target_charge_level_percentage:
+          type:
+          - integer
+          - 'null'
+          description: The target charge level as a percentage. Will be null if we are unable to get this information from the Vehicle integration.
+          readOnly: true
+        target_charge_level_watt_hours:
+          type:
+          - integer
+          - 'null'
+          description: The target charge level in watt hours. Will be null if we are unable to get this information from the Vehicle integration.
+          readOnly: true
+        charge_energy_added_watt_hours:
+          type:
+          - integer
+          - 'null'
+          description: The amount of energy added during the most recent charge, as reported by the vehicle, in watt hours. Will be null if we are unable to get this information from the Vehicle integration.
+          readOnly: true
+        minutes_to_full_charge:
+          type:
+          - integer
+          - 'null'
+          description: The number of minutes the vehicle predicts until it is fully charged. Will be null if we are unable to get this information from the Vehicle integration.
+          readOnly: true
+        current_type:
+          type:
+          - string
+          - 'null'
+          enum:
+          - AC - Typically home chargers
+          - DC - Typically OTG chargers
+          - null
+          description: The current type of the EVSE the vehicle is connected to (AC or DC). Will be null if we are unable to get this information from the Vehicle integration.
+          readOnly: true
+        is_complete:
+          type:
+          - boolean
+          - 'null'
+          description: Whether the vehicle has reached the target charge level. Will be null if we are unable to get this information from the Vehicle integration.
+          readOnly: true
+        odometer_meters:
+          type:
+          - integer
+          - 'null'
+          description: The vehicle's odometer reading in meters. Will be null if we are unable to get this information from the Vehicle integration.
+          readOnly: true
+        data_source:
+          type:
+          - string
+          - 'null'
+          description: The integration that originated this data.
+          readOnly: true
+        state:
+          type:
+          - string
+          - 'null'
+          enum:
+          - DRIVING
+          - RECENTLY_FINISHED_DRIVING
+          - STATIONARY
+          - IN_SERVICE
+          - PLUGGED_IN_NOT_CHARGING
+          - PLUGGED_IN_CHARGING
+          - PLUGGED_IN_COMPLETE
+          - PLUGGED_IN_NEAR_READY_BY_TIME
+          - PLUGGED_IN_ALMOST_COMPLETE
+          - UNKNOWN
+          - null
+          description: The state of the vehicle. Will be null if we are unable to get this information from the Vehicle integration.
+          readOnly: true
+    EVSEModel:
+      title: Model
+      description: A resource representing a model of EVSEs.
+      type: object
+      required:
+      - id
+      - url
+      - name
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given EVSE Model.
+          pattern: emod[A-Z\d]{26}
+          example: emod01HS9A004X5TB5JCMHENB5Z446
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/evse_models/emod01HS9A004X5TB5JCMHENB5Z446
+          readOnly: true
+        name:
+          type: string
+          example: EVWC2S22
+          readOnly: true
+        make:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/evse_makes/emak01HS8FRMXGE3566EDXCMWGW5W4
+          - $ref: '#/components/schemas/EVSEMake'
+        display_name:
+          type:
+          - string
+          - 'null'
+          example: EVWC2S22
+          description: The EVSE model name for in-app display. May be null if no display name has been set.
+          readOnly: true
+        onboarding_url:
+          type:
+          - string
+          - 'null'
+          example: https://api.ev.energy/v2/evse_onboarding?model_id=emod01HN2NJHAJJAQD32QJ4QXTDSGW&user_id=user01HN2NJ9NMRZBXT1H6FT9N7735&client_id=your_client_id
+          format: uri
+          description: 'A pre-constructed link to initiate onboarding for an EVSE with this model. If it is null, then we do not support intergrating with this EVSE and the user will need an integrated vehicle in order for us to be able to track their charging.
+
+
+            Your `client_id` and the user''s `user_id` are automatically included based on your authentication token. If you are using client credentials authentication, the user ID will not be automatically included unless you set the EvEnergy-User header on your request.'
+          readOnly: true
+      x-tags:
+      - EVSEs
+    Location:
+      title: Location
+      type: object
+      description: 'Location model for charging locations.
+
+
+        **Address validation:** Address fields are optional as a group, but each field independently triggers the requirement. If any of `address_1`, `address_2`, `city`, `state`, `postal_code`, `country_code`, or `coordinates` is provided with a non-null value, then `address_1`, `city`, `postal_code`, and `country_code` must all be provided as non-null values. Sending the keys with explicit `null` values is allowed and does not trigger the requirement (this is how addresses are cleared via `PATCH`). Partial addresses are rejected with a 400.
+
+        '
+      properties:
+        address_1:
+          type:
+          - string
+          - 'null'
+          description: First line of address.
+        address_2:
+          type:
+          - string
+          - 'null'
+          description: Second line of address.
+        postal_code:
+          type:
+          - string
+          - 'null'
+          description: Postal Code.
+        country_code:
+          anyOf:
+          - $ref: '#/components/schemas/CountryCode'
+          - type: 'null'
+          $ref: '#/components/schemas/CountryCode'
+        coordinates:
+          anyOf:
+          - $ref: '#/components/schemas/LatLong'
+          - type: 'null'
+        tariff:
+          oneOf:
+          - format: uri
+            type:
+            - string
+            - 'null'
+            example: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7735
+          - $ref: '#/components/schemas/Tariff'
+        city:
+          type:
+          - string
+          - 'null'
+        state:
+          type:
+          - string
+          - 'null'
+        evse_site:
+          oneOf:
+          - type:
+            - string
+            - 'null'
+          - $ref: '#/components/schemas/EVSESite'
+          description: If null, the user's location is not an EVSE Site. Otherwise, this field references the site they are a part of.
+      dependentSchemas:
+        address_1:
+          if:
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - city
+            - postal_code
+            - country_code
+            properties:
+              city:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+        address_2:
+          if:
+            properties:
+              address_2:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - city
+            - postal_code
+            - country_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              city:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+        city:
+          if:
+            properties:
+              city:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - postal_code
+            - country_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+        state:
+          if:
+            properties:
+              state:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - city
+            - postal_code
+            - country_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              city:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+        postal_code:
+          if:
+            properties:
+              postal_code:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - city
+            - country_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              city:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+        country_code:
+          if:
+            properties:
+              country_code:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - city
+            - postal_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              city:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+        coordinates:
+          if:
+            properties:
+              coordinates:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - city
+            - postal_code
+            - country_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              city:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+    ChargingSubSession:
+      title: SubSession
+      type: object
+      description: Represents a period within a charging session (one plug-in episode) when the same charging mode was active. Begins either when a vehicle is plugged in or when it switches mode (eg. from smart to boost) and ends either when the vehicle is unplugged or the mode switches again. Note that start/end bound the period the mode was active — not when energy was actually flowing. Energy may be delivered during only part of the sub-session, or in several separate bursts (see the energy_usage endpoint). See [Understanding charging data](docs/understanding/charging_sessions.md).
+      x-tags:
+      - Charging sessions
+      required:
+      - id
+      - url
+      - start
+      - end
+      - mode
+      - energy_delivered_watt_hours
+      - location
+      - cost
+      - currency
+      - total_co2_grams
+      - co2_intensity_grams_per_kilowatt_hour
+      - co2_intensity_classification
+      - duration_minutes
+      - grid_energy_delivered_watt_hours
+      - solar_energy_delivered_watt_hours
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given Charging sub-session.
+          pattern: csub[A-Z\d]{26}
+          example: csub01HSH04KDEWF6Z4DB2J77J74K5
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/charging_sub_sessions/csub01HSH04KDEWF6Z4DB2J77J74K5
+        start:
+          type: string
+          format: date-time
+          description: When this sub-session began — either when the vehicle was plugged in, or when the charging mode changed (e.g. the user activated boost). Not necessarily when energy started flowing; see the energy_usage endpoint for actual delivery intervals.
+          readOnly: true
+        end:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: When this sub-session ended — either when the vehicle was unplugged, or when the charging mode changed again. Null while the sub-session is ongoing. Energy delivery often finishes well before this time (e.g. once the target charge level is reached).
+          readOnly: true
+        mode:
+          enum:
+          - SMART
+          - BOOST
+          - UNMANAGED_HOME
+          - UNMANAGED_OTG
+          - MANAGED_OTG
+          description: 'The type of scheduling applied during this period.
+
+
+            SMART: Actively optimised charging
+
+
+            BOOST: Charge immediately
+
+
+            UNMANAGED_HOME: No optimisation, at a home location
+
+
+            UNMANAGED_OTG: No optimisation, at an on-the-go (public) location
+
+
+            MANAGED_OTG: Optimised charging at an on-the-go (public) location'
+          readOnly: true
+        vehicle:
+          oneOf:
+          - type:
+            - string
+            - 'null'
+            example: https://api.ev.energy/v2/vehicles/vhcl01HRFF3SEVSCRAV9B3CHVDFN0H
+            format: uri
+          - $ref: '#/components/schemas/Vehicle'
+        evse:
+          oneOf:
+          - type:
+            - string
+            - 'null'
+            example: https://api.ev.energy/v2/evses/evse01HSH04KDEWF6Z4DB2J77J74K5
+            format: uri
+          - $ref: '#/components/schemas/EVSE'
+        energy_delivered_watt_hours:
+          type: integer
+          example: 2300
+          description: Net energy delivered to the vehicle during this sub-session in Wh.
+          readOnly: true
+        cost:
+          type:
+          - integer
+          - 'null'
+          example: 634
+          readOnly: true
+        location:
+          type: object
+          properties:
+            name:
+              type: string
+              example: Home
+              readOnly: true
+            coordinates:
+              type: object
+              $ref: '#/components/schemas/LatLong'
+              description: Can be null
+            postal_code:
+              type:
+              - string
+              - 'null'
+              maxLength: 10
+            address_1:
+              type:
+              - string
+              - 'null'
+            timezone:
+              type:
+              - string
+              - 'null'
+              example: Europe/London
+              description: IANA timezone name for the charging location.
+        percentage_added:
+          type:
+          - number
+          - 'null'
+          example: 30
+          readOnly: true
+        currency:
+          type: string
+          example: GBP
+          readOnly: true
+        savings_cost:
+          type:
+          - integer
+          - 'null'
+          description: Cost Savings in Minor Unit of Currency.
+          readOnly: true
+        savings_co2_grams:
+          type:
+          - integer
+          - 'null'
+          description: Savings of Carbon in Grams of CO2.
+          readOnly: true
+        incentive_earned:
+          type:
+          - integer
+          - 'null'
+          example: 99
+          description: Incentive earned in minor unit of currency.
+          readOnly: true
+        total_co2_grams:
+          type:
+          - integer
+          - 'null'
+          description: Estimated total CO2 emissions of this sub-session in grams
+        co2_intensity_grams_per_kilowatt_hour:
+          type:
+          - integer
+          - 'null'
+          description: Estimated CO2 emissions per unit of electricity in grams per kilowatt hour
+        co2_intensity_classification:
+          oneOf:
+          - enum:
+            - very low
+            - low
+            - moderate
+            - high
+            - very high
+          - type: 'null'
+          description: Classification of the estimated CO2 intensity value. Can be null.
+          readOnly: true
+        cost_per_kilowatt_hour:
+          type:
+          - integer
+          - 'null'
+          description: Average cost per kilowatt hour of energy delivered during this charging sub-session
+        total_points:
+          type: integer
+          description: Number of smart points earned during this charging sub-session
+        total_points_missed:
+          type:
+          - integer
+          - 'null'
+          description: Difference between the number of smart points earned in this sub-session and the number that would have been earned by Smart charging
+        duration_minutes:
+          type: integer
+          description: How long the vehicle was actively charging for, to the nearest minute. This can be much shorter than the gap between start and end, and does not tell you when within the sub-session energy was delivered — use the energy_usage endpoint for that.
+        grid_energy_delivered_watt_hours:
+          type:
+          - integer
+          - 'null'
+          description: Grid energy delivered during this charging sub-session in watt hours (Wh).
+          readOnly: true
+        solar_energy_delivered_watt_hours:
+          type:
+          - integer
+          - 'null'
+          description: Solar energy delivered during this charging sub-session in watt hours (Wh).
+          readOnly: true
+        labels:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+            enum:
+            - OUTSIDE
+            - OFF_PEAK
+            - SUMMER_PEAK
+            - MIXED
+            - OTHER
+            - PRIMARY
+            - AWAY
+            - CONED
+            - ORU
+          description: Labels categorizing this charging sub-session (e.g., service territory, pricing period).
+          readOnly: true
+        energy_usage:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/charging_sub_sessions/csub01HSH04KDEWF6Z4DB2J77J74K5/energy_usage
+            readOnly: true
+          - $ref: '#/components/schemas/EnergyUsage'
+          description: A link to more detailed information about energy usage during the charging sub-session, including the intervals in which energy was actually delivered to the vehicle. Can be expanded.
+        schedules:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/charging_sub_sessions/csub01HSH04KDEWF6Z4DB2J77J74K5/schedules
+            readOnly: true
+          - $ref: '#/components/schemas/Schedules'
+          description: A link to schedule information for the charging sub-session. Can be expanded.
+          readOnly: true
+        assessment:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/charging_sub_sessions/csub01HSH04KDEWF6Z4DB2J77J74K5/assessment
+            readOnly: true
+          - $ref: '#/components/schemas/ChargingSubSessionAssessment'
+          description: A link to the performance assessment for this charging sub-session. Can be expanded. Requires debug:read scope.
+          readOnly: true
+        flags:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/charging_sub_sessions/csub01HSH04KDEWF6Z4DB2J77J74K5/flags
+            readOnly: true
+          - $ref: '#/components/schemas/ChargingSubSessionFlags'
+          description: A link to flags associated with this charging sub-session. Can be expanded.
+          readOnly: true
+        debug_metadata:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/charging_sub_sessions/csub01HSH04KDEWF6Z4DB2J77J74K5/debug_metadata
+            readOnly: true
+          - $ref: '#/components/schemas/ChargingSubSessionDebugMetadata'
+          description: A link to debug metadata for this charging sub-session. Can be expanded. Requires debug:read scope.
+          readOnly: true
+        tariff:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7735
+          - $ref: '#/components/schemas/Tariff'
+          - type: 'null'
+          description: The electricity import tariff. Expandable with ?expand=tariff. Requires tariff:read scope.
+          readOnly: true
+        carbon_feed:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/carbon_feeds/cabf01HN2NJ9NMRZBXT1H6FT9N7735
+          - $ref: '#/components/schemas/CarbonFeed'
+          - type: 'null'
+          description: The carbon feed used to calculate carbon intensity for this sub-session. Expandable with ?expand=carbon_feed. Requires carbon:read scope.
+          readOnly: true
+        grid_feeds:
+          oneOf:
+          - type: array
+            items:
+              type: string
+              format: uri
+              example: https://api.ev.energy/v2/grid_feeds/grfd01HN2NJ9NMRZBXT1H6FT9N7735
+          - type: array
+            items:
+              $ref: '#/components/schemas/GridFeed'
+          description: Grid feeds applied to this sub-session. Expandable with ?expand=grid_feeds. Requires grid:read scope.
+          readOnly: true
+        solar_mode_type:
+          type:
+          - string
+          - 'null'
+          enum:
+          - 'OFF'
+          - SOLAR_ONLY
+          - SOLAR_AND_GRID
+          - SOLAR_SMART
+          - null
+          description: The solar charging mode active for this sub-session. Null when solar charging is not configured.
+          readOnly: true
+        grid_energy_delivered:
+          type: string
+          format: decimal
+          deprecated: true
+          description: Use `grid_energy_delivered_watt_hours` instead
+          readOnly: true
+        solar_energy_delivered:
+          type: string
+          format: decimal
+          deprecated: true
+          description: Use `solar_energy_delivered_watt_hours` instead.
+          readOnly: true
+    SchedulePlan:
+      title: SchedulePlan
+      type: object
+      description: A schedule plan containing the parameters used to generate charging schedules.
+      properties:
+        id:
+          type: string
+          pattern: scpl[A-Z\d]{26}
+          example: scpl01HSH04KDEWF6Z4DB2J77J74K5
+          description: Unique identifier for this schedule plan.
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          example: '2024-01-01T02:00:00Z'
+          description: When this schedule plan was created.
+          readOnly: true
+        ready_by_time:
+          type: string
+          format: date-time
+          example: '2024-01-01T08:00:00Z'
+          description: The target time by which charging should be complete.
+          readOnly: true
+        price_threshold_minor_unit:
+          type:
+          - integer
+          - 'null'
+          example: 1500
+          description: Price threshold in minor currency units (e.g., cents/pence) multiplied by 100. For example, 1500 represents 15 pence (£0.15), and 50 represents 0.5 pence (£0.005). Null if no threshold set.
+          readOnly: true
+        power_on_current_milliamps:
+          type: integer
+          example: 32000
+          description: The charging current in milliamps when power is on.
+          readOnly: true
+        power_off_current_milliamps:
+          type: integer
+          example: 0
+          description: The current in milliamps when power is off (typically 0).
+          readOnly: true
+        seconds_to_charge:
+          type: integer
+          example: 10800
+          description: The number of seconds required to complete charging.
+          readOnly: true
+        vehicle_charge_level_watt_hours:
+          type:
+          - integer
+          - 'null'
+          example: 25000
+          description: The vehicle's battery level in watt-hours at the time the plan was created. Null if unknown.
+          readOnly: true
+        estimated_charge_rate_watts:
+          type: integer
+          example: 7400
+          description: The estimated charging rate in watts.
+          readOnly: true
+        estimated_charge_rate_source:
+          type:
+          - string
+          - 'null'
+          enum:
+          - CURRENT_SESSION_EVSE_DATA_LOGS
+          - CURRENT_SESSION_VEHICLE_DATA_LOGS
+          - ENERGY_TRANSFER_PERIODS
+          - DEFAULT_CHARGE_RATE
+          - MAX_EVSE_CHARGE_RATE
+          - MAX_VEHICLE_CHARGE_RATE
+          - null
+          description: The source of data used for estimating charge rate. Null if not specified.
+          readOnly: true
+        watt_hours_to_charge:
+          type: integer
+          example: 22000
+          description: The total energy required to complete charging in watt-hours.
+          readOnly: true
+        min_charge_limit_percent:
+          type: integer
+          minimum: 0
+          maximum: 100
+          example: 0
+          description: The minimum charge limit as a percentage (0-100).
+          readOnly: true
+        max_charge_limit_percent:
+          type: integer
+          minimum: 0
+          maximum: 100
+          example: 80
+          description: The maximum charge limit as a percentage (0-100).
+          readOnly: true
+        price_data:
+          oneOf:
+          - type: 'null'
+          - type: array
+            items:
+              $ref: '#/components/schemas/Price'
+          description: Tariff rate intervals active when this schedule plan was created. Null by default; expand with ?expand=price_data to populate. Returns null if no tariff is associated with the session.
+          readOnly: true
+    Vehicle:
+      title: Vehicle
+      description: A resource representing a single, physical electric vehicle.
+      type: object
+      x-tags:
+      - Vehicles
+      required:
+      - id
+      - url
+      - integrated
+      - battery_size_watt_hours
+      - effective_battery_size_watt_hours
+      - maximum_charge_limit_percentage
+      - description
+      - disabled
+      - smart_charging_enabled
+      - vehicle_class
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given Vehicle.
+          pattern: vhcl[A-Z\d]{26}
+          example: vhcl01HRFF3SEVSCRAV9B3CHVDFN0H
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/vehicles/vhcl01HRFF3SEVSCRAV9B3CHVDFN0H
+          readOnly: true
+        trim:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/trim/vehicle_trim01HRFHBCM7VBSWRPVYFBQMH2BR
+          - $ref: '#/components/schemas/VehicleTrim'
+          description: Defaults to a url, but can be expanded to the full Trim resource via the `expand` query parameter.
+          readOnly: true
+        user:
+          example: https://api.ev.energy/v2/users/user01HN2NJ9NMRZBXT1H6FT9N7735
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/user/user01HN2NJ9NMRZBXT1H6FT9N7735
+          - $ref: '#/components/schemas/User'
+          description: Defaults to a url, but can be expanded to the full User resource via the `expand` query parameter.
+        latest_status_log:
+          example: https://api.ev.energy/v2/vehicles/vhcl01HRFF3SEVSCRAV9B3CHVDFN0H/status_logs/2024-04-17T09:39:45.994584Z/
+          oneOf:
+          - type:
+            - string
+            - 'null'
+            example: https://api.ev.energy/v2/vehicles/vhcl01HRFF3SEVSCRAV9B3CHVDFN0H/status_logs/2024-04-17T09:39:45.994584Z/
+            format: uri
+          - $ref: '#/components/schemas/VehicleStatusLog'
+          description: An expandable reference to the most recent status log for this Vehicle. This can be requested or expanded to get the most accurate information we have on the device's current status.
+        charging_sub_sessions:
+          type: string
+          format: uri
+          example: https://api.ev.energy/charging_sub_sessions/?vehicle_id=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H
+          description: Provides a pre-constructed URL to list charging sub-sessions involving this Vehicle.
+        integrated:
+          enum:
+          - UNINTEGRATED
+          - ACTIVE
+          - INACTIVE
+          description: 'Whether we have an integration with this vehicle.
+
+            - `UNINTEGRATED`: This vehicle is not integrated
+
+            - `ACTIVE`: This vehicle is integrated and the connection is working.
+
+            - `INACTIVE`: This vehicle has been integrated but the connection has been severed, usually because the user needs to reconnect it.'
+          readOnly: true
+        battery_size_watt_hours:
+          type: integer
+          minimum: 1000
+          maximum: 300000
+          description: The nominal battery capacity of the vehicle in watt-hours according to the vehicle integration or trim. Editable via PATCH only for unintegrated vehicles; sending it for an integrated vehicle is rejected. Setting it flags the battery size as user-provided. Stored to the nearest 0.01 kWh (10 Wh), so the value read back may be rounded.
+          example: 60000
+        effective_battery_size_watt_hours:
+          type: integer
+          description: The effective battery capacity of the vehicle in watt-hours, accounting for estimated degradation based on odometer reading. This is the value used by the smart charging scheduler.
+          readOnly: true
+          example: 60000
+        maximum_charge_limit_percentage:
+          type: integer
+          minimum: 50
+          maximum: 100
+          description: The target state of charge of the car as a percentage between 50 and 100. The car will not be smart charged above this value. Can be null if target charge level has not been set or we don't know the car's battery size.
+          default: 100
+        description:
+          type: string
+          maxLength: 200
+          description: Human-readable label for the vehicle.
+          example: My Volvo C40
+          readOnly: true
+        disabled:
+          type: boolean
+          description: 'Whether the vehicle has been disabled and can no longer be smart-charged or controlled. Set when the user unenrolls the vehicle, when an integrated vehicle is switched to unintegrated (''dumb''), or when the owning account is pending deletion. Disabled vehicles that have not been permanently deleted are still returned by this endpoint. This is independent of integrated: a disabled vehicle can still report integrated=ACTIVE (e.g. pending deletion), and a healthy never-integrated vehicle is not disabled.'
+          example: false
+          readOnly: true
+        smart_charging_enabled:
+          type: boolean
+          description: Whether smart (dynamic) charging is enabled for this vehicle.
+          example: true
+        vehicle_class:
+          type:
+          - string
+          - 'null'
+          enum:
+          - PASSENGER
+          - COMMERCIAL
+          - null
+          description: Class of vehicle, passenger or commercial.
+          example: PASSENGER
+    ChargingSubSessionEndedWebhook:
+      title: Charging Sub Session Ended Webhook
+      description: Webhook payload delivered when a charging sub-session ends.
+      type: object
+      required:
+      - type
+      - timestamp
+      - data
+      properties:
+        type:
+          type: string
+          enum:
+          - charging_sub_session.ended
+          description: The event type. Also delivered in the `svix-event-type` header.
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 UTC timestamp for when the event occurred.
+        data:
+          description: The ended charging sub-session, in the same format returned by `GET /v2/charging_sub_sessions/{id}`.
+          allOf:
+          - $ref: '#/components/schemas/ChargingSubSession'
+      examples:
+      - type: charging_sub_session.ended
+        timestamp: '2022-11-03T20:26:10.344522Z'
+        data:
+          id: csub01HSH04KDEWF6Z4DB2J77J74K5
+          url: https://api.ev.energy/v2/charging_sub_sessions/csub01HSH04KDEWF6Z4DB2J77J74K5
+          start: '2019-08-24T14:15:22Z'
+          end: '2019-08-24T15:15:22Z'
+          mode: SMART
+          energy_delivered_watt_hours: 2300
+          location:
+            name: Home
+          cost: 634
+          currency: GBP
+          total_co2_grams: 229
+          co2_intensity_grams_per_kilowatt_hour: 1
+          co2_intensity_classification: low
+          duration_minutes: 60
+          grid_energy_delivered_watt_hours: 1840
+          solar_energy_delivered_watt_hours: 460
+    ChargingSessionFlag:
+      title: ChargingSessionFlag
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name describing the type of issue flagged. New values may be added over time.
+          example: ENERGY_OVER_DELIVERY
+        root_cause:
+          type: string
+          description: Category describing the root cause of the issue. New values may be added over time.
+          example: CHARGE_MEASUREMENT_OSCILLATION
+      required:
+      - name
+      - root_cause
+    ChargingSubSessionAssessmentMetrics:
+      title: ChargingSubSessionAssessmentMetrics
+      type: object
+      description: Performance quality metrics for a charging session assessment. All fields are nullable.
+      properties:
+        vehicle_data_uptime:
+          type:
+          - integer
+          - 'null'
+          description: Vehicle data uptime as a percentage (0-100).
+          example: 95
+        vehicle_location_uptime:
+          type:
+          - integer
+          - 'null'
+          description: Vehicle location uptime as a percentage (0-100).
+          example: 90
+        vehicle_error_rate:
+          type:
+          - integer
+          - 'null'
+          description: Vehicle error rate as a percentage (0-100).
+          example: 2
+        vehicle_command_adherence:
+          type:
+          - integer
+          - 'null'
+          description: Vehicle command adherence as a percentage (0-100).
+          example: 88
+        evse_data_uptime:
+          type:
+          - integer
+          - 'null'
+          description: EVSE data uptime as a percentage (0-100).
+          example: 98
+        evse_command_adherence:
+          type:
+          - integer
+          - 'null'
+          description: EVSE command adherence as a percentage (0-100).
+          example: 92
+        schedule_quality:
+          type:
+          - integer
+          - 'null'
+          description: Time that schedule requested charging but no charge occurred as a percentage (0-100).
+          example: 85
+        charge_outside_of_schedule:
+          type:
+          - integer
+          - 'null'
+          description: Energy usage outside of schedule as a percentage (0-100).
+          example: 5
+        session_duration:
+          type:
+          - integer
+          - 'null'
+          description: Session duration.
+          example: 28800
+        energy_delivered_vs_required:
+          type:
+          - integer
+          - 'null'
+          description: Energy delivered vs required as a percentage (0-100).
+          example: 95
+        savings_attainment_rate:
+          type:
+          - integer
+          - 'null'
+          description: Savings achieved compared to theoretical maximum as a percentage (0-100).
+          example: 78
+        session_savings_range:
+          type:
+          - integer
+          - 'null'
+          description: Difference between maximum and minimum theoretical session costs (units of currency).
+          example: 30
+        charge_energy_added_meter_reset:
+          type:
+          - boolean
+          - 'null'
+          description: Whether a charge energy added meter reset was detected.
+          example: false
+        charge_energy_added_oscillation_count:
+          type:
+          - integer
+          - 'null'
+          description: Number of charge energy added oscillations.
+          example: 0
+        charge_level_oscillation_count:
+          type:
+          - integer
+          - 'null'
+          description: Number of charge level oscillations.
+          example: 1
+        charge_location_data_at_session_start_minutes:
+          type:
+          - integer
+          - 'null'
+          description: Age of charge location data at session start, in minutes.
+          example: 5
+        last_location_update_implied_velocity_kmh:
+          type:
+          - integer
+          - 'null'
+          description: Implied velocity from last location update, in km/h.
+          example: 0
+        distance_from_home_meters:
+          type:
+          - integer
+          - 'null'
+          description: Distance from home in meters.
+          example: 15
+        missing_location:
+          type:
+          - boolean
+          - 'null'
+          description: Whether location data is missing.
+          example: false
+        vehicle_median_data_gap_duration_minutes:
+          type:
+          - integer
+          - 'null'
+          description: Median vehicle data gap duration in minutes.
+          example: 3
+        vehicle_max_data_gap_duration_minutes:
+          type:
+          - integer
+          - 'null'
+          description: Maximum vehicle data gap duration in minutes.
+          example: 12
+        vehicle_data_frequency_below_threshold:
+          type:
+          - integer
+          - 'null'
+          description: Vehicle data frequency below threshold as a percentage (0-100).
+          example: 8
+        evse_median_data_gap_duration_minutes:
+          type:
+          - integer
+          - 'null'
+          description: Median EVSE data gap duration in minutes.
+          example: 2
+        evse_max_data_gap_duration_minutes:
+          type:
+          - integer
+          - 'null'
+          description: Maximum EVSE data gap duration in minutes.
+          example: 8
+        evse_data_frequency_below_threshold:
+          type:
+          - integer
+          - 'null'
+          description: EVSE data frequency below threshold as a percentage (0-100).
+          example: 5
+        charge_rate_max_mad_score:
+          type:
+          - integer
+          - 'null'
+          description: Maximum MAD score for charge rate.
+          example: 3
+        charge_rate_max_median_ratio:
+          type:
+          - integer
+          - 'null'
+          description: Charge rate max to median ratio as a percentage (0-100).
+          example: 140
+    DispatcherLog:
+      title: DispatcherLog
+      type: object
+      description: Records when a Dispatch Command was sent to an EVSE or Vehicle.
+      x-tags:
+      - Charging Sessions
+      properties:
+        logged_at:
+          type: string
+          format: date-time
+          description: The date and time when the dispatch command was logged.
+          readOnly: true
+        charging_sub_session:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/charging_sub_sessions/csub01HSH04KDEWF6Z4DB2J77J74K5
+          - $ref: '#/components/schemas/ChargingSubSession'
+          description: The charging sub-session associated with this dispatch log.
+          readOnly: true
+        schedule_valid_period_start:
+          type: string
+          format: date-time
+          description: The start of the validity period for the schedule that generated this dispatch command.
+          readOnly: true
+        schedule_created_at:
+          type: string
+          format: date-time
+          description: When the schedule that generated this dispatch command was created.
+          readOnly: true
+        internal_command_id:
+          type: string
+          format: uuid
+          description: Internal identifier for tracking the dispatch command.
+          example: 12345678-1234-5678-1234-567812345678
+          readOnly: true
+        device_type:
+          type: string
+          enum:
+          - EVSE
+          - VEHICLE
+          description: The type of device the Dispatch Command was sent to.
+          readOnly: true
+        reason_not_sent:
+          type:
+          - string
+          - 'null'
+          description: If the dispatch command was not sent, provides a reason.
+          readOnly: true
+    UsageInterval:
+      title: UsageInterval
+      type: object
+      properties:
+        interval_seconds:
+          type: integer
+          description: The number of seconds that this interval lasts for.
+          readOnly: true
+        started_at:
+          type: string
+          format: date-time
+          description: When this interval began.
+          readOnly: true
+        total_energy_delivered_watt_hours:
+          type: integer
+          description: The total number of watt hours delivered during the interval.
+          readOnly: true
+        meter_usage_watt_hours:
+          type: integer
+          nullable: true
+          description: An estimate of the supply meter usage in watt hours during the interval, accounting for charging system losses between the supply meter and the EVSE/Vehicle. Null when not available.
+          readOnly: true
+        alt_usage_watt_hours:
+          type: integer
+          nullable: true
+          description: Counterfactual energy usage in watt hours. Represents the estimated energy that would have been delivered during this interval if the vehicle had charged immediately without managed charging. Null when not available.
+          readOnly: true
+        percentage_import:
+          type: integer
+          nullable: true
+          minimum: 0
+          maximum: 100
+          description: The percentage of energy imported from the grid during this interval (0-100). Used for calculating costs with home solar.
+          readOnly: true
+        electricity_cost_sub_unit:
+          type: string
+          format: decimal
+          nullable: true
+          description: The electricity rate for this interval, in the smallest sub-unit of the currency (e.g. pence/kWh, cents/kWh). For merged intervals with multiple pricing tiers, this is the sum of the distinct rate values.
+          readOnly: true
+        energy_delivered_by_price:
+          type: object
+          $ref: '#/components/schemas/EnergyDeliveredByPrice'
+          description: Energy delivered during the interval, broken down by the price paid for that energy. For example, if half the period was at peak price (50p) and half at off-peak price (20p), this field would contain an entry for 20p and an entry for 50p with the total energy delivered at each price. Note that prices are always quoted in the smallest sub-unit of the currency. (Ie. cents for USD, pence for GBP.)
+          readOnly: true
+    CountryCode:
+      description: ISO 3166-1 2 letter Country Codes.
+      type: string
+      enum:
+      - AD
+      - AE
+      - AF
+      - AG
+      - AI
+      - AL
+      - AM
+      - AO
+      - AQ
+      - AR
+      - AS
+      - AT
+      - AU
+      - AW
+      - AX
+      - AZ
+      - BA
+      - BB
+      - BD
+      - BE
+      - BF
+      - BG
+      - BH
+      - BI
+      - BJ
+      - BL
+      - BM
+      - BN
+      - BO
+      - BQ
+      - BR
+      - BS
+      - BT
+      - BV
+      - BW
+      - BY
+      - BZ
+      - CA
+      - CC
+      - CD
+      - CF
+      - CG
+      - CH
+      - CI
+      - CK
+      - CL
+      - CM
+      - CN
+      - CO
+      - CR
+      - CU
+      - CV
+      - CW
+      - CX
+      - CY
+      - CZ
+      - DE
+      - DJ
+      - DK
+      - DM
+      - DO
+      - DZ
+      - EC
+      - EE
+      - EG
+      - EH
+      - ER
+      - ES
+      - ET
+      - FI
+      - FJ
+      - FK
+      - FM
+      - FO
+      - FR
+      - GA
+      - GB
+      - GD
+      - GE
+      - GF
+      - GG
+      - GH
+      - GI
+      - GL
+      - GM
+      - GN
+      - GP
+      - GQ
+      - GR
+      - GS
+      - GT
+      - GU
+      - GW
+      - GY
+      - HK
+      - HM
+      - HN
+      - HR
+      - HT
+      - HU
+      - ID
+      - IE
+      - IL
+      - IM
+      - IN
+      - IO
+      - IQ
+      - IR
+      - IS
+      - IT
+      - JE
+      - JM
+      - JO
+      - JP
+      - KE
+      - KG
+      - KH
+      - KI
+      - KM
+      - KN
+      - KP
+      - KR
+      - KW
+      - KY
+      - KZ
+      - LA
+      - LB
+      - LC
+      - LI
+      - LK
+      - LR
+      - LS
+      - LT
+      - LU
+      - LV
+      - LY
+      - MA
+      - MC
+      - MD
+      - ME
+      - MF
+      - MG
+      - MH
+      - MK
+      - ML
+      - MM
+      - MN
+      - MO
+      - MP
+      - MQ
+      - MR
+      - MS
+      - MT
+      - MU
+      - MV
+      - MW
+      - MX
+      - MY
+      - MZ
+      - NA
+      - NC
+      - NE
+      - NF
+      - NG
+      - NI
+      - NL
+      - 'NO'
+      - NP
+      - NR
+      - NU
+      - NZ
+      - OM
+      - PA
+      - PE
+      - PF
+      - PG
+      - PH
+      - PK
+      - PL
+      - PM
+      - PN
+      - PR
+      - PS
+      - PT
+      - PW
+      - PY
+      - QA
+      - RE
+      - RO
+      - RS
+      - RU
+      - RW
+      - SA
+      - SB
+      - SC
+      - SD
+      - SE
+      - SG
+      - SH
+      - SI
+      - SJ
+      - SK
+      - SL
+      - SM
+      - SN
+      - SO
+      - SR
+      - SS
+      - ST
+      - SV
+      - SX
+      - SY
+      - SZ
+      - TC
+      - TD
+      - TF
+      - TG
+      - TH
+      - TJ
+      - TK
+      - TL
+      - TM
+      - TN
+      - TO
+      - TR
+      - TT
+      - TV
+      - TW
+      - TZ
+      - UA
+      - UG
+      - UM
+      - US
+      - UY
+      - UZ
+      - VA
+      - VC
+      - VE
+      - VG
+      - VI
+      - VN
+      - VU
+      - WF
+      - WS
+      - YE
+      - YT
+      - ZA
+      - ZM
+      - ZW
+    ScheduleInterval:
+      title: ScheduleInterval
+      description: A schedule interval represents a charging instruction for a specific time period within a charging session. It specifies the charging current (in milliamps) that should be applied during that period.
+      type: object
+      x-tags:
+      - Schedules
+      properties:
+        started_at:
+          type: string
+          format: date-time
+          example: '2024-01-01T02:00:00Z'
+          description: The start time of the period this schedule applies to. Always aligned to half-hour boundaries (:00 or :30).
+          readOnly: true
+        interval_seconds:
+          type:
+          - integer
+          - 'null'
+          example: 1800
+          description: The duration of this schedule in seconds. Currently always 1800 seconds (30 minutes), or null for boost sessions which have no defined end time.
+          readOnly: true
+        current_milliamps:
+          type: integer
+          example: 7400
+          description: The charging current in milliamps that should be applied during this period. A value of 0 means no charging.
+          readOnly: true
+        schedule_type:
+          type: string
+          example: SMART
+          enum:
+          - INITIAL_CHARGE_TIME
+          - BATTERY_WARMING
+          - SMART
+          - BOOST
+          - SOLAR_ONLY
+          - SOLAR_SMART
+          - V2G_DISCHARGE
+          - V2G_CHARGEBACK
+          - LEGACY
+          description: 'The type of scheduling that generated this instruction.
+
+
+            - INITIAL_CHARGE_TIME: Initial charge to condition the battery
+
+            - BATTERY_WARMING: Pre-warming the hour before the ready-by-time
+
+            - SMART: Optimised smart charging
+
+            - BOOST: Immediate charging at maximum rate
+
+            - SOLAR_ONLY: Charging only from solar generation
+
+            - SOLAR_SMART: Combined solar and smart charging
+
+            - V2G_DISCHARGE: Vehicle-to-grid discharge
+
+            - V2G_CHARGEBACK: Charging back after V2G discharge
+
+            - LEGACY: Legacy schedules from before type tracking'
+          readOnly: true
+        dispatched_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          example: '2024-01-01T02:00:15Z'
+          description: When this schedule was last sent to the device. Null if not yet dispatched.
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          example: '2024-01-01T01:55:00Z'
+          description: When this schedule was created.
+          readOnly: true
+    EVSEStatusLog:
+      title: EVSEStatusLog
+      description: Records the state of an EVSE at a particular point in time.
+      type: object
+      x-tags:
+      - EVSEs
+      properties:
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/evse/evse01HSH04KDEWF6Z4DB2J77J74K5/status_logs/2024-01-01T11:11:11.1111Z/
+          readOnly: true
+        sampled_at:
+          type: string
+          format: date-time
+          description: The date and time this status information was sampled on the EVSE.
+        logged_at:
+          type: string
+          format: date-time
+          description: The date and time when this data was recorded. Likely to be later than `sampled_at`, but how much later depends on the integration and other factors.
+        evse:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/evses/evse01HSH04KDEWF6Z4DB2J77J74K5
+          - $ref: '#/components/schemas/EVSE'
+        is_plugged_in:
+          type:
+          - boolean
+          - 'null'
+          description: Is there currently a vehicle connected to the EVSE? Will be null if we are unable to get this information from the EVSE integration.
+        is_charging:
+          type:
+          - boolean
+          - 'null'
+          description: Is the EVSE currently delivering charge? Will be null if we are unable to get this information from the EVSE integration.
+        charge_rate_watts:
+          type:
+          - integer
+          - 'null'
+          description: The current rate of charge delivery, in watts. Will be null if we are unable to get this information from the EVSE integration.
+        export_power_watts:
+          type:
+          - integer
+          - 'null'
+          description: Power flowing from the vehicle to the grid (V2X), in watts. Will be null when the EVSE does not report export power or is not bidirectional.
+          readOnly: true
+        control_pilot_status:
+          type:
+          - string
+          - 'null'
+          enum:
+          - A
+          - B
+          - C
+          - D
+          - E
+          - F
+          - null
+          description: "The SAE J1772 Control Pilot state of the EVSE. Will be null if we are unable to get this information from the EVSE integration.\n - `A`: Standby (no vehicle connected).\n - `B`: Vehicle detected (plugged in, not charging).\n - `C`: Ready / charging (drawing power, no ventilation required).\n - `D`: Charging with ventilation required.\n - `E`: No power (shut off).\n - `F`: Error / fault."
+          readOnly: true
+        meter_reading_watt_hours:
+          type:
+          - integer
+          - 'null'
+          description: The meter reading in watt hours. Will be null if we are unable to get this information from the EVSE integration.
+          readOnly: true
+        is_enabled:
+          type:
+          - boolean
+          - 'null'
+          description: Whether the EVSE is enabled (free-vend mode). Will be null if we are unable to get this information from the EVSE integration.
+          readOnly: true
+        max_current_rating_milliamps:
+          type:
+          - integer
+          - 'null'
+          description: The maximum current the EVSE will allow the car to draw, in milliamps. Will be null if we are unable to get this information from the EVSE integration.
+          readOnly: true
+        cable_current_rating_milliamps:
+          type:
+          - integer
+          - 'null'
+          description: The maximum current the cable is rated for, in milliamps. Will be null if we are unable to get this information from the EVSE integration.
+          readOnly: true
+        signal_strength_rssi_dbm:
+          type:
+          - integer
+          - 'null'
+          description: The signal strength (RSSI) the EVSE reported, in dBm. Will be null if we are unable to get this information from the EVSE integration.
+          readOnly: true
+        inlet_power_watts:
+          type:
+          - integer
+          - 'null'
+          description: Power measured by the EVSE at the property supply inlet, in watts. Will be null if we are unable to get this information from the EVSE integration.
+          readOnly: true
+        voltage_millivolts:
+          type:
+          - integer
+          - 'null'
+          description: Voltage measured by the EVSE, in millivolts. Will be null if we are unable to get this information from the EVSE integration.
+          readOnly: true
+        state_of_charge_percentage:
+          type:
+          - integer
+          - 'null'
+          description: Battery charge level as a percentage, as received via the EVSE. Will be null if we are unable to get this information from the EVSE integration.
+          readOnly: true
+        mode:
+          type:
+          - string
+          - 'null'
+          enum:
+          - null
+          - Unknown
+          - Idle
+          - Delay
+          - Charge
+          - Discharge
+          - FFR
+          - Load match
+          - Export match
+          - Peak time
+          - Deep sleep
+          description: Operating mode reported by the EVSE. Will be null if we are unable to get this information from the EVSE integration.
+          readOnly: true
+    LocationDetail:
+      title: Location
+      description: Extra fields only included when a single location is requested but omitted when locations are listed.
+      allOf:
+      - type: object
+        properties:
+          current_carbon_intensity_grams_per_kilowatt_hour:
+            type:
+            - integer
+            - 'null'
+            example: 300
+            description: The current carbon intensity associated with the location in gCO2/kWh.
+      - $ref: '#/components/schemas/Location'
+    PriceSummary:
+      title: PriceSummary
+      description: A single price for a certain time range.
+      type: object
+      examples:
+      - price: '0.10'
+        times:
+        - start: '18:00:00'
+          end: 00:00:00
+      x-tags:
+      - Tariffs
+      properties:
+        price:
+          type: string
+          example: '0.10'
+          description: The price is in major currency units e.g. 0.10 means £0.10.
+        times:
+          type: array
+          items:
+            $ref: '#/components/schemas/Times'
+    VehicleMake:
+      title: VehicleMake
+      description: A resource representing a vehicle manufacturer.
+      type: object
+      x-tags:
+      - Vehicles
+      required:
+      - id
+      - url
+      - name
+      - icon
+      - onboarding_url
+      - models
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given Vehicle Make.
+          pattern: vmak[A-Z\d]{26}
+          example: vmak01HRFHBCM7VBSWRPVYFBQMH2BR
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/vehicle_makes/vmak01HRFHBCM7VBSWRPVYFBQMH2BR
+          readOnly: true
+        name:
+          type: string
+          example: Volvo
+          readOnly: true
+        icon:
+          type:
+          - string
+          - 'null'
+          format: uri
+          example: https://cdn.example.com/volvo.png
+          description: A url for an image of the make's logo.
+          readOnly: true
+        onboarding_url:
+          type:
+          - string
+          - 'null'
+          example: https://api.ev.energy/v2/vehicle_onboarding/?make_id=vmak01HN2P75GBNFRJPCZJXEFVXH5E&user_id=user01HN2NJ9NMRZBXT1H6FT9N7735&client_id=your_client_id
+          description: 'A pre-constructed link to initiate onboarding for a vehicle of this make. If it is null, then it cannot be onboarded with make alone. You should filter the list of [vehicle models](ev.energy-API-v2.yaml/paths/~1vehicle_models/get) by this make and then have the user select their model.
+
+
+            Your `client_id` and the user''s `user_id` are automatically included based on your authentication token. If you are using client credentials authentication, the user ID will not be automatically included unless you set the EvEnergy-User header on your request.'
+          readOnly: true
+        models:
+          type: string
+          format: uri
+          example: https://api.ev.energy/vehicle_models?make_id=vmak01HN2P75GBNFRJPCZJXEFVXH5E
+          description: A pre-constructed link to a list of vehicle models filtered for this make.
+          readOnly: true
+        subscription_name:
+          type:
+          - string
+          - 'null'
+          description: Full OEM telematics subscription name required for vehicle connectivity (e.g. 'Volkswagen We Connect ID'). Null if no subscription is required.
+          example: Volkswagen We Connect ID
+          readOnly: true
+        subscription_package:
+          type:
+          - string
+          - 'null'
+          description: Specific OEM subscription package required (e.g. 'We Connect ID'). Null if no subscription is required.
+          example: We Connect ID
+          readOnly: true
+    VehicleModel:
+      title: VehicleModel
+      description: A resource representing a model of vehicle.
+      type: object
+      x-tags:
+      - Vehicles
+      required:
+      - id
+      - url
+      - name
+      - default_battery_size_watt_hours
+      - default_connector_type
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given Vehicle Model.
+          pattern: vmod[A-Z\d]{26}
+          example: vmod01HSBR8Z36GD7A46K7M4R12VG0
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/vehicle_models/vmod01HSBR8Z36GD7A46K7M4R12VG0
+          readOnly: true
+        name:
+          type: string
+          example: C40
+          readOnly: true
+        make:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/vehicle_makes/vmak01HRFHBCM7VBSWRPVYFBQMH2BR
+          - $ref: '#/components/schemas/VehicleMake'
+        onboarding_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+          example: https://api.ev.energy/v2/vehicle_onboarding?model_id=vmod01HN2P436099PEQ20B7TKPGTEJ&user_id=user01HN2NJ9NMRZBXT1H6FT9N7735&client_id=your_client_id
+          description: 'A pre-constructed link to initiate onboarding for a vehicle of this model. If it is null, then it cannot be onboarded with model alone. You should filter the list of [vehicle trims](ev.energy-API-v2.yaml/paths/~1vehicle_trims/get) by this model and then have the user select their trim.
+
+
+            Your `client_id` and the user''s `user_id` are automatically included based on your authentication token. If you are using client credentials authentication, the user ID will not be automatically included unless you set the EvEnergy-User header on your request.'
+        vehicle_trims:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/vehicle_trims?model_id=vmod01HN2P436099PEQ20B7TKPGTEJ
+          description: 'A pre-constructed link to a list of vehicle trims filtered for this model.
+
+            '
+          readOnly: true
+        default_battery_size_watt_hours:
+          type: integer
+          description: Default battery size in watt-hours for this model, derived from the most common battery size across trims. Falls back to 45000 Wh if no trim data exists.
+          example: 79000
+          readOnly: true
+        default_connector_type:
+          type:
+          - string
+          - 'null'
+          enum:
+          - CCS
+          - NACS
+          - CHADEMO
+          - null
+          description: 'Default charging connector type for this model, used to pre-fill
+
+            connector selection during vehicle onboarding. Null when not yet
+
+            known. Editable via PATCH with the `vehicle_catalogue:write` scope.'
+    EnergyDeliveredByPrice:
+      title: EnergyDeliveredByPrice
+      type: object
+      properties:
+        price:
+          type: string
+          description: The price paid for the energy in the smallest unit of the currency.
+          example: '21.3'
+          format: decimal
+        energy_delivered_watt_hours:
+          type: integer
+          example: 1800
+    VehicleTrim:
+      title: VehicleTrim
+      description: A resource representing a "trim level" of a particular vehicle model, which captures a specific set of features.
+      type: object
+      x-tags:
+      - Vehicles
+      required:
+      - id
+      - url
+      - name
+      - onboarding_url
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given Vehicle Trim.
+          pattern: trim[A-Z\d]{26}
+          example: trim01HRFHBCM7VBSWRPVYFBQMH2BR
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/vehicle_trim/trim01HRFHBCM7VBSWRPVYFBQMH2BR
+          readOnly: true
+        name:
+          type: string
+          example: Recharge Core (69 kWh)
+          readOnly: true
+        model:
+          oneOf:
+          - type: string
+            format: uri
+          - $ref: '#/components/schemas/VehicleModel'
+        battery_size_watt_hours:
+          type:
+          - integer
+          - 'null'
+          description: Battery size in watt-hours. null if not known for this trim.
+          example: 75500
+          readOnly: true
+        onboarding_url:
+          type:
+          - string
+          - 'null'
+          example: https://api.ev.energy/v2/vehicle_onboarding?trim_id=trim01HN2NZ1040Y8E77CQGXADC2TZ&user_id=user01HN2NJ9NMRZBXT1H6FT9N7735&client_id=your_client_id
+          format: uri
+          description: 'A pre-constructed link to initiate onboarding for a vehicle with this trim. If it is null, then we do not support intergrating with this vehicle and you should POST the trim to [/vehicles](ev.energy-API-v2.yaml/paths/~1vehicles/post) to create an unintegrated vehicle.
+
+
+            Your `client_id` and the user''s `user_id` are automatically included based on your authentication token. If you are using client credentials authentication, the user ID will not be automatically included unless you set the EvEnergy-User header on your request.'
+          readOnly: true
+    RFC9457ProblemDetail:
+      title: RFC 9457 Problem Detail
+      x-tags:
+      - problems
+      type: object
+      required:
+      - title
+      - detail
+      properties:
+        type:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/problems/example-problem/
+        status:
+          type: number
+          example: 400
+        title:
+          type: string
+          example: Short description
+        detail:
+          type: string
+          example: Long, more specific description.
+        instance:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
+        notification:
+          $ref: '#/components/schemas/Notification'
+      examples:
+      - type: https://api.ev.energy/v2/problems/example-problem/
+        status: 400
+        title: Short description
+        detail: Long, more specific description.
+        instance: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
+        notification:
+          id: notf01HTHKTXVB77901324BCQPF1RB
+          url: https://api.ev.energy/notifications/notf01HTHKTXVB77901324BCQPF1RB
+          message_id: ERR0123
+          category: ACTIONABLE
+          event_time: '2019-08-24T14:15:22Z'
+          short_text_title: Your car is disconnected
+          short_text_body: We need to reconnect to keep smart charging your car
+          detail_page_title: Your car is disconnected
+          detail_page_body: Your car has been disconnected. This happens when your password is reset. We need you to re-authorise ev.energy to access your account in order for us to keep managing your charging. Blah blah blah.
+          external_link: http://example.com
+          external_button_label: More info
+          read_at: '2019-08-24T14:20:22Z'
+          resolved_at: '2019-08-25T14:15:22Z'
+    Notification:
+      title: Notification
+      description: Something that the user should be informed about.
+      type: object
+      examples:
+      - id: notf67O36PLTFDB57M0E5L33JZLGM0
+        url: https://api.ev.energy/notifications/notf67O36PLTFDB57M0E5L33JZLGM0
+        message_id: ERR0123
+        category: ACTIONABLE
+        event_time: '2019-08-24T14:15:22Z'
+        short_text_title: Your car is disconnected
+        short_text_body: We need to reconnect to keep smart charging your car
+        detail_page_title: Your car is disconnected
+        detail_page_body: Your car has been disconnected. This happens when your password is reset. We need you to re-authorise ev.energy to access your account in order for us to keep managing your charging. Blah blah blah.
+        external_link: http://example.com
+        external_button_label: More info
+        read_at: '2019-08-24T14:20:22Z'
+        resolved_at: '2019-08-25T14:15:22Z'
+      required:
+      - id
+      - url
+      - message_id
+      - category
+      - event_time
+      - short_text_title
+      - short_text_body
+      - detail_page_title
+      - detail_page_body
+      - external_link
+      - external_button_label
+      properties:
+        id:
+          type: string
+          pattern: notf[A-Z\d]{26}
+          example: notf67O36PLTFDB57M0E5L33JZLGM0
+          description: Unique identifier for the Notification
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/notifications/notf67O36PLTFDB57M0E5L33JZLGM0
+        message_id:
+          type: string
+          description: Internal identifier for this notification type. E.g. 'ERR0023'
+        category:
+          description: Category of this notification type
+          enum:
+          - ACTIONABLE
+          - SERVICE
+          - RETRY
+          - MARKETING
+          - INTERNAL
+        event_time:
+          type: string
+          format: date-time
+          description: The timestamp of the event described by this notification
+        short_text_title:
+          type: string
+          description: Short title for the notification
+          maxLength: 33
+        short_text_body:
+          type: string
+          description: Short description of the event being notified
+          maxLength: 49
+        detail_page_title:
+          type: string
+          description: Title of a help page giving more information about this notification
+        detail_page_body:
+          type: string
+          description: Text of a help page giving more information about this notification
+        external_link:
+          type:
+          - string
+          - 'null'
+          description: URL of a web page giving further information about this notification
+          format: uri
+        external_button_label:
+          type: string
+          description: Text to be displayed on a button leading to the external_link location
+        read_at:
+          type: string
+          format: date-time
+          description: When the user examined the contents of this notification
+        resolved_at:
+          type: string
+          format: date-time
+          description: When the problem associated with this notification was resolved
+    Price:
+      title: Price
+      type: object
+      description: A price for a specific time interval.
+      x-tags:
+      - Tariffs
+      required:
+      - started_at
+      - interval_seconds
+      - price_minor_units
+      properties:
+        started_at:
+          type: string
+          format: date-time
+          description: When this price interval began (ISO 8601 datetime).
+          example: '2024-01-15T10:00:00Z'
+          readOnly: true
+        interval_seconds:
+          type: integer
+          description: The duration of this price interval in seconds.
+          example: 1800
+          readOnly: true
+        price_minor_units:
+          type: integer
+          description: The price in minor currency units (e.g., pence for GBP).
+          example: 10
+          readOnly: true
+    EVSE:
+      title: EVSE
+      description: A resource that represents a single, physical piece of hardware for supplying electricity to an electric vehicle.
+      type: object
+      x-tags:
+      - EVSEs
+      required:
+      - id
+      - url
+      - cpid
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given EVSE.
+          pattern: evse[A-Z\d]{26}
+          example: evse01HSH04KDEWF6Z4DB2J77J74K5
+          readOnly: true
+        url:
+          type: string
+          example: https://api.ev.energy/v2/evses/evse01HSH04KDEWF6Z4DB2J77J74K5
+          format: uri
+          readOnly: true
+        cpid:
+          type: string
+          description: A unique identifier for the chargepoint. The format varies by manufacturer and model.
+          example: SHIR100001
+          readOnly: true
+        model:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/evse_models/emod01HS9A004X5TB5JCMHENB5Z446
+          - $ref: '#/components/schemas/EVSEModel'
+          readOnly: true
+        user:
+          example: https://api.ev.energy/v2/users/user01HN2NJ9NMRZBXT1H6FT9N7735
+          oneOf:
+          - type: string
+            example: https://api.ev.energy/v2/users/user01HN2NJ9NMRZBXT1H6FT9N7735
+            format: uri
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        latest_status_log:
+          example: https://api.ev.energy/v2/evse/evse01HSH04KDEWF6Z4DB2J77J74K5/status_logs/2024-01-01T11:11:11.1111Z/
+          oneOf:
+          - type:
+            - string
+            - 'null'
+            example: https://api.ev.energy/v2/evse/evse01HSH04KDEWF6Z4DB2J77J74K5/status_logs/2024-01-01T11:11:11.1111Z/
+            format: uri
+          - $ref: '#/components/schemas/EVSEStatusLog'
+          description: 'An expandable reference to the most recent status log for this EVSE. This can be requested or expanded to get the most accurate information we have on the device''s current status.
+
+
+            **Inferring reachability:** v2 deliberately does not expose a discrete `online`/`offline` state on the EVSE resource — the boundary is fuzzy and prone to misuse. To decide whether an EVSE is currently reachable, expand `latest_status_log` (or fetch it separately) and compare its `sampled_at` timestamp against your own staleness threshold (for example: a charger silent for more than 15 minutes is likely unreachable).'
+          readOnly: true
+        ct_clamp:
+          oneOf:
+          - type:
+            - string
+            - 'null'
+            format: uri
+            example: https://api.ev.energy/v2/ct_clamps/ctcl01HSH04KDEWF6Z4DB2J77J74K5
+          - $ref: '#/components/schemas/CTClamp'
+          description: An expandable reference to the CT clamp associated with this EVSE. Will be null if no CT clamp is installed.
+          readOnly: true
+        lock_mode:
+          type:
+          - string
+          - 'null'
+          enum:
+          - UNLOCKED
+          - SMART
+          - LOCKED
+          - null
+          example: UNLOCKED
+          description: Lock mode of the EVSE. ``UNLOCKED`` allows free charging, ``SMART`` only allows charging within smart-charging hours, ``LOCKED`` blocks all charging.
+          readOnly: true
+        location:
+          type:
+          - object
+          - 'null'
+          properties:
+            latitude:
+              type: number
+              format: double
+              example: 51.5074
+            longitude:
+              type: number
+              format: double
+              example: -0.1278
+          required:
+          - latitude
+          - longitude
+          example:
+            latitude: 51.5074
+            longitude: -0.1278
+          description: 'The geographic location of the EVSE as a latitude/longitude point.
+
+
+            **Why smart charging needs it:** the location tells ev.energy which electricity grid the charger sits on, which drives the core smart-charging decisions:
+
+
+            - **Carbon optimisation** — selects the local carbon-intensity feed so charging is shifted to the lowest-carbon periods.
+
+            - **Timezone** — resolves the charger''s timezone so time-of-day charging schedules and tariff windows are applied in local time.
+
+            - **Programs and solar** — determines the eligible grid/demand-response programs and the relevant solar forecast.
+
+
+            Without an accurate location the scheduler cannot reliably optimise charging for cost and carbon.
+
+
+            **When it is set:** during commissioning, where the supplied postcode/address is geocoded to a latitude/longitude (or, for app-linked chargers, copied from the owner''s home location). It can be corrected later via `PATCH`. Null when the location has not yet been determined.'
+        lifecycle_state:
+          type:
+          - string
+          - 'null'
+          enum:
+          - CREATED_LINKED
+          - INSTALLED
+          - COMMISSIONED
+          - DECOMMISSIONED
+          - UNKNOWN
+          - PROBABLY_INSTALLED
+          - UNPAIRED
+          - PENDING
+          - ENROLLED
+          - null
+          example: COMMISSIONED
+          description: The most recently recorded stage of the EVSE's onboarding lifecycle. Null when no stage has been recorded for it yet, which is normal for a charger that has only just been created.
+          readOnly: true
+        charging_sub_sessions:
+          type: string
+          format: uri
+          example: https://api.ev.energy/charging_sub_sessions/?evse_id=evse01HSH04KDEWF6Z4DB2J77J74K5
+          description: Provides a pre-constructed URL to list charging sub-sessions involving this EVSE.
+    ChargingSubSessionDebugMetadata:
+      title: ChargingSubSessionDebugMetadata
+      type: object
+      description: Session-level diagnostic information for a charging sub-session.
+      properties:
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/charging_sub_sessions/csub01HSH04KDEWF6Z4DB2J77J74K5/debug_metadata
+          readOnly: true
+        charging_sub_session:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/charging_sub_sessions/csub01HSH04KDEWF6Z4DB2J77J74K5
+            readOnly: true
+          - $ref: '#/components/schemas/ChargingSubSession'
+          description: The charging sub-session this debug metadata belongs to. Expandable.
+        start_reason:
+          oneOf:
+          - type: string
+            enum:
+            - BOOST_START
+            - SMART_CHARGE_ENABLED
+            - SMART_CHARGE_DISABLED
+            - SOLAR_SETTINGS
+            - ADMIN_CREATE_FAKE
+            - ADMIN_IMPORT_CSV
+            - REPROCESS_VEHICLEDATALOGS_CMD
+            - SFTP_IMPORTER
+            - EVSE_CONNECT
+            - CP_EVSE_CONNECT
+            - VEHICLE_LOG_CONNECT
+            - USER_SETTINGS
+          - type: 'null'
+          description: The reason the session was started. New values may be added over time.
+          readOnly: true
+        finish_reason:
+          oneOf:
+          - type: string
+            enum:
+            - BOOST_START
+            - SMART_CHARGE_ENABLED
+            - SMART_CHARGE_DISABLED
+            - SOLAR_SETTINGS
+            - ADMIN_ACTION
+            - FAKE_CURRENT_CHARGING_CMD
+            - REPROCESS_VEHICLEDATALOGS_CMD
+            - SFTP_IMPORTER
+            - INVALIDATE_ACCOUNT
+            - REMOVE_INTEGRATION
+            - EVSE_UNPAIR
+            - EVSE_DISCONNECT
+          - type: 'null'
+          description: The reason the session finished. New values may be added over time.
+          readOnly: true
+        is_energy_delivered_capped:
+          type: boolean
+          description: Indicates whether delivered energy was capped to prevent unrealistic over-delivery beyond the vehicle's battery capacity.
+          readOnly: true
+        uncapped_energy_delivered_watt_hours:
+          oneOf:
+          - type: integer
+          - type: 'null'
+          description: The recalculated energy in watt-hours that would have been delivered without capping. Null when energy delivery was not capped or when recalculation cannot be completed.
+          readOnly: true
+        energy_usage_calculation_method:
+          type: string
+          enum:
+          - ESTIMATED_CHARGE_ENERGY_ADDED
+          - ESTIMATED_CHARGE_LEVEL
+          - ESTIMATED_CHARGE_RATE
+          - METERED
+          - METERED_CHARGE_RATE
+          - BETA_ESTIMATED_CHARGE_ENERGY_ADDED
+          - ESTIMATED_CHARGE_LEVEL_WITH_INFERENCE
+          - MANUAL_ENTRY
+          description: The method used to calculate energy usage for this session.
+          readOnly: true
+        energy_usage_interpolation_method:
+          type: string
+          enum:
+          - LINEAR
+          - LINEAR_WITH_CHARGE_STEP
+          description: The method used to interpolate data readings when calculating energy usage.
+          readOnly: true
+        solar_integration_type:
+          oneOf:
+          - type: string
+            enum:
+            - UNAVAILABLE
+            - HARDWARE
+            - SOFTWARE
+            - SOFTWARE_BETA
+            - HARDWARE_PASSTHROUGH
+          - type: 'null'
+          description: The solar integration type of the EVSE paired with this session. Null when no EVSE is associated with the session.
+          readOnly: true
+      required:
+      - url
+      - charging_sub_session
+      - start_reason
+      - finish_reason
+      - is_energy_delivered_capped
+      - uncapped_energy_delivered_watt_hours
+      - energy_usage_calculation_method
+      - energy_usage_interpolation_method
+      - solar_integration_type
+    SchedulePlans:
+      title: SchedulePlans
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/charging_sub_sessions/csub01HSH04KDEWF6Z4DB2J77J74K5/schedule_plans
+          readOnly: true
+        charging_sub_session:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/charging_sub_sessions/csub01HSH04KDEWF6Z4DB2J77J74K5
+          - $ref: '#/components/schemas/ChargingSubSession'
+          description: The charging sub-session these schedule plans belong to. Defaults to a url, but can be expanded to the full ChargingSubSession resource via the `expand` query parameter.
+          readOnly: true
+        schedule_plans:
+          type: array
+          description: A list of schedule plans for this charging sub-session.
+          items:
+            $ref: '#/components/schemas/SchedulePlan'
+          readOnly: true
+    TariffBase:
+      title: TariffBase
+      type: object
+      description: 'Core tariff properties shared by Tariff and expanded scheduler_tariff. Note: daily_prices and type are only available under contract. Please reach out to your account manager to find out more.'
+      x-tags:
+      - Tariffs
+      required:
+      - id
+      - url
+      - supplier
+      - name
+      - currency
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given user.
+          pattern: tari[A-Z\d]{26}
+          example: tari01HN2NJ9NMRZBXT1H6FT9N7735
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7735
+        supplier:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/suppliers/supl01HN2NJ9NMRZBXT1H6FT9N7735
+          - $ref: '#/components/schemas/Supplier'
+          description: The energy company that supplies this tariff.
+        name:
+          type: string
+          example: Fangorn Biomass
+        currency:
+          type: string
+          example: GBP
+        highlighted:
+          type: boolean
+          description: A highlighted tariff is one that is often selected by users.
+        type:
+          enum:
+          - FLAT_RATE
+          - DUAL_RATE
+          - THREE_RATE
+          - DYNAMIC
+          - EXTERNALLY_MANAGED
+          - OTHER
+        daily_prices:
+          $ref: '#/components/schemas/DailyPrices'
+          description: 'The times returned here are localised to the timezone the tariff is in.
+
+            The timezone is returned in `timezone_name`.'
+        timezone_name:
+          type: string
+          example: Europe/London
+        price_chart_url:
+          type:
+          - string
+          - 'null'
+          description: The url of a website which can display a chart of prices for the tariff. This website is an external resource and is not affiliated with ev.energy.
+          example: https://www.example.com/
+        gsp_group:
+          type:
+          - string
+          - 'null'
+          description: The GB Grid Supply Point (DNO region) the tariff applies to. Suppliers publish region-specific rates, so the same named tariff can appear once per region with differing prices; this field distinguishes them. `null` for tariffs that are not region-specific.
+          example: _C
+        valid_from:
+          type: string
+          format: date
+          description: The date from which this tariff became available to new customers.
+          example: '2026-03-17'
+        valid_until:
+          type:
+          - string
+          - 'null'
+          format: date
+          description: The date after which this tariff is no longer available to new customers (it has been superseded). `null` if the tariff is still open to new sign-ups. Use the `valid` query parameter to filter the list to only currently-available tariffs.
+          example: '2027-03-17'
+    ChargingSubSessionFlags:
+      title: ChargingSubSessionFlags
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/charging_sub_sessions/csub01HSH04KDEWF6Z4DB2J77J74K5/flags
+          readOnly: true
+        charging_sub_session:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/charging_sub_sessions/csub01HSH04KDEWF6Z4DB2J77J74K5
+            readOnly: true
+          - $ref: '#/components/schemas/ChargingSubSession'
+          description: The charging sub-session these flags belong to. Expandable.
+        flags:
+          type: array
+          description: A list of flags associated with this charging sub-session.
+          items:
+            $ref: '#/components/schemas/ChargingSessionFlag'
+          readOnly: true
+      required:
+      - url
+      - charging_sub_session
+      - flags
+    User:
+      title: User
+      description: A resource that represents an individual user in the ev.energy system.
+      type: object
+      x-tags:
+      - Users
+      required:
+      - id
+      - url
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given user.
+          pattern: user[A-Z\d]{26}
+          example: user01HN2NJ9NMRZBXT1H6FT9N7735
+          readOnly: true
+        url:
+          type: string
+          example: https://api.ev.energy/v2/users/user01HN2NJ9NMRZBXT1H6FT9N7735
+          format: uri
+          readOnly: true
+        email:
+          type: string
+          format: email
+        full_name:
+          type: string
+          readOnly: true
+          description: The user's full name.
+          example: Frodo Baggins
+        joined_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: The date and time when the user joined the platform.
+          example: '2023-06-15T10:00:00Z'
+        terms_consent_datetime:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+          description: When the user gave their terms and conditions consent, or null if they have not.
+          example: '2023-06-15T10:00:00Z'
+        default_location:
+          anyOf:
+          - $ref: '#/components/schemas/Location'
+          - $ref: '#/components/schemas/LocationDetail'
+          description: LocationDetail is served when a single user is requested, otherwise Location is served for user lists.
+        vehicles:
+          type: array
+          items:
+            type: string
+            format: uri
+            example: https://api.ev.energy/v2/vehicles/vhcl01HRFF3SEVSCRAV9B3CHVDFN0H
+            readOnly: true
+          readOnly: true
+        evses:
+          type: array
+          items:
+            type: string
+            format: uri
+            example: https://api.ev.energy/v2/evses/evse01HSH04XHZCT92RN018F0236ZM
+            readOnly: true
+          readOnly: true
+    EnergyUsage:
+      title: EnergyUsage
+      type: object
+      description: Detailed energy usage for a charging sub-session, reported as a list of intervals recording when energy was actually delivered to the vehicle and how much. Use this (rather than the sub-session's start/end) to determine when charging actually happened.
+      properties:
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/charging_sub_sessions/csub01HSH04KDEWF6Z4DB2J77J74K5/energy_usage
+          readOnly: true
+        currency:
+          type: string
+          example: GBP
+          description: The currency that prices for intervals are quoted in. Note that we always use the smallest unit of the currency.
+          readOnly: true
+        charging_sub_session:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/charging_sub_sessions/csub01HSH04KDEWF6Z4DB2J77J74K5
+          readOnly: true
+        intervals:
+          type: array
+          description: A list of energy usage intervals for this charging sub-session.
+          items:
+            $ref: '#/components/schemas/UsageInterval'
+          readOnly: true
+        last_updated_at:
+          type: string
+          format: date-time
+          description: The datetime when the energy usages were last updated at.
+    ChargingSubSessionCreatedWebhook:
+      title: Charging Sub Session Created Webhook
+      description: Webhook payload delivered when a charging sub-session is created.
+      type: object
+      required:
+      - type
+      - timestamp
+      - data
+      properties:
+        type:
+          type: string
+          enum:
+          - charging_sub_session.created
+          description: The event type. Also delivered in the `svix-event-type` header.
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 UTC timestamp for when the event occurred.
+        data:
+          description: The created charging sub-session, in the same format returned by `GET /v2/charging_sub_sessions/{id}`.
+          allOf:
+          - $ref: '#/components/schemas/ChargingSubSession'
+      examples:
+      - type: charging_sub_session.created
+        timestamp: '2022-11-03T20:26:10.344522Z'
+        data:
+          id: csub01HSH04KDEWF6Z4DB2J77J74K5
+          url: https://api.ev.energy/v2/charging_sub_sessions/csub01HSH04KDEWF6Z4DB2J77J74K5
+          start: '2019-08-24T14:15:22Z'
+          end: null
+          mode: SMART
+          energy_delivered_watt_hours: 0
+          location:
+            name: Home
+          cost: 0
+          currency: GBP
+          total_co2_grams: 0
+          co2_intensity_grams_per_kilowatt_hour: 1
+          co2_intensity_classification: low
+          duration_minutes: 0
+          grid_energy_delivered_watt_hours: 0
+          solar_energy_delivered_watt_hours: 0
+    LatLong:
+      title: LatLong
+      type: object
+      description: Coordinates model used for locations.
+      required:
+      - latitude
+      - longitude
+      properties:
+        latitude:
+          type: number
+          format: float
+          example: 51.52576576674041
+        longitude:
+          type: number
+          format: float
+          example: -0.08366433371722264
+    EVSEMake:
+      title: Make
+      description: A resource representing a manufacturer of EVSEs.
+      type: object
+      x-tags:
+      - EVSEs
+      required:
+      - id
+      - url
+      - name
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given EVSE Make.
+          pattern: emak[A-Z\d]{26}
+          example: emak01HS8FRXKJD5JZZ7ZN6W8H21P8
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/evse_makes/emak01HS8FRXKJD5JZZ7ZN6W8H21P8
+          readOnly: true
+        name:
+          type: string
+          example: BG SyncEV
+          readOnly: true
+        display_name:
+          type:
+          - string
+          - 'null'
+          example: BG SyncEV
+          description: The EVSE make name for in-app display. May be null if no display name has been set.
+          readOnly: true
+        icon:
+          type:
+          - string
+          - 'null'
+          format: uri
+          example: https://cdn.example.com/volvo.png
+          description: A url for an image of the make's logo.
+          readOnly: true
+        onboarding_url:
+          type:
+          - string
+          - 'null'
+          example: https://api.ev.energy/v2/evse_onboarding?make_id=emak01HN2NJQRGDQP0GBE1F7R6PB3D&user_id=user01HN2NJ9NMRZBXT1H6FT9N7735&client_id=your_client_id
+          description: 'A pre-constructed link to initiate onboarding for an EVSE of this make. If it is null, then it cannot be onboarded with model alone. You should filter the list of [EVSE models](ev.energy-API-v2.yaml/paths/~1evse_models/get) by this make and then have the user select their model.
+
+
+            Your `client_id` and the user''s `user_id` are automatically included based on your authentication token. If you are using client credentials authentication, the user ID will not be automatically included unless you set the EvEnergy-User header on your request.'
+          readOnly: true
+        is_beta:
+          type: boolean
+          example: false
+          description: Whether this EVSE make integration is in beta.
+          readOnly: true
+        evse_models:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/evse_models/?make_id=emak01HN2NJQRGDQP0GBE1F7R6PB3D
+          description: A pre-constructed link to a list of EVSE models filtered for this make.
+          readOnly: true
+  responses:
+    Problem429TooManyRequests:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Example 1:
+              value:
+                type: https://api.ev.energy/v2/problems/rate-limit-exceeded/
+                status: 429
+                title: Too Many Requests
+                detail: Request was rate limited. Try again in 42 seconds
+      description: The client has exceeded its rate limit.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        Retry-After:
+          $ref: '#/components/headers/retry-after'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem401Unauthorized:
+      description: You need to authorise requests to access this resource.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 401
+              title:
+                type: string
+                example: Unauthorized
+              detail:
+                type: string
+                example: Authentication credentials were not provided.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem400BadRequestList:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Invalid Pagination Parameter:
+              $ref: '#/components/examples/ProblemInvalidPaginationParameter'
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem406NotAcceptable:
+      description: Could not satisfy the request Accept header.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 406
+              title:
+                type: string
+                example: Not Acceptable
+              detail:
+                type: string
+                example: Could not satisfy the request Accept header.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem409Conflict:
+      description: The request conflicts with the current state of the resource.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem404NotFound:
+      description: This resource either does not exist or the client is not authorized to access it.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 404
+              title:
+                type: string
+                example: Not found
+              detail:
+                type: string
+                example: Resource does not exist or cannot be accessed.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem503ServiceUnavailable:
+      description: The command could not be delivered to the vehicle or charger.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem400BadRequestRetrieve:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem403Forbidden:
+      description: You do not have permission to perform this action.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 403
+              title:
+                type: string
+                example: Forbidden
+              detail:
+                type: string
+                example: You do not have permission to perform this action.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+  headers:
+    version-2:
+      description: Indicates the version of the API that generated this response. If EvEnergy-Version was not specified in the request, this will be your OAuth application's default version.
+      schema:
+        type: number
+        enum:
+        - 2
+    link:
+      description: Provides links to the previous and next pages of data, if they exist.
+      example: <https://api.ev.energy/v2/vehicles?page_size=25&page_before=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="previous", <https://api.ev.energy/v2/vehicles?page_size=25&page_after=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="next"
+      schema:
+        type: string
+    x-ratelimit-remaining:
+      description: The number of requests remaining until this client's rate limit is reached.
+      schema:
+        type: number
+        default: 999
+    x-ratelimit-limit:
+      description: The maximum number of requests that can be made to this endpoint per hour. Defaults to 1000 but may vary per client.
+      schema:
+        type: number
+        default: 1000
+    retry-after:
+      description: The number of seconds until this client's requests will not be rate limited.
+      schema:
+        type: number
+        default: 3600
+  examples:
+    ProblemInvalidPaginationParameter:
+      value:
+        type: https://api.ev.energy/v2/problems/pagination-parameters/
+        status: 400
+        title: Invalid pagination parameter
+        detail: 'Invalid value for pagination parameter: page_size'
+    ProblemUnsupportedVersion:
+      value:
+        type: https://api.ev.energy/v2/problems/pagination-parameters/
+        status: 400
+        title: Unsupported version
+        detail: 'Unsupported version requested: 3.0'
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.ev.energy/o/token/
+          refreshUrl: https://api.ev.energy/o/token/
+          scopes:
+            carbon:read: ''
+            grid:read: ''
+            evse:read: ''
+            evse:write: ''
+            vehicle:read: ''
+            user:read: ''
+            charging_session:read: ''
+            tariff:read: ''
+            tariff:prices:read: ''
+            user:write: ''
+            inverter:read: ''
+            inverter:write: ''
+            home_battery:read: ''
+            home_energy:read: ''
+            boundary_meter:read: ''
+            vehicle:write: ''
+            vehicle_catalogue:write: Update shared vehicle-catalogue reference data (e.g. a model's default connector type)
+            charging_session:write: ''
+            solar:write: ''
+            solar:read: ''
+            subscription:read: ''
+            debug:read: ''
+            dispatch_coordinator:read: ''
+            dispatch_event:write: ''
+            solar_forecast:read: ''
+            payout_method:read: Read a user's preferred payout method
+            payout_method:write: Set, update, or clear a user's preferred payout method
+            notification_preferences:read: Read a user's notification group opt-in state
+            notification_preferences:write: Update a user's notification group opt-in state
+            route_planner_preferences:read: Read a user's EV Route Planner preferences
+            route_planner_preferences:write: Update a user's EV Route Planner preferences
+            saved_routes:read: Read a user's saved route-planner routes
+            saved_routes:write: Create, update, or delete a user's saved routes
+            region:read: Read region and region group boundary data
+            region:write: Create regions and region groups
+        authorizationCode:
+          authorizationUrl: https://api.ev.energy/o/authorize/
+          tokenUrl: https://api.ev.energy/o/token/
+          refreshUrl: https://api.ev.energy/o/token/
+          scopes: {}
+x-redocly:
+  openapi:
+    hideSchemaTitles: true
+x-internal: false

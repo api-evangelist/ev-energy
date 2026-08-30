@@ -1,0 +1,4018 @@
+openapi: 3.2.0
+info:
+  title: ev.energy v2 EVS Es API
+  version: '2.0'
+  contact:
+    email: developers@ev.energy
+    url: developers.ev.energy
+    name: ev.energy developers
+  description: The official API for ev.energy, version 2.
+  license:
+    name: Proprietary
+    url: https://ev.energy
+  termsOfService: ''
+servers:
+- url: https://api.ev.energy/v2
+  description: Live API for both production and sandbox requests.
+  x-internal: false
+- description: Staging server for internal testing only.
+  url: https://api-staging.ev.energy/v2
+  x-internal: true
+security:
+- oauth2: []
+tags:
+- name: EVSEs
+  description: Endpoints for interacting with EVSEs.
+paths:
+  /evse_compatibility/check:
+    get:
+      summary: Check EVSE model compatibility in a country
+      description: "Returns whether the given `EVSEModel` is supported in the supplied\ncountry, and whether the support is `beta` (early-access) or live.\nUsed by the onboarding flow to tell the user upfront whether their\nhardware will work before any account-linking step.\n\nPublic endpoint — callable pre-account, no authentication required.\n\nCountry resolution follows this order: explicit `country` query\nparameter, then the `Accept-Language` header, then `US`.\n\nWhen `program_id` is supplied, program membership is applied as an\nadditional filter on top of the global compatibility check: the\nmodel must be in the program's `supported_evse_models` list AND\npass the global region + `EvseCompatibility` check. Region is\nderived from the program's country, so the `country` query\nparameter and `Accept-Language` header are ignored in that case.\n\nError responses follow RFC 9457 Problem Details. Problem types\nemitted by this endpoint:\n\n- `validation-failed-evse-compatibility-check` — missing or\n  invalid `evse_model_id` / `country` query parameter (`400`).\n- `evse-model-not-found` — `evse_model_id` does not resolve to\n  an `EVSEModel` (`404`).\n- `program-not-found` — `program_id` does not resolve to a\n  program (`404`)."
+      tags:
+      - EVSEs
+      operationId: get-evse_compatibility-check
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - name: evse_model_id
+        in: query
+        required: true
+        description: '`EVSEModel.uid` to check compatibility for.'
+        schema:
+          type: string
+          pattern: emod[A-Z\d]{26}
+      - name: country
+        in: query
+        required: false
+        description: ISO-3166 alpha-2 country code. See description for fallback chain.
+        schema:
+          type: string
+          pattern: ^[A-Za-z]{2}$
+          minLength: 2
+          maxLength: 2
+      - $ref: '#/components/parameters/Accept-Language'
+      - name: client_id
+        in: query
+        required: false
+        description: 'OAuth `Application.client_id`. Mirrors the pre-account
+
+          onboarding endpoints: when supplied and the application has
+
+          sandbox mode enabled, the endpoint returns a canned response
+
+          without touching the database.'
+        schema:
+          type: string
+      - name: program_id
+        in: query
+        required: false
+        description: 'Program uid. When supplied, the model must be in the
+
+          program''s `supported_evse_models` list AND pass the global
+
+          region + `EvseCompatibility` check. Region is derived from
+
+          the program''s country; `country` and `Accept-Language` are
+
+          ignored in that case. Omit for the core app''s pre-account
+
+          flow where the program is not yet known.'
+        schema:
+          type: string
+          pattern: prog[A-Z\d]{26}
+      responses:
+        '200':
+          description: Compatibility verdict for the supplied model and country.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EVSECompatibilityCheckResult'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '405':
+          $ref: '#/components/responses/Problem405MethodNotAllowed'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+      security: []
+  /evses:
+    get:
+      summary: List EVSEs
+      tags:
+      - EVSEs
+      responses:
+        '200':
+          description: Returns a list of EVSEs.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EVSE'
+          headers:
+            Link:
+              $ref: '#/components/headers/link'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-evses
+      parameters:
+      - $ref: '#/components/parameters/previous'
+      - $ref: '#/components/parameters/next'
+      - $ref: '#/components/parameters/page_size'
+      - $ref: '#/components/parameters/expand-on-evse'
+      - $ref: '#/components/parameters/cpid'
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/user'
+      description: List all the EVSEs that the authorization token has access to.
+      security:
+      - oauth2:
+        - evse:read
+  /evses/{evse_id}:
+    parameters:
+    - $ref: '#/components/parameters/evse_id'
+    get:
+      summary: Retrieve an EVSE
+      tags:
+      - EVSEs
+      responses:
+        '200':
+          description: Returns a single EVSE.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EVSE'
+              examples:
+                Example 1:
+                  value:
+                    id: evse01HSH04KDEWF6Z4DB2J77J74K5
+                    url: https://api.ev.energy/v2/evses/evse01HSH04KDEWF6Z4DB2J77J74K5
+                    model:
+                      id: emod01HS9A004X5TB5JCMHENB5Z446
+                      name: EVWC2S22
+                      make:
+                        id: emak01HS8FRXKJD5JZZ7ZN6W8H21P8
+                        name: BG SyncEV
+                    user: https://api.ev.energy/v2/users/user01HN2NJ9NMRZBXT1H6FT9N7735
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-evses-evse_id
+      parameters:
+      - $ref: '#/components/parameters/expand-on-evse'
+      - $ref: '#/components/parameters/version-2'
+      description: Retrieve a single, specific EVSE's details.
+      security:
+      - oauth2:
+        - evse:read
+    patch:
+      summary: Update an EVSE
+      tags:
+      - EVSEs
+      responses:
+        '200':
+          description: EVSE updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EVSE'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400UpdateEVSEValidationFailed'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: patch-evses-evse_id
+      parameters:
+      - $ref: '#/components/parameters/expand-on-evse'
+      - $ref: '#/components/parameters/version-2'
+      description: 'Update an EVSE. Only the EVSE''s `location` may be changed via this endpoint; all other fields are read-only.
+
+
+        A `400` is returned when the request body fails validation (for example a non-numeric, non-finite or out-of-range coordinate), with the offending fields listed under `field_errors`.'
+      security:
+      - oauth2:
+        - evse:write
+      requestBody:
+        description: The EVSE fields to update.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                location:
+                  type:
+                  - object
+                  - 'null'
+                  properties:
+                    latitude:
+                      type: number
+                      format: double
+                      example: 51.5074
+                    longitude:
+                      type: number
+                      format: double
+                      example: -0.1278
+                  required:
+                  - latitude
+                  - longitude
+                  description: The geographic location of the EVSE as a latitude/longitude point. Send `null` to clear it.
+    delete:
+      summary: Decommission an EVSE
+      tags:
+      - EVSEs
+      responses:
+        '204':
+          description: The EVSE has been decommissioned successfully.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: delete-evses-evse_id
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      description: Decommission the EVSE by disconnecting it from the ev.energy system.
+      security:
+      - oauth2:
+        - evse:write
+  /evse_models:
+    get:
+      summary: List EVSE models
+      tags:
+      - EVSEs
+      responses:
+        '200':
+          description: Returns a list of EVSE models.
+          headers:
+            Link:
+              $ref: '#/components/headers/link'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EVSEModel'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-evse_models
+      parameters:
+      - $ref: '#/components/parameters/previous'
+      - $ref: '#/components/parameters/next'
+      - $ref: '#/components/parameters/page_size'
+      - $ref: '#/components/parameters/expand-on-evsemodel'
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/available_for_user_id'
+      - $ref: '#/components/parameters/user'
+      - $ref: '#/components/parameters/evse_make_id_q'
+      description: 'List all the EVSE models known by the ev.energy system.
+
+
+        Anonymous callers are rate limited to 50 requests per hour per IP.'
+      security: []
+  /evse_models/{evse_model_id}:
+    parameters:
+    - $ref: '#/components/parameters/evse_model_id'
+    get:
+      summary: Retrieve an EVSE model
+      tags:
+      - EVSEs
+      responses:
+        '200':
+          description: Return a single EVSE model.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EVSEModel'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-evse_models-evse_model_id
+      parameters:
+      - $ref: '#/components/parameters/expand-on-evsemodel'
+      - $ref: '#/components/parameters/version-2'
+      description: 'Retrieve details for a single, specific EVSE model.
+
+
+        Anonymous callers are rate limited to 50 requests per hour per IP.'
+      security: []
+  /evse_makes:
+    parameters: []
+    get:
+      summary: List EVSE makes
+      tags:
+      - EVSEs
+      responses:
+        '200':
+          description: Return a list of EVSE Makes.
+          headers:
+            Link:
+              $ref: '#/components/headers/link'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EVSEMake'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-evse_makes
+      parameters:
+      - $ref: '#/components/parameters/previous'
+      - $ref: '#/components/parameters/next'
+      - $ref: '#/components/parameters/page_size'
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/available_for_user_id'
+      - $ref: '#/components/parameters/user'
+      description: 'List all the EVSE makes known by the ev.energy system.
+
+
+        Anonymous callers are rate limited to 50 requests per hour per IP.'
+      security: []
+  /evse_makes/{evse_make_id}:
+    parameters:
+    - $ref: '#/components/parameters/evse_make_id'
+    get:
+      summary: Retrieve an EVSE make
+      tags:
+      - EVSEs
+      responses:
+        '200':
+          description: Return a single EVSE make.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EVSEMake'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-evse_makes-evse_make_id
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      description: 'Retrieve details for a single, specific EVSE make.
+
+
+        Anonymous callers are rate limited to 50 requests per hour per IP.'
+      security: []
+  /evses/{evse_id}/status_logs:
+    parameters:
+    - $ref: '#/components/parameters/evse_id'
+    get:
+      summary: List status logs for an EVSE
+      description: List the historical status logs for a specific EVSE. Used to find out the state of the EVSE at each point it reported in to ev.energy.
+      tags:
+      - EVSEs
+      responses:
+        '200':
+          description: List all status logs for a specific EVSE, sorted newest first.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EVSEStatusLog'
+          headers:
+            Link:
+              $ref: '#/components/headers/link-timestamps'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-evses-evse_id-status_logs
+      parameters:
+      - $ref: '#/components/parameters/previous'
+      - $ref: '#/components/parameters/next'
+      - $ref: '#/components/parameters/page_size'
+      - $ref: '#/components/parameters/sampled_at__gte'
+      - $ref: '#/components/parameters/sampled_at__lte'
+      - $ref: '#/components/parameters/expand-on-evsestatuslog'
+      - $ref: '#/components/parameters/version-2'
+      security:
+      - oauth2:
+        - evse:read
+  /evses/{evse_id}/status_logs/{sampled_at}:
+    parameters:
+    - $ref: '#/components/parameters/evse_id'
+    - schema:
+        type: string
+        format: date-time
+      name: sampled_at
+      in: path
+      required: true
+      description: The time the log's data was recorded on the device.
+      example: '2024-04-17T09:39:45.984584Z'
+    get:
+      summary: Retrieve a status log for an EVSE
+      description: An EVSE status log is uniquely identified by the combination of EVSE ID and the time it was sampled at.
+      tags:
+      - EVSEs
+      responses:
+        '200':
+          description: Retrieve a single status log for a specific EVSE.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EVSEStatusLog'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-evses-evse_id-status_logs-timestamp
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/expand-on-evsestatuslog'
+      security:
+      - oauth2:
+        - evse:read
+  /evses/{evse_id}/command_logs:
+    parameters:
+    - $ref: '#/components/parameters/evse_id'
+    get:
+      summary: List command logs for an EVSE
+      description: List the historical command logs for a specific EVSE. These logs record commands that were sent to the EVSE.
+      tags:
+      - EVSEs
+      responses:
+        '200':
+          description: List all command logs for a specific EVSE, sorted newest first.
+          headers:
+            Link:
+              $ref: '#/components/headers/link-timestamps'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EVSECommandLog'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-evses-evse_id-command_logs
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/previous'
+      - $ref: '#/components/parameters/next'
+      - $ref: '#/components/parameters/page_size'
+      - $ref: '#/components/parameters/logged_at__gte'
+      - $ref: '#/components/parameters/logged_at__lte'
+      - $ref: '#/components/parameters/expand-on-evsecommandlog'
+      security:
+      - oauth2:
+        - debug:read
+  /evses/{evse_id}/command_logs/{logged_at}:
+    parameters:
+    - $ref: '#/components/parameters/evse_id'
+    - schema:
+        type: string
+        format: date-time
+      name: logged_at
+      in: path
+      required: true
+      description: The time the command was logged.
+      example: '2024-04-17T09:39:45.984584Z'
+    get:
+      summary: Retrieve a command log for an EVSE
+      description: An EVSE command log is uniquely identified by the combination of EVSE ID and the time it was logged at.
+      tags:
+      - EVSEs
+      responses:
+        '200':
+          description: Retrieve a single command log for a specific EVSE.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EVSECommandLog'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-evses-evse_id-command_logs-timestamp
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/expand-on-evsecommandlog'
+      security:
+      - oauth2:
+        - debug:read
+  /evses/{evse_id}/error_logs:
+    parameters:
+    - $ref: '#/components/parameters/evse_id'
+    get:
+      summary: List API error logs for an EVSE
+      description: List the historical API error logs for a specific EVSE. These logs capture errors that occurred when attempting to communicate with the EVSE's hardware API.
+      tags:
+      - EVSEs
+      responses:
+        '200':
+          description: List all API error logs for a specific EVSE, sorted newest first.
+          headers:
+            Link:
+              $ref: '#/components/headers/link-timestamps'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EVSEAPIErrorLog'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-evses-evse_id-error_logs
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/previous'
+      - $ref: '#/components/parameters/next'
+      - $ref: '#/components/parameters/page_size'
+      - $ref: '#/components/parameters/sampled_at__gte'
+      - $ref: '#/components/parameters/sampled_at__lte'
+      - $ref: '#/components/parameters/expand-on-evseerrorlog'
+      security:
+      - oauth2:
+        - debug:read
+  /evses/{evse_id}/error_logs/{sampled_at}:
+    parameters:
+    - $ref: '#/components/parameters/evse_id'
+    - schema:
+        type: string
+        format: date-time
+      name: sampled_at
+      in: path
+      required: true
+      description: The time the error was sampled.
+      example: '2024-04-17T09:39:45.984584Z'
+    get:
+      summary: Retrieve a specific API error log for an EVSE
+      description: A single API error log for a particular EVSE is uniquely identified by the timestamp it was sampled at.
+      tags:
+      - EVSEs
+      responses:
+        '200':
+          description: Returns the EVSE API error logged at a specific time.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EVSEAPIErrorLog'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-evses-evse_id-error_logs-timestamp
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/expand-on-evseerrorlog'
+      security:
+      - oauth2:
+        - debug:read
+  /evses/{evse_id}/ocpp_logs:
+    parameters:
+    - $ref: '#/components/parameters/evse_id'
+    get:
+      summary: List OCPP logs for an EVSE
+      description: List the historical OCPP message logs for a specific EVSE. These logs record OCPP messages sent to or received from the charger.
+      tags:
+      - EVSEs
+      responses:
+        '200':
+          description: List all OCPP logs for a specific EVSE, sorted newest first.
+          headers:
+            Link:
+              $ref: '#/components/headers/link-timestamps'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EVSEOCPPLog'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-evses-evse_id-ocpp_logs
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/previous'
+      - $ref: '#/components/parameters/next'
+      - $ref: '#/components/parameters/page_size'
+      - $ref: '#/components/parameters/sampled_at__gte'
+      - $ref: '#/components/parameters/sampled_at__lte'
+      - $ref: '#/components/parameters/ocpp-action'
+      - $ref: '#/components/parameters/ocpp-action__in'
+      - $ref: '#/components/parameters/ocpp-direction'
+      - $ref: '#/components/parameters/ocpp-error_code'
+      - $ref: '#/components/parameters/ocpp-error_code__in'
+      - $ref: '#/components/parameters/expand-on-evseocpplog'
+      security:
+      - oauth2:
+        - debug:read
+  /evses/{evse_id}/ocpp_logs/{sampled_at}:
+    parameters:
+    - $ref: '#/components/parameters/evse_id'
+    - schema:
+        type: string
+        format: date-time
+      name: sampled_at
+      in: path
+      required: true
+      description: The time the OCPP message was recorded.
+      example: '2024-04-17T09:39:45.984584Z'
+    get:
+      summary: Retrieve an OCPP log for an EVSE
+      description: An EVSE OCPP log is uniquely identified by the combination of EVSE ID and the time it was sampled at.
+      tags:
+      - EVSEs
+      responses:
+        '200':
+          description: Retrieve a single OCPP log for a specific EVSE.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EVSEOCPPLog'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-evses-evse_id-ocpp_logs-timestamp
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/expand-on-evseocpplog'
+      security:
+      - oauth2:
+        - debug:read
+  /evses/{evse_id}/vpp_modes:
+    parameters:
+    - $ref: '#/components/parameters/evse_id'
+    get:
+      summary: Get VPP modes for an EVSE
+      description: Returns the VPP (Virtual Power Plant) control modes supported by this EVSE.
+      tags:
+      - EVSEs
+      responses:
+        '200':
+          description: Returns the VPP modes supported by this EVSE.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VPPModes'
+              examples:
+                EVSE VPP Modes:
+                  value:
+                    target_power: true
+                    import_max_power: true
+                    export_max_power: false
+                    charge_mode: true
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-evses-evse_id-vpp_modes
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      security:
+      - oauth2:
+        - evse:read
+  /evses/{evse_id}/connectivity:
+    parameters:
+    - $ref: '#/components/parameters/evse_id'
+    get:
+      summary: Get connectivity information for an EVSE
+      description: Returns a snapshot of the EVSE's connectivity metrics including signal strength, SIM data, firmware version, and connection reliability.
+      tags:
+      - EVSEs
+      responses:
+        '200':
+          description: Returns the connectivity information for this EVSE.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EVSEConnectivity'
+              examples:
+                EVSE Connectivity:
+                  value:
+                    signal_strength_rssi_dbm: -65
+                    lowest_signal_strength_rssi_dbm_7d: -89
+                    highest_signal_strength_rssi_dbm_7d: -57
+                    connection_reliability_30d: 97
+                    ip_address: 10.193.28.42
+                    iccid: '8944110000001234567'
+                    firmware_version: 1.2.3
+                    latest_status_log: https://api.ev.energy/v2/evses/evse01HSH04KDEWF6Z4DB2J77J74K5/status_logs/2024-04-17T09:39:45.984584Z/
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-evses-evse_id-connectivity
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/expand-on-evse-connectivity'
+      security:
+      - oauth2:
+        - evse:read
+  /evses/{evse_id}/reconnect:
+    parameters:
+    - $ref: '#/components/parameters/evse_id'
+    post:
+      summary: Create EVSE reconnection URL
+      tags:
+      - EVSEs
+      responses:
+        '201':
+          description: Returns the newly generated reconnection URL.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EVSEReconnectionUrl'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestCreate'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: post-evses-evse_id-reconnect
+      x-stoplight:
+        id: evse-reconnect-endpoint
+      description: Create a reconnection request URL for the EVSE. The EVSE must have a user assigned.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EVSEReconnectionUrl'
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      security:
+      - oauth2:
+        - evse:write
+  /evse_firmware_versions:
+    get:
+      summary: List EVSE firmware versions
+      description: 'List EVSE firmware versions available in the catalogue. Only firmware
+
+        versions flagged as production releases are returned.'
+      tags:
+      - EVSEs
+      responses:
+        '200':
+          description: Returns a list of EVSE firmware versions.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EVSEFirmwareVersion'
+          headers:
+            Link:
+              $ref: '#/components/headers/link'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-evse_firmware_versions
+      parameters:
+      - $ref: '#/components/parameters/previous'
+      - $ref: '#/components/parameters/next'
+      - $ref: '#/components/parameters/page_size'
+      - $ref: '#/components/parameters/version-2'
+      security:
+      - oauth2:
+        - evse:read
+  /evse_firmware_versions/{evse_firmware_version_id}:
+    parameters:
+    - $ref: '#/components/parameters/evse_firmware_version_id'
+    get:
+      summary: Retrieve an EVSE firmware version
+      description: Retrieve a single EVSE firmware version by ID.
+      tags:
+      - EVSEs
+      responses:
+        '200':
+          description: Returns an EVSE firmware version.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EVSEFirmwareVersion'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-evse_firmware_versions-evse_firmware_version_id
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      security:
+      - oauth2:
+        - evse:read
+  /evse_onboarding:
+    parameters: []
+    get:
+      summary: Initiate EVSE onboarding
+      tags:
+      - EVSEs
+      responses:
+        '200':
+          description: Returned only when `response_type=json` is supplied. Carries an absolute URL to the EVSE onboarding wrapper that the client opens in a WebView (mobile) or redirects the browser to (web). The wrapper view either redirects to the provider (when a model was supplied) or shows the make picker.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EVSEOnboardingJsonResponse'
+        '302':
+          description: 'Have the user''s browser follow the redirect to be prompted to connect their EVSE to the ev.energy system.
+
+
+            If a make or model were not provided, the user will first be redirected to a screen to select these.'
+          headers:
+            Location:
+              schema:
+                type: string
+              description: The URL that the users browser will be redirected to in order to integrate their EVSE.
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+      operationId: get-evse_onboarding
+      description: 'Initiate the onboarding process for a new EVSE in your user''s browser (or an embedded web view in an app).
+
+
+        If neither `make_id` or `model_id` are passed as query parameters, the user will be shown a user interface to pick their EVSE make.
+
+
+        ## Native clients (`response_type=json`)
+
+
+        Native mobile clients that need to open the onboarding URL in a WebView (rather than follow a 302 redirect) can pass `response_type=json` to receive a JSON payload instead. In that case at least one of `make_id` or `model_id` is required (otherwise the endpoint responds with `400`).
+
+
+        ## Final redirect
+
+
+        After the user completes the web flow, the browser is redirected to the `redirect_uri` query parameter (when supplied and valid) or otherwise the `onboarding_redirect_url` configured on your application. The redirect URL will carry two query parameters identifying the onboarded EVSE:
+
+
+        - `evse_uid` — the v2 UID of the onboarded EVSE (preferred). Use this to call `GET /v2/evses/{evse_uid}` for further details.
+
+        - `evse_id` — the legacy integer primary key. Prefer `evse_uid`.
+
+
+        Example: `https://your-redirect/?evse_id=123&evse_uid=evse01...`.'
+      parameters:
+      - $ref: '#/components/parameters/user_id_onboarding'
+      - schema:
+          type: string
+          example: emak01HN2NJQRGDQP0GBE1F7R6PB3D
+        in: query
+        name: make_id
+        description: Specify the make of EVSE to be onboarded.
+      - schema:
+          type: string
+          example: emod01HN2NJHAJJAQD32QJ4QXTDSGW
+        in: query
+        name: model_id
+        description: Specify the model of EVSE to be onboarded.
+      - $ref: '#/components/parameters/client_id'
+      - schema:
+          type: string
+          enum:
+          - json
+        in: query
+        name: response_type
+        description: When set to `json`, the endpoint returns a JSON payload (200) instead of a 302 redirect. Used by native mobile clients that prefer to open the onboarding URL in a WebView. Requires at least one of `make_id` or `model_id`.
+      - schema:
+          type: string
+          format: uri
+          example: https://drivers.ev.energy/acme
+        in: query
+        name: redirect_uri
+        description: Optional URL to return the user to after onboarding completes. Its scheme and host must match one of the application's registered `redirect_uris` or its `onboarding_redirect_url`, otherwise the endpoint responds with `400`. When omitted, the application's static `onboarding_redirect_url` is used.
+      security: []
+  /evse_onboarding/import:
+    post:
+      summary: Import an EVSE by serial number
+      tags:
+      - EVSEs
+      responses:
+        '201':
+          description: Returns the newly imported EVSE, linked to the authenticated user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EVSE'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestCreate'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          description: The provider's system has no EVSE matching the supplied serial number for the authenticated user's email.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/RFC9457ProblemDetail'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '422':
+          description: The import could not be completed — either the EVSE is already registered in our database, the integration provider returned an error, or the provider is not supported for serial-number-based import.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/RFC9457ProblemDetail'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: post-evse_onboarding-import
+      description: 'Import an EVSE into the ev.energy system using its serial number and the authenticated user''s email. The backend calls the provider''s API to look up the device and link it; the response is the freshly created `EVSE` resource, shape-identical to `GET /evses/{evse_id}`.
+
+
+        Supported providers (serial-number-based onboarding): `ChargePoint`, `EO`, `SyncEV`, `EnelX`, `Easee`, `Wallbox`, `Zaptec`. Other EVSE providers use the OAuth flow via `GET /evse_onboarding/` instead.'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EVSEImportRequest'
+      parameters:
+      - $ref: '#/components/parameters/expand-on-evse'
+      - $ref: '#/components/parameters/version-2'
+      security:
+      - oauth2:
+        - evse:write
+  /evse_waitlist:
+    post:
+      summary: Add user to the EVSE waitlist
+      description: 'Captures a user who hit an `incompatible` result on the EVSE compatibility check, so we can notify them once their hardware becomes supported. Pre-account, anonymous endpoint — no OAuth token required.
+
+
+        The request body must identify the device in exactly one of two modes:
+
+
+        - **Picker mode** — supply `evse_model_id` (uid of an `EVSEModel`). `evse_make_name` and `evse_model_name` must be omitted / null.
+
+        - **Manual entry** — supply both `evse_make_name` and `evse_model_name` as free-text strings. `evse_model_id` must be omitted / null.
+
+
+        Any other combination — including all three null — returns `400`.
+
+
+        Country is derived server-side: from `program.country` when `program_id` is supplied; otherwise from the `Accept-Language` header (defaulting to `US`).
+
+
+        Error responses follow RFC 9457 Problem Details. Problem types emitted by this endpoint:
+
+
+        - `validation-failed-evse-waitlist` — request body fails validation (missing required field, mode constraint violation, unknown `evse_model_id` / `program_id`).'
+      tags:
+      - EVSEs
+      operationId: post-evse_waitlist
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/Accept-Language'
+      - name: client_id
+        in: query
+        required: false
+        description: 'OAuth `Application.client_id`. Mirrors the pre-account onboarding and compatibility-check endpoints: when supplied and the application has sandbox mode enabled, the endpoint returns a canned `201` without persisting anything.'
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EVSEWaitlistRequest'
+      responses:
+        '201':
+          description: Waitlist entry created. Body echoes the new entry's uid.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EVSEWaitlistResponse'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '405':
+          $ref: '#/components/responses/Problem405MethodNotAllowed'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      security: []
+components:
+  responses:
+    Problem405MethodNotAllowed:
+      description: Could not satisfy this HTTP method.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 405
+              title:
+                type: string
+                example: Method Not Allowed
+              detail:
+                type: string
+                example: Could not satisfy this HTTP method.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem400BadRequestCreate:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Request failed validation:
+              $ref: '#/components/examples/ProblemValidationFailedVehicle'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem429TooManyRequests:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Example 1:
+              value:
+                type: https://api.ev.energy/v2/problems/rate-limit-exceeded/
+                status: 429
+                title: Too Many Requests
+                detail: Request was rate limited. Try again in 42 seconds
+      description: The client has exceeded its rate limit.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        Retry-After:
+          $ref: '#/components/headers/retry-after'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem401Unauthorized:
+      description: You need to authorise requests to access this resource.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 401
+              title:
+                type: string
+                example: Unauthorized
+              detail:
+                type: string
+                example: Authentication credentials were not provided.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem400BadRequestList:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Invalid Pagination Parameter:
+              $ref: '#/components/examples/ProblemInvalidPaginationParameter'
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem406NotAcceptable:
+      description: Could not satisfy the request Accept header.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 406
+              title:
+                type: string
+                example: Not Acceptable
+              detail:
+                type: string
+                example: Could not satisfy the request Accept header.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem400UpdateEVSEValidationFailed:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Request failed validation:
+              value:
+                type: https://api.ev.energy/v2/problems/validation-failed-update-evse/
+                status: 400
+                title: Request failed validation.
+                detail: 'Error on fields: location'
+                field_errors:
+                  location:
+                  - latitude must be between -90 and 90 and longitude must be between -180 and 180.
+      description: The EVSE update request body failed validation.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem404NotFound:
+      description: This resource either does not exist or the client is not authorized to access it.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 404
+              title:
+                type: string
+                example: Not found
+              detail:
+                type: string
+                example: Resource does not exist or cannot be accessed.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem400BadRequestRetrieve:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem403Forbidden:
+      description: You do not have permission to perform this action.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 403
+              title:
+                type: string
+                example: Forbidden
+              detail:
+                type: string
+                example: You do not have permission to perform this action.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+  schemas:
+    Supplier:
+      title: Supplier
+      type: object
+      description: An energy company who supplies electricity tariffs.
+      required:
+      - id
+      - url
+      - name
+      - icon
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given user.
+          pattern: supl[A-Z\d]{26}
+          example: supl01HN2NJ9NMRZBXT1H6FT9N7735
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/suppliers/supl01HN2NJ9NMRZBXT1H6FT9N7735
+        name:
+          type: string
+          example: Rivendell Renewables
+        icon:
+          type:
+          - string
+          - 'null'
+          format: uri
+          example: https://cdn.example.com/rivendell_renewables.jpg
+        highlighted:
+          type: boolean
+          description: A highlighted supplier is one that is often selected by users.
+      x-tags:
+      - Tariffs
+    EVSEAPIErrorLog:
+      title: EVSEAPIErrorLog
+      description: Records an error that occurred when attempting to communicate with an EVSE's hardware API.
+      type: object
+      x-tags:
+      - EVSEs
+      properties:
+        url:
+          type: string
+          example: https://api.ev.energy/v2/evses/evse01HSH04KDEWF6Z4DB2J77J74K5/error_logs/2024-04-17T09:39:45.984584Z/
+          format: uri
+          readOnly: true
+        sampled_at:
+          type: string
+          description: The date and time when this error was sampled by the ev.energy system.
+          format: date-time
+          readOnly: true
+        evse:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/evses/evse01HSH04KDEWF6Z4DB2J77J74K5
+          - $ref: '#/components/schemas/EVSE'
+        status_code:
+          type:
+          - integer
+          - 'null'
+          example: 401
+          description: The HTTP status code of the error response from the EVSE hardware API.
+          readOnly: true
+        controller:
+          type: string
+          example: OCPP
+          description: The EVSE controller/integration that was being used when the error occurred.
+          readOnly: true
+        error_code:
+          type:
+          - string
+          - 'null'
+          example: AUTHENTICATION_ERROR
+          description: The error code received from the provider or determined by the ev.energy system.
+          readOnly: true
+        error_type:
+          type:
+          - string
+          - 'null'
+          example: HardwareAPIUnauthorized
+          description: The error type received from the provider or determined by the ev.energy system.
+          readOnly: true
+        error_detail:
+          type:
+          - string
+          - 'null'
+          description: Detailed information about the error.
+          readOnly: true
+        external_request_id:
+          type:
+          - string
+          - 'null'
+          example: req-12345
+          description: The external request ID that resulted in this error. Used for tracing and debugging.
+          readOnly: true
+        internal_command_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          example: d4e5f6a7-b8c9-0123-def0-123456789abc
+          description: Internal UUID to track the command dispatch. This can be used to correlate errors with commands.
+          readOnly: true
+    EVSEFirmwareVersion:
+      title: EVSEFirmwareVersion
+      type: object
+      description: A specific firmware release available for one or more EVSE models.
+      required:
+      - id
+      - url
+      - version
+      - public_version
+      - change_log
+      - support_url
+      properties:
+        id:
+          type: string
+          pattern: evsf[A-Z\d]{26}
+          example: evsf01HSH04KDEWF6Z4DB2J77J74K5
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/evse_firmware_versions/evsf01HSH04KDEWF6Z4DB2J77J74K5/
+          readOnly: true
+        version:
+          type: string
+          description: The internal firmware version identifier.
+          example: 1.2.3
+          readOnly: true
+        public_version:
+          type:
+          - string
+          - 'null'
+          description: The publicly displayed version label, if different from the internal version.
+          example: '1.2'
+          readOnly: true
+        change_log:
+          type:
+          - string
+          - 'null'
+          description: A summary of the changes in this firmware release.
+          example: Bug fixes and stability improvements
+          readOnly: true
+        support_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+          description: A link to documentation describing this firmware version.
+          example: https://example.com/firmware/1.2
+          readOnly: true
+    EVSEConnectivity:
+      title: EVSEConnectivity
+      type: object
+      description: Connectivity snapshot for an EVSE including signal strength, SIM data, firmware version, and connection reliability.
+      required:
+      - signal_strength_rssi_dbm
+      - lowest_signal_strength_rssi_dbm_7d
+      - highest_signal_strength_rssi_dbm_7d
+      - connection_reliability_30d
+      - ip_address
+      - iccid
+      - firmware_version
+      - latest_status_log
+      properties:
+        signal_strength_rssi_dbm:
+          type:
+          - integer
+          - 'null'
+          description: Last known signal strength in RSSI dBm. Null for WiFi EVSEs.
+          readOnly: true
+          example: -65
+        lowest_signal_strength_rssi_dbm_7d:
+          type:
+          - integer
+          - 'null'
+          description: Lowest signal strength in RSSI dBm over the past 7 days. Null for WiFi EVSEs.
+          readOnly: true
+          example: -89
+        highest_signal_strength_rssi_dbm_7d:
+          type:
+          - integer
+          - 'null'
+          description: Highest signal strength in RSSI dBm over the past 7 days. Null for WiFi EVSEs.
+          readOnly: true
+          example: -57
+        connection_reliability_30d:
+          type: integer
+          description: Connection reliability over the past 30 days, from 0 (fully offline) to 100 (fully online).
+          readOnly: true
+          example: 97
+        ip_address:
+          type:
+          - string
+          - 'null'
+          description: The IP address assigned to the EVSE's SIM. Null if no SIM data is available.
+          readOnly: true
+          example: 10.193.28.42
+        iccid:
+          type:
+          - string
+          - 'null'
+          description: The ICCID of the EVSE's SIM card. Null if no SIM data is available.
+          readOnly: true
+          example: '8944110000001234567'
+        firmware_version:
+          type:
+          - string
+          - 'null'
+          description: The current firmware version running on the EVSE. Null if not known.
+          readOnly: true
+          example: 1.2.3
+        latest_status_log:
+          oneOf:
+          - type:
+            - string
+            - 'null'
+            example: https://api.ev.energy/v2/evses/evse01HSH04KDEWF6Z4DB2J77J74K5/status_logs/2024-04-17T09:39:45.984584Z/
+            format: uri
+          - $ref: '#/components/schemas/EVSEStatusLog'
+          description: An expandable reference to the most recent status log for this EVSE. URL by default, full object when ?expand=latest_status_log is used.
+          readOnly: true
+    CTClamp:
+      title: CTClamp
+      description: A CT (Current Transformer) clamp used to measure grid current, typically for solar charging logic.
+      type: object
+      x-tags:
+      - CT Clamps
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given CT clamp.
+          pattern: ctcl[A-Z\d]{26}
+          example: ctcl01HSH04KDEWF6Z4DB2J77J74K5
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/ct_clamps/ctcl01HSH04KDEWF6Z4DB2J77J74K5
+          readOnly: true
+        evse:
+          oneOf:
+          - type:
+            - string
+            - 'null'
+            format: uri
+            example: https://api.ev.energy/v2/evses/evse01HSH04KDEWF6Z4DB2J77J74K5
+          - $ref: '#/components/schemas/EVSE'
+          description: The EVSE associated with this CT clamp. Will be null if not linked to an EVSE.
+          readOnly: true
+        calibration_factor:
+          type: integer
+          description: Calibration multiplier for current readings. A value of -1 indicates the clamp was fitted the wrong way around.
+          example: 1
+          readOnly: true
+    EVSEOCPPLog:
+      title: EVSEOCPPLog
+      description: Records an OCPP message sent to or received from an EVSE.
+      type: object
+      x-tags:
+      - EVSEs
+      properties:
+        url:
+          type: string
+          example: https://api.ev.energy/v2/evses/evse01HSH04KDEWF6Z4DB2J77J74K5/ocpp_logs/2024-04-17T09:39:45.984584Z/
+          format: uri
+          readOnly: true
+        sampled_at:
+          type: string
+          description: The date and time when this OCPP message was recorded.
+          format: date-time
+          readOnly: true
+        evse:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/evses/evse01HSH04KDEWF6Z4DB2J77J74K5
+          - $ref: '#/components/schemas/EVSE'
+        direction:
+          type: string
+          description: Whether the message was sent to or received from the charger.
+          readOnly: true
+          example: Sent
+          enum:
+          - Sent
+          - Received
+        action:
+          type: string
+          description: The OCPP action label for this message.
+          readOnly: true
+          example: StatusNotification
+          enum:
+          - Authorize
+          - BootNotification
+          - CancelReservation
+          - CertificateSigned
+          - ChangeAvailability
+          - ChangeConfiguration
+          - ClearCache
+          - ClearChargingProfile
+          - DataTransfer
+          - DeleteCertificate
+          - DiagnosticsStatusNotification
+          - ExtendedTriggerMessage
+          - FirmwareStatusNotification
+          - GetCompositeSchedule
+          - GetConfiguration
+          - GetDiagnostics
+          - GetInstalledCertificateIds
+          - GetLocalListVersion
+          - GetLog
+          - Heartbeat
+          - InstallCertificate
+          - LogStatusNotification
+          - MeterValues
+          - RemoteStartTransaction
+          - RemoteStopTransaction
+          - ReserveNow
+          - Reset
+          - SecurityEventNotification
+          - SendLocalList
+          - SetChargingProfile
+          - SignCertificate
+          - SignedFirmwareStatusNotification
+          - SignedUpdateFirmware
+          - StartTransaction
+          - StatusNotification
+          - StopTransaction
+          - TriggerMessage
+          - UnlockConnector
+          - UpdateFirmware
+        payload:
+          type: object
+          description: The OCPP message payload.
+          readOnly: true
+        message_id:
+          type: string
+          description: The unique message ID for this OCPP call. Can be a UUID, integer, or string.
+          readOnly: true
+          example: abc-123
+        response:
+          description: The response to this OCPP call, if one has been received.
+          oneOf:
+          - $ref: '#/components/schemas/EVSEOCPPCallResponse'
+          - type: 'null'
+    Times:
+      title: Times
+      description: Defines a period of time.
+      type: object
+      x-tags:
+      - Tariffs
+      properties:
+        start:
+          type: string
+          example: '18:00:00'
+          pattern: \d\d:\d\d:\d\d
+        end:
+          type: string
+          example: 00:00:00
+          pattern: \d\d:\d\d:\d\d
+    EVSEWaitlistRequest:
+      title: EVSEWaitlistRequest
+      description: 'Request body for `POST /evse_waitlist`. Device identification fields are mutually constrained: supply exactly one of (`evse_model_id`) or (both `evse_make_name` and `evse_model_name`). Any other combination returns `400`. Country is not part of the request body — see endpoint description for how it is derived.'
+      type: object
+      x-tags:
+      - EVSEs
+      required:
+      - email
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email address to notify when the user's hardware becomes supported.
+          example: user@example.com
+        program_id:
+          type:
+          - string
+          - 'null'
+          pattern: prog[A-Z\d]{26}
+          description: Optional `ProgramConfig` uid. Captured where known (web signup, whitelabel microsite) so later notification logic can scope by program.
+          example: prog01HRS4TSK26BPBV7127DH7E0HA
+        evse_model_id:
+          type:
+          - string
+          - 'null'
+          pattern: emod[A-Z\d]{26}
+          description: Uid of an `EVSEModel`. Used when the user picked from the EVSE picker. Mutually exclusive with `evse_make_name` / `evse_model_name`.
+          example: emod01HRS4TSK26BPBV7127DH7E0HA
+        evse_make_name:
+          type: string
+          description: Free-text make name from manual entry. Must be supplied together with `evse_model_name`. Mutually exclusive with `evse_model_id`.
+          example: Wallbox
+        evse_model_name:
+          type: string
+          description: Free-text model name from manual entry. Must be supplied together with `evse_make_name`. Mutually exclusive with `evse_model_id`.
+          example: Pulsar Pro
+    DailyPrices:
+      title: DailyPrices
+      description: Information about the tariff's prices for different parts of the day.
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      maxProperties: 3
+      required:
+      - peak
+      properties:
+        peak:
+          $ref: '#/components/schemas/PriceSummary'
+        mid_peak:
+          $ref: '#/components/schemas/PriceSummary'
+        off_peak:
+          $ref: '#/components/schemas/PriceSummary'
+      x-tags:
+      - Tariffs
+    EVSEMake:
+      title: Make
+      description: A resource representing a manufacturer of EVSEs.
+      type: object
+      x-tags:
+      - EVSEs
+      required:
+      - id
+      - url
+      - name
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given EVSE Make.
+          pattern: emak[A-Z\d]{26}
+          example: emak01HS8FRXKJD5JZZ7ZN6W8H21P8
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/evse_makes/emak01HS8FRXKJD5JZZ7ZN6W8H21P8
+          readOnly: true
+        name:
+          type: string
+          example: BG SyncEV
+          readOnly: true
+        display_name:
+          type:
+          - string
+          - 'null'
+          example: BG SyncEV
+          description: The EVSE make name for in-app display. May be null if no display name has been set.
+          readOnly: true
+        icon:
+          type:
+          - string
+          - 'null'
+          format: uri
+          example: https://cdn.example.com/volvo.png
+          description: A url for an image of the make's logo.
+          readOnly: true
+        onboarding_url:
+          type:
+          - string
+          - 'null'
+          example: https://api.ev.energy/v2/evse_onboarding?make_id=emak01HN2NJQRGDQP0GBE1F7R6PB3D&user_id=user01HN2NJ9NMRZBXT1H6FT9N7735&client_id=your_client_id
+          description: 'A pre-constructed link to initiate onboarding for an EVSE of this make. If it is null, then it cannot be onboarded with model alone. You should filter the list of [EVSE models](ev.energy-API-v2.yaml/paths/~1evse_models/get) by this make and then have the user select their model.
+
+
+            Your `client_id` and the user''s `user_id` are automatically included based on your authentication token. If you are using client credentials authentication, the user ID will not be automatically included unless you set the EvEnergy-User header on your request.'
+          readOnly: true
+        is_beta:
+          type: boolean
+          example: false
+          description: Whether this EVSE make integration is in beta.
+          readOnly: true
+        evse_models:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/evse_models/?make_id=emak01HN2NJQRGDQP0GBE1F7R6PB3D
+          description: A pre-constructed link to a list of EVSE models filtered for this make.
+          readOnly: true
+    Tariff:
+      title: Tariff
+      examples:
+      - id: tari01HN2NJ9NMRZBXT1H6FT9N7735
+        url: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7735
+        supplier: https://api.ev.energy/v2/suppliers/supl01HN2NJ9NMRZBXT1H6FT9N7735
+        name: Fangorn Biomass
+        currency: GBP
+        gsp_group: _C
+        valid_from: '2026-03-17'
+        valid_until: '2027-03-17'
+        daily_prices:
+          peak:
+            price: '0.30'
+            times:
+            - start: '18:00:00'
+              end: 00:00:00
+          mid_peak:
+            price: '0.20'
+            times:
+            - start: '10:00:00'
+              end: 08:00:00
+          off_peak:
+            price: '0.10'
+            times:
+            - start: 08:00:00
+              end: '18:00:00'
+        scheduler_tariff: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7835
+      description: 'Note: daily_prices and type are only available under contract. Please reach out to your account manager to find out more.'
+      x-tags:
+      - Tariffs
+      allOf:
+      - $ref: '#/components/schemas/TariffBase'
+      - type: object
+        properties:
+          scheduler_tariff:
+            oneOf:
+            - type: string
+              format: uri
+              example: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7835
+            - type: object
+              required:
+              - id
+              - url
+              - supplier
+              - name
+              - currency
+              properties:
+                id:
+                  type: string
+                  pattern: tari[A-Z\d]{26}
+                url:
+                  type: string
+                  format: uri
+                supplier:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+                currency:
+                  type: string
+              additionalProperties: true
+            - type: 'null'
+            description: The tariff used by the scheduler for charge optimisation, which may differ from the billing tariff. Returns a URL by default, or null if not set. Expandable with ?expand=scheduler_tariff to return a TariffBase object (additional fields may be present beyond those listed here).
+    EVSESite:
+      title: EVSESite
+      type: object
+      description: Represents a place with one or more EVSEs installed which can be accessed by multiple users.
+      required:
+      - id
+      - url
+      - evses
+      - cpms_connection
+      properties:
+        id:
+          type: string
+          pattern: site[A-Z\d]{26}
+          examples:
+          - site01JX2SZ0WAFTDYVYY0JRAYREY7
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/evse_sites/site01JX2SZ0WAFTDYVYY0JRAYREY7
+          readOnly: true
+        evses:
+          type: array
+          description: A list of all EVSEs that are currently associated with this site.
+          items:
+            type: string
+            format: uri
+            examples:
+            - https://api.ev.energy/v2/evses/evse01HSH04KDEWF6Z4DB2J77J74K5
+          readOnly: true
+        cpms_connection:
+          type:
+          - string
+          - 'null'
+          description: The type of ChargePoint Management System that this site is connected to, if there is one.
+          enum:
+          - null
+          - CHARGEPOINT
+          - SWTCH
+          readOnly: true
+        cpms_connection_display_name:
+          type:
+          - string
+          - 'null'
+          description: A human-readable name for the Chargepoint Management System that the site is connected to.
+          example: ChargePoint
+        user_connected:
+          type:
+          - boolean
+          - 'null'
+          description: When authenticated as a specific user (eg. via the Authorisation Code grant type) or when the EvEnergy-User header is set to a valid user ID, this field will indicate whether the user is currently connected to this EVSE Site's CPMS. If the request is not made in the context of a user, or the site does not have a CPMS connection, this field will be null.
+          readOnly: true
+    EVSEOCPPCallResponse:
+      title: EVSEOCPPCallResponse
+      description: The response to an OCPP call message.
+      type: object
+      properties:
+        sampled_at:
+          type: string
+          format: date-time
+          description: The date and time when this response was recorded.
+          readOnly: true
+        payload:
+          type: object
+          description: The OCPP response payload.
+          readOnly: true
+        error_code:
+          type: string
+          description: The OCPP error code for this response.
+          readOnly: true
+          example: NoError
+          enum:
+          - NoError
+          - NotImplemented
+          - NotSupported
+          - InternalError
+          - ProtocolError
+          - SecurityError
+          - FormationViolation
+          - PropertyConstraintViolation
+          - OccurenceConstraintViolation
+          - TypeConstraintViolation
+          - GenericError
+          - UnknownError
+        error_description:
+          type:
+          - string
+          - 'null'
+          description: A human-readable description of the error, if any.
+          readOnly: true
+    EVSEModel:
+      title: Model
+      description: A resource representing a model of EVSEs.
+      type: object
+      required:
+      - id
+      - url
+      - name
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given EVSE Model.
+          pattern: emod[A-Z\d]{26}
+          example: emod01HS9A004X5TB5JCMHENB5Z446
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/evse_models/emod01HS9A004X5TB5JCMHENB5Z446
+          readOnly: true
+        name:
+          type: string
+          example: EVWC2S22
+          readOnly: true
+        make:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/evse_makes/emak01HS8FRMXGE3566EDXCMWGW5W4
+          - $ref: '#/components/schemas/EVSEMake'
+        display_name:
+          type:
+          - string
+          - 'null'
+          example: EVWC2S22
+          description: The EVSE model name for in-app display. May be null if no display name has been set.
+          readOnly: true
+        onboarding_url:
+          type:
+          - string
+          - 'null'
+          example: https://api.ev.energy/v2/evse_onboarding?model_id=emod01HN2NJHAJJAQD32QJ4QXTDSGW&user_id=user01HN2NJ9NMRZBXT1H6FT9N7735&client_id=your_client_id
+          format: uri
+          description: 'A pre-constructed link to initiate onboarding for an EVSE with this model. If it is null, then we do not support intergrating with this EVSE and the user will need an integrated vehicle in order for us to be able to track their charging.
+
+
+            Your `client_id` and the user''s `user_id` are automatically included based on your authentication token. If you are using client credentials authentication, the user ID will not be automatically included unless you set the EvEnergy-User header on your request.'
+          readOnly: true
+      x-tags:
+      - EVSEs
+    Location:
+      title: Location
+      type: object
+      description: 'Location model for charging locations.
+
+
+        **Address validation:** Address fields are optional as a group, but each field independently triggers the requirement. If any of `address_1`, `address_2`, `city`, `state`, `postal_code`, `country_code`, or `coordinates` is provided with a non-null value, then `address_1`, `city`, `postal_code`, and `country_code` must all be provided as non-null values. Sending the keys with explicit `null` values is allowed and does not trigger the requirement (this is how addresses are cleared via `PATCH`). Partial addresses are rejected with a 400.
+
+        '
+      properties:
+        address_1:
+          type:
+          - string
+          - 'null'
+          description: First line of address.
+        address_2:
+          type:
+          - string
+          - 'null'
+          description: Second line of address.
+        postal_code:
+          type:
+          - string
+          - 'null'
+          description: Postal Code.
+        country_code:
+          anyOf:
+          - $ref: '#/components/schemas/CountryCode'
+          - type: 'null'
+          $ref: '#/components/schemas/CountryCode'
+        coordinates:
+          anyOf:
+          - $ref: '#/components/schemas/LatLong'
+          - type: 'null'
+        tariff:
+          oneOf:
+          - format: uri
+            type:
+            - string
+            - 'null'
+            example: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7735
+          - $ref: '#/components/schemas/Tariff'
+        city:
+          type:
+          - string
+          - 'null'
+        state:
+          type:
+          - string
+          - 'null'
+        evse_site:
+          oneOf:
+          - type:
+            - string
+            - 'null'
+          - $ref: '#/components/schemas/EVSESite'
+          description: If null, the user's location is not an EVSE Site. Otherwise, this field references the site they are a part of.
+      dependentSchemas:
+        address_1:
+          if:
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - city
+            - postal_code
+            - country_code
+            properties:
+              city:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+        address_2:
+          if:
+            properties:
+              address_2:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - city
+            - postal_code
+            - country_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              city:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+        city:
+          if:
+            properties:
+              city:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - postal_code
+            - country_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+        state:
+          if:
+            properties:
+              state:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - city
+            - postal_code
+            - country_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              city:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+        postal_code:
+          if:
+            properties:
+              postal_code:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - city
+            - country_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              city:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+        country_code:
+          if:
+            properties:
+              country_code:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - city
+            - postal_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              city:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+        coordinates:
+          if:
+            properties:
+              coordinates:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - city
+            - postal_code
+            - country_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              city:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+    EVSEImportRequest:
+      title: EVSEImportRequest
+      description: Request body for `POST /evse_onboarding/import`. The backend uses the authenticated user's email (and `secondary_email` if set on the profile) to look up the device at the provider, so only the provider name and the device's serial number are required from the client.
+      type: object
+      x-tags:
+      - EVSEs
+      required:
+      - provider
+      - serial_number
+      properties:
+        provider:
+          type: string
+          description: The integration provider that owns the EVSE. Must be one of the providers that supports serial-number-based import.
+          enum:
+          - ChargePoint
+          - EO
+          - SyncEV
+          - EnelX
+          - Easee
+          - Wallbox
+          - Zaptec
+          example: Wallbox
+        serial_number:
+          type: string
+          description: The serial number (CPID) of the EVSE as printed on the device or shown in the provider's app.
+          example: WBX-12345678
+    EVSECompatibilityCheckResult:
+      title: EVSECompatibilityCheckResult
+      description: 'Compatibility verdict for an `(EVSEModel, country)` pair. Returned
+
+        by `GET /evse_compatibility/check`.'
+      type: object
+      required:
+      - compatible
+      - beta
+      - recommendation_rank
+      properties:
+        compatible:
+          type: boolean
+          description: True if the model is supported in the requested country.
+        beta:
+          type: boolean
+          description: 'True if support is currently in early-access / beta. Always
+
+            present in the response; `false` when `compatible` is `false`.'
+        recommendation_rank:
+          type:
+          - integer
+          - 'null'
+          minimum: 1
+          maximum: 10
+          description: 'Priority of the EVSE make on the new device-selection screen.
+
+            Lower = higher priority (1 = top, 10 = lowest explicit value);
+
+            `null` means no rank set and should be treated as lower priority
+
+            than any explicit value. Always reflects the make''s current
+
+            value, independent of `compatible`.'
+    EVSEReconnectionUrl:
+      title: EVSEReconnectionUrl
+      x-stoplight:
+        id: evse-reconnection-url-schema
+      type: object
+      examples:
+      - url: https://app.ev.energy/evse-onboarding/start/56091b3b-86e9-4e7c-a825-f99e5d131234
+      description: A URL for a user to re-authenticate their EVSE.
+      properties:
+        url:
+          type: string
+          x-stoplight:
+            id: evse-reconnection-url-field
+          format: uri
+          example: https://app.ev.energy/evse-onboarding/start/56091b3b-86e9-4e7c-a825-f99e5d131234
+          readOnly: true
+    CountryCode:
+      description: ISO 3166-1 2 letter Country Codes.
+      type: string
+      enum:
+      - AD
+      - AE
+      - AF
+      - AG
+      - AI
+      - AL
+      - AM
+      - AO
+      - AQ
+      - AR
+      - AS
+      - AT
+      - AU
+      - AW
+      - AX
+      - AZ
+      - BA
+      - BB
+      - BD
+      - BE
+      - BF
+      - BG
+      - BH
+      - BI
+      - BJ
+      - BL
+      - BM
+      - BN
+      - BO
+      - BQ
+      - BR
+      - BS
+      - BT
+      - BV
+      - BW
+      - BY
+      - BZ
+      - CA
+      - CC
+      - CD
+      - CF
+      - CG
+      - CH
+      - CI
+      - CK
+      - CL
+      - CM
+      - CN
+      - CO
+      - CR
+      - CU
+      - CV
+      - CW
+      - CX
+      - CY
+      - CZ
+      - DE
+      - DJ
+      - DK
+      - DM
+      - DO
+      - DZ
+      - EC
+      - EE
+      - EG
+      - EH
+      - ER
+      - ES
+      - ET
+      - FI
+      - FJ
+      - FK
+      - FM
+      - FO
+      - FR
+      - GA
+      - GB
+      - GD
+      - GE
+      - GF
+      - GG
+      - GH
+      - GI
+      - GL
+      - GM
+      - GN
+      - GP
+      - GQ
+      - GR
+      - GS
+      - GT
+      - GU
+      - GW
+      - GY
+      - HK
+      - HM
+      - HN
+      - HR
+      - HT
+      - HU
+      - ID
+      - IE
+      - IL
+      - IM
+      - IN
+      - IO
+      - IQ
+      - IR
+      - IS
+      - IT
+      - JE
+      - JM
+      - JO
+      - JP
+      - KE
+      - KG
+      - KH
+      - KI
+      - KM
+      - KN
+      - KP
+      - KR
+      - KW
+      - KY
+      - KZ
+      - LA
+      - LB
+      - LC
+      - LI
+      - LK
+      - LR
+      - LS
+      - LT
+      - LU
+      - LV
+      - LY
+      - MA
+      - MC
+      - MD
+      - ME
+      - MF
+      - MG
+      - MH
+      - MK
+      - ML
+      - MM
+      - MN
+      - MO
+      - MP
+      - MQ
+      - MR
+      - MS
+      - MT
+      - MU
+      - MV
+      - MW
+      - MX
+      - MY
+      - MZ
+      - NA
+      - NC
+      - NE
+      - NF
+      - NG
+      - NI
+      - NL
+      - 'NO'
+      - NP
+      - NR
+      - NU
+      - NZ
+      - OM
+      - PA
+      - PE
+      - PF
+      - PG
+      - PH
+      - PK
+      - PL
+      - PM
+      - PN
+      - PR
+      - PS
+      - PT
+      - PW
+      - PY
+      - QA
+      - RE
+      - RO
+      - RS
+      - RU
+      - RW
+      - SA
+      - SB
+      - SC
+      - SD
+      - SE
+      - SG
+      - SH
+      - SI
+      - SJ
+      - SK
+      - SL
+      - SM
+      - SN
+      - SO
+      - SR
+      - SS
+      - ST
+      - SV
+      - SX
+      - SY
+      - SZ
+      - TC
+      - TD
+      - TF
+      - TG
+      - TH
+      - TJ
+      - TK
+      - TL
+      - TM
+      - TN
+      - TO
+      - TR
+      - TT
+      - TV
+      - TW
+      - TZ
+      - UA
+      - UG
+      - UM
+      - US
+      - UY
+      - UZ
+      - VA
+      - VC
+      - VE
+      - VG
+      - VI
+      - VN
+      - VU
+      - WF
+      - WS
+      - YE
+      - YT
+      - ZA
+      - ZM
+      - ZW
+    EVSEStatusLog:
+      title: EVSEStatusLog
+      description: Records the state of an EVSE at a particular point in time.
+      type: object
+      x-tags:
+      - EVSEs
+      properties:
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/evse/evse01HSH04KDEWF6Z4DB2J77J74K5/status_logs/2024-01-01T11:11:11.1111Z/
+          readOnly: true
+        sampled_at:
+          type: string
+          format: date-time
+          description: The date and time this status information was sampled on the EVSE.
+        logged_at:
+          type: string
+          format: date-time
+          description: The date and time when this data was recorded. Likely to be later than `sampled_at`, but how much later depends on the integration and other factors.
+        evse:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/evses/evse01HSH04KDEWF6Z4DB2J77J74K5
+          - $ref: '#/components/schemas/EVSE'
+        is_plugged_in:
+          type:
+          - boolean
+          - 'null'
+          description: Is there currently a vehicle connected to the EVSE? Will be null if we are unable to get this information from the EVSE integration.
+        is_charging:
+          type:
+          - boolean
+          - 'null'
+          description: Is the EVSE currently delivering charge? Will be null if we are unable to get this information from the EVSE integration.
+        charge_rate_watts:
+          type:
+          - integer
+          - 'null'
+          description: The current rate of charge delivery, in watts. Will be null if we are unable to get this information from the EVSE integration.
+        export_power_watts:
+          type:
+          - integer
+          - 'null'
+          description: Power flowing from the vehicle to the grid (V2X), in watts. Will be null when the EVSE does not report export power or is not bidirectional.
+          readOnly: true
+        control_pilot_status:
+          type:
+          - string
+          - 'null'
+          enum:
+          - A
+          - B
+          - C
+          - D
+          - E
+          - F
+          - null
+          description: "The SAE J1772 Control Pilot state of the EVSE. Will be null if we are unable to get this information from the EVSE integration.\n - `A`: Standby (no vehicle connected).\n - `B`: Vehicle detected (plugged in, not charging).\n - `C`: Ready / charging (drawing power, no ventilation required).\n - `D`: Charging with ventilation required.\n - `E`: No power (shut off).\n - `F`: Error / fault."
+          readOnly: true
+        meter_reading_watt_hours:
+          type:
+          - integer
+          - 'null'
+          description: The meter reading in watt hours. Will be null if we are unable to get this information from the EVSE integration.
+          readOnly: true
+        is_enabled:
+          type:
+          - boolean
+          - 'null'
+          description: Whether the EVSE is enabled (free-vend mode). Will be null if we are unable to get this information from the EVSE integration.
+          readOnly: true
+        max_current_rating_milliamps:
+          type:
+          - integer
+          - 'null'
+          description: The maximum current the EVSE will allow the car to draw, in milliamps. Will be null if we are unable to get this information from the EVSE integration.
+          readOnly: true
+        cable_current_rating_milliamps:
+          type:
+          - integer
+          - 'null'
+          description: The maximum current the cable is rated for, in milliamps. Will be null if we are unable to get this information from the EVSE integration.
+          readOnly: true
+        signal_strength_rssi_dbm:
+          type:
+          - integer
+          - 'null'
+          description: The signal strength (RSSI) the EVSE reported, in dBm. Will be null if we are unable to get this information from the EVSE integration.
+          readOnly: true
+        inlet_power_watts:
+          type:
+          - integer
+          - 'null'
+          description: Power measured by the EVSE at the property supply inlet, in watts. Will be null if we are unable to get this information from the EVSE integration.
+          readOnly: true
+        voltage_millivolts:
+          type:
+          - integer
+          - 'null'
+          description: Voltage measured by the EVSE, in millivolts. Will be null if we are unable to get this information from the EVSE integration.
+          readOnly: true
+        state_of_charge_percentage:
+          type:
+          - integer
+          - 'null'
+          description: Battery charge level as a percentage, as received via the EVSE. Will be null if we are unable to get this information from the EVSE integration.
+          readOnly: true
+        mode:
+          type:
+          - string
+          - 'null'
+          enum:
+          - null
+          - Unknown
+          - Idle
+          - Delay
+          - Charge
+          - Discharge
+          - FFR
+          - Load match
+          - Export match
+          - Peak time
+          - Deep sleep
+          description: Operating mode reported by the EVSE. Will be null if we are unable to get this information from the EVSE integration.
+          readOnly: true
+    LocationDetail:
+      title: Location
+      description: Extra fields only included when a single location is requested but omitted when locations are listed.
+      allOf:
+      - type: object
+        properties:
+          current_carbon_intensity_grams_per_kilowatt_hour:
+            type:
+            - integer
+            - 'null'
+            example: 300
+            description: The current carbon intensity associated with the location in gCO2/kWh.
+      - $ref: '#/components/schemas/Location'
+    PriceSummary:
+      title: PriceSummary
+      description: A single price for a certain time range.
+      type: object
+      examples:
+      - price: '0.10'
+        times:
+        - start: '18:00:00'
+          end: 00:00:00
+      x-tags:
+      - Tariffs
+      properties:
+        price:
+          type: string
+          example: '0.10'
+          description: The price is in major currency units e.g. 0.10 means £0.10.
+        times:
+          type: array
+          items:
+            $ref: '#/components/schemas/Times'
+    EVSEWaitlistResponse:
+      title: EVSEWaitlistResponse
+      description: Response body for `POST /evse_waitlist`. Echoes just the new entry's uid; no `url` is returned because the endpoint exposes no retrieve action (privacy by design — waitlist entries cannot be enumerated or looked up via the public API).
+      type: object
+      x-tags:
+      - EVSEs
+      required:
+      - id
+      properties:
+        id:
+          type: string
+          pattern: ewlt[A-Z\d]{26}
+          description: Uid of the created waitlist entry.
+          example: ewlt01HRS4TSK26BPBV7127DH7E0HA
+    RFC9457ProblemDetail:
+      title: RFC 9457 Problem Detail
+      x-tags:
+      - problems
+      type: object
+      required:
+      - title
+      - detail
+      properties:
+        type:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/problems/example-problem/
+        status:
+          type: number
+          example: 400
+        title:
+          type: string
+          example: Short description
+        detail:
+          type: string
+          example: Long, more specific description.
+        instance:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
+        notification:
+          $ref: '#/components/schemas/Notification'
+      examples:
+      - type: https://api.ev.energy/v2/problems/example-problem/
+        status: 400
+        title: Short description
+        detail: Long, more specific description.
+        instance: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
+        notification:
+          id: notf01HTHKTXVB77901324BCQPF1RB
+          url: https://api.ev.energy/notifications/notf01HTHKTXVB77901324BCQPF1RB
+          message_id: ERR0123
+          category: ACTIONABLE
+          event_time: '2019-08-24T14:15:22Z'
+          short_text_title: Your car is disconnected
+          short_text_body: We need to reconnect to keep smart charging your car
+          detail_page_title: Your car is disconnected
+          detail_page_body: Your car has been disconnected. This happens when your password is reset. We need you to re-authorise ev.energy to access your account in order for us to keep managing your charging. Blah blah blah.
+          external_link: http://example.com
+          external_button_label: More info
+          read_at: '2019-08-24T14:20:22Z'
+          resolved_at: '2019-08-25T14:15:22Z'
+    Notification:
+      title: Notification
+      description: Something that the user should be informed about.
+      type: object
+      examples:
+      - id: notf67O36PLTFDB57M0E5L33JZLGM0
+        url: https://api.ev.energy/notifications/notf67O36PLTFDB57M0E5L33JZLGM0
+        message_id: ERR0123
+        category: ACTIONABLE
+        event_time: '2019-08-24T14:15:22Z'
+        short_text_title: Your car is disconnected
+        short_text_body: We need to reconnect to keep smart charging your car
+        detail_page_title: Your car is disconnected
+        detail_page_body: Your car has been disconnected. This happens when your password is reset. We need you to re-authorise ev.energy to access your account in order for us to keep managing your charging. Blah blah blah.
+        external_link: http://example.com
+        external_button_label: More info
+        read_at: '2019-08-24T14:20:22Z'
+        resolved_at: '2019-08-25T14:15:22Z'
+      required:
+      - id
+      - url
+      - message_id
+      - category
+      - event_time
+      - short_text_title
+      - short_text_body
+      - detail_page_title
+      - detail_page_body
+      - external_link
+      - external_button_label
+      properties:
+        id:
+          type: string
+          pattern: notf[A-Z\d]{26}
+          example: notf67O36PLTFDB57M0E5L33JZLGM0
+          description: Unique identifier for the Notification
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/notifications/notf67O36PLTFDB57M0E5L33JZLGM0
+        message_id:
+          type: string
+          description: Internal identifier for this notification type. E.g. 'ERR0023'
+        category:
+          description: Category of this notification type
+          enum:
+          - ACTIONABLE
+          - SERVICE
+          - RETRY
+          - MARKETING
+          - INTERNAL
+        event_time:
+          type: string
+          format: date-time
+          description: The timestamp of the event described by this notification
+        short_text_title:
+          type: string
+          description: Short title for the notification
+          maxLength: 33
+        short_text_body:
+          type: string
+          description: Short description of the event being notified
+          maxLength: 49
+        detail_page_title:
+          type: string
+          description: Title of a help page giving more information about this notification
+        detail_page_body:
+          type: string
+          description: Text of a help page giving more information about this notification
+        external_link:
+          type:
+          - string
+          - 'null'
+          description: URL of a web page giving further information about this notification
+          format: uri
+        external_button_label:
+          type: string
+          description: Text to be displayed on a button leading to the external_link location
+        read_at:
+          type: string
+          format: date-time
+          description: When the user examined the contents of this notification
+        resolved_at:
+          type: string
+          format: date-time
+          description: When the problem associated with this notification was resolved
+    EVSECommandLog:
+      title: EVSECommandLog
+      description: Records a command that was sent to an EVSE.
+      type: object
+      x-tags:
+      - EVSEs
+      properties:
+        url:
+          type: string
+          example: https://api.ev.energy/v2/evses/evse01HSH04KDEWF6Z4DB2J77J74K5/command_logs/2024-04-17T09:39:45.984584Z/
+          format: uri
+          readOnly: true
+        logged_at:
+          type: string
+          description: The date and time when this command was logged by the ev.energy system.
+          format: date-time
+          readOnly: true
+        evse:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/evses/evse01HSH04KDEWF6Z4DB2J77J74K5
+          - $ref: '#/components/schemas/EVSE'
+        max_load_target_milliamps:
+          type:
+          - integer
+          - 'null'
+          example: 32000
+          description: The target maximum load sent to the EVSE, in milliamps.
+          readOnly: true
+        is_enabled_target:
+          type:
+          - boolean
+          - 'null'
+          example: true
+          description: The target state sent for is_enabled (i.e. free-vend mode).
+          readOnly: true
+        always_enabled:
+          type:
+          - boolean
+          - 'null'
+          example: false
+          description: Whether the EVSE should always be in is_enabled (i.e. free-vend) mode.
+          readOnly: true
+        reason:
+          type:
+          - string
+          - 'null'
+          example: SCHEDULED_CHARGING
+          description: The reason the command was sent to the EVSE.
+          readOnly: true
+          enum:
+          - SCHEDULED_CHARGING
+          - REFRESH_SCHEDULES
+          - STOP_CHARGE
+          - START_CHARGE
+          - SOLAR_CHARGE_NIGHTTIME_CHARGE_RATE
+          - API_TRIGGERED_COMMAND
+          - COMMISSIONING
+          - CHARGING_SESSION
+          - VEHICLE_TO_HOME
+          - FREE_VEND
+          - MAINTAIN_EVSE_STATE
+          - CREATE_HOME_CHARGER
+          - LOCKED_MODE
+          - SMART_CHARGE_ENABLED_CHANGED
+          - SMART_CHARGE_ENABLED
+          - SMART_CHARGE_DISABLED
+        internal_command_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          example: d4e5f6a7-b8c9-0123-def0-123456789abc
+          description: Internal UUID to track this command dispatch. This links with device command logs.
+          readOnly: true
+    EVSE:
+      title: EVSE
+      description: A resource that represents a single, physical piece of hardware for supplying electricity to an electric vehicle.
+      type: object
+      x-tags:
+      - EVSEs
+      required:
+      - id
+      - url
+      - cpid
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given EVSE.
+          pattern: evse[A-Z\d]{26}
+          example: evse01HSH04KDEWF6Z4DB2J77J74K5
+          readOnly: true
+        url:
+          type: string
+          example: https://api.ev.energy/v2/evses/evse01HSH04KDEWF6Z4DB2J77J74K5
+          format: uri
+          readOnly: true
+        cpid:
+          type: string
+          description: A unique identifier for the chargepoint. The format varies by manufacturer and model.
+          example: SHIR100001
+          readOnly: true
+        model:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/evse_models/emod01HS9A004X5TB5JCMHENB5Z446
+          - $ref: '#/components/schemas/EVSEModel'
+          readOnly: true
+        user:
+          example: https://api.ev.energy/v2/users/user01HN2NJ9NMRZBXT1H6FT9N7735
+          oneOf:
+          - type: string
+            example: https://api.ev.energy/v2/users/user01HN2NJ9NMRZBXT1H6FT9N7735
+            format: uri
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+        latest_status_log:
+          example: https://api.ev.energy/v2/evse/evse01HSH04KDEWF6Z4DB2J77J74K5/status_logs/2024-01-01T11:11:11.1111Z/
+          oneOf:
+          - type:
+            - string
+            - 'null'
+            example: https://api.ev.energy/v2/evse/evse01HSH04KDEWF6Z4DB2J77J74K5/status_logs/2024-01-01T11:11:11.1111Z/
+            format: uri
+          - $ref: '#/components/schemas/EVSEStatusLog'
+          description: 'An expandable reference to the most recent status log for this EVSE. This can be requested or expanded to get the most accurate information we have on the device''s current status.
+
+
+            **Inferring reachability:** v2 deliberately does not expose a discrete `online`/`offline` state on the EVSE resource — the boundary is fuzzy and prone to misuse. To decide whether an EVSE is currently reachable, expand `latest_status_log` (or fetch it separately) and compare its `sampled_at` timestamp against your own staleness threshold (for example: a charger silent for more than 15 minutes is likely unreachable).'
+          readOnly: true
+        ct_clamp:
+          oneOf:
+          - type:
+            - string
+            - 'null'
+            format: uri
+            example: https://api.ev.energy/v2/ct_clamps/ctcl01HSH04KDEWF6Z4DB2J77J74K5
+          - $ref: '#/components/schemas/CTClamp'
+          description: An expandable reference to the CT clamp associated with this EVSE. Will be null if no CT clamp is installed.
+          readOnly: true
+        lock_mode:
+          type:
+          - string
+          - 'null'
+          enum:
+          - UNLOCKED
+          - SMART
+          - LOCKED
+          - null
+          example: UNLOCKED
+          description: Lock mode of the EVSE. ``UNLOCKED`` allows free charging, ``SMART`` only allows charging within smart-charging hours, ``LOCKED`` blocks all charging.
+          readOnly: true
+        location:
+          type:
+          - object
+          - 'null'
+          properties:
+            latitude:
+              type: number
+              format: double
+              example: 51.5074
+            longitude:
+              type: number
+              format: double
+              example: -0.1278
+          required:
+          - latitude
+          - longitude
+          example:
+            latitude: 51.5074
+            longitude: -0.1278
+          description: 'The geographic location of the EVSE as a latitude/longitude point.
+
+
+            **Why smart charging needs it:** the location tells ev.energy which electricity grid the charger sits on, which drives the core smart-charging decisions:
+
+
+            - **Carbon optimisation** — selects the local carbon-intensity feed so charging is shifted to the lowest-carbon periods.
+
+            - **Timezone** — resolves the charger''s timezone so time-of-day charging schedules and tariff windows are applied in local time.
+
+            - **Programs and solar** — determines the eligible grid/demand-response programs and the relevant solar forecast.
+
+
+            Without an accurate location the scheduler cannot reliably optimise charging for cost and carbon.
+
+
+            **When it is set:** during commissioning, where the supplied postcode/address is geocoded to a latitude/longitude (or, for app-linked chargers, copied from the owner''s home location). It can be corrected later via `PATCH`. Null when the location has not yet been determined.'
+        lifecycle_state:
+          type:
+          - string
+          - 'null'
+          enum:
+          - CREATED_LINKED
+          - INSTALLED
+          - COMMISSIONED
+          - DECOMMISSIONED
+          - UNKNOWN
+          - PROBABLY_INSTALLED
+          - UNPAIRED
+          - PENDING
+          - ENROLLED
+          - null
+          example: COMMISSIONED
+          description: The most recently recorded stage of the EVSE's onboarding lifecycle. Null when no stage has been recorded for it yet, which is normal for a charger that has only just been created.
+          readOnly: true
+        charging_sub_sessions:
+          type: string
+          format: uri
+          example: https://api.ev.energy/charging_sub_sessions/?evse_id=evse01HSH04KDEWF6Z4DB2J77J74K5
+          description: Provides a pre-constructed URL to list charging sub-sessions involving this EVSE.
+    VPPModes:
+      title: VPPModes
+      type: object
+      description: VPP (Virtual Power Plant) mode capabilities indicating which control modes are supported by the resource.
+      required:
+      - target_power
+      - import_max_power
+      - export_max_power
+      - charge_mode
+      properties:
+        target_power:
+          type: boolean
+          description: Whether target power control mode is supported.
+          readOnly: true
+          example: true
+        import_max_power:
+          type: boolean
+          description: Whether import maximum power control mode is supported.
+          readOnly: true
+          example: true
+        export_max_power:
+          type: boolean
+          description: Whether export maximum power control mode is supported.
+          readOnly: true
+          example: false
+        charge_mode:
+          type: boolean
+          description: Whether charge mode control is supported.
+          readOnly: true
+          example: true
+      examples:
+      - target_power: true
+        import_max_power: true
+        export_max_power: false
+        charge_mode: true
+    TariffBase:
+      title: TariffBase
+      type: object
+      description: 'Core tariff properties shared by Tariff and expanded scheduler_tariff. Note: daily_prices and type are only available under contract. Please reach out to your account manager to find out more.'
+      x-tags:
+      - Tariffs
+      required:
+      - id
+      - url
+      - supplier
+      - name
+      - currency
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given user.
+          pattern: tari[A-Z\d]{26}
+          example: tari01HN2NJ9NMRZBXT1H6FT9N7735
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7735
+        supplier:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/suppliers/supl01HN2NJ9NMRZBXT1H6FT9N7735
+          - $ref: '#/components/schemas/Supplier'
+          description: The energy company that supplies this tariff.
+        name:
+          type: string
+          example: Fangorn Biomass
+        currency:
+          type: string
+          example: GBP
+        highlighted:
+          type: boolean
+          description: A highlighted tariff is one that is often selected by users.
+        type:
+          enum:
+          - FLAT_RATE
+          - DUAL_RATE
+          - THREE_RATE
+          - DYNAMIC
+          - EXTERNALLY_MANAGED
+          - OTHER
+        daily_prices:
+          $ref: '#/components/schemas/DailyPrices'
+          description: 'The times returned here are localised to the timezone the tariff is in.
+
+            The timezone is returned in `timezone_name`.'
+        timezone_name:
+          type: string
+          example: Europe/London
+        price_chart_url:
+          type:
+          - string
+          - 'null'
+          description: The url of a website which can display a chart of prices for the tariff. This website is an external resource and is not affiliated with ev.energy.
+          example: https://www.example.com/
+        gsp_group:
+          type:
+          - string
+          - 'null'
+          description: The GB Grid Supply Point (DNO region) the tariff applies to. Suppliers publish region-specific rates, so the same named tariff can appear once per region with differing prices; this field distinguishes them. `null` for tariffs that are not region-specific.
+          example: _C
+        valid_from:
+          type: string
+          format: date
+          description: The date from which this tariff became available to new customers.
+          example: '2026-03-17'
+        valid_until:
+          type:
+          - string
+          - 'null'
+          format: date
+          description: The date after which this tariff is no longer available to new customers (it has been superseded). `null` if the tariff is still open to new sign-ups. Use the `valid` query parameter to filter the list to only currently-available tariffs.
+          example: '2027-03-17'
+    User:
+      title: User
+      description: A resource that represents an individual user in the ev.energy system.
+      type: object
+      x-tags:
+      - Users
+      required:
+      - id
+      - url
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given user.
+          pattern: user[A-Z\d]{26}
+          example: user01HN2NJ9NMRZBXT1H6FT9N7735
+          readOnly: true
+        url:
+          type: string
+          example: https://api.ev.energy/v2/users/user01HN2NJ9NMRZBXT1H6FT9N7735
+          format: uri
+          readOnly: true
+        email:
+          type: string
+          format: email
+        full_name:
+          type: string
+          readOnly: true
+          description: The user's full name.
+          example: Frodo Baggins
+        joined_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: The date and time when the user joined the platform.
+          example: '2023-06-15T10:00:00Z'
+        terms_consent_datetime:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+          description: When the user gave their terms and conditions consent, or null if they have not.
+          example: '2023-06-15T10:00:00Z'
+        default_location:
+          anyOf:
+          - $ref: '#/components/schemas/Location'
+          - $ref: '#/components/schemas/LocationDetail'
+          description: LocationDetail is served when a single user is requested, otherwise Location is served for user lists.
+        vehicles:
+          type: array
+          items:
+            type: string
+            format: uri
+            example: https://api.ev.energy/v2/vehicles/vhcl01HRFF3SEVSCRAV9B3CHVDFN0H
+            readOnly: true
+          readOnly: true
+        evses:
+          type: array
+          items:
+            type: string
+            format: uri
+            example: https://api.ev.energy/v2/evses/evse01HSH04XHZCT92RN018F0236ZM
+            readOnly: true
+          readOnly: true
+    LatLong:
+      title: LatLong
+      type: object
+      description: Coordinates model used for locations.
+      required:
+      - latitude
+      - longitude
+      properties:
+        latitude:
+          type: number
+          format: float
+          example: 51.52576576674041
+        longitude:
+          type: number
+          format: float
+          example: -0.08366433371722264
+    EVSEOnboardingJsonResponse:
+      title: EVSEOnboardingJsonResponse
+      description: JSON payload returned by `GET /evse_onboarding?response_type=json`. Carries the absolute Start-wrapper URL.
+      type: object
+      x-tags:
+      - EVSEs
+      required:
+      - url
+      properties:
+        url:
+          type: string
+          format: uri
+          description: Absolute URL to the EVSE onboarding wrapper. Open it in a WebView (mobile) or redirect the browser to it (web). The wrapper view either redirects to the provider (when a model was supplied) or shows the make picker.
+          example: https://api.ev.energy/evse-onboarding/start/abc12345-def6-7890-1234-567890abcdef/
+  parameters:
+    evse_firmware_version_id:
+      name: evse_firmware_version_id
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: evsf[A-Z\d]{26}
+        example: evsf01HSH04KDEWF6Z4DB2J77J74K5
+      description: The ID of the specific EVSE firmware version.
+    sampled_at__gte:
+      name: sampled_at__gte
+      in: query
+      schema:
+        type: string
+        format: date-time
+        example: '2024-04-17T09:39:45.984584Z'
+      description: Filters for logs sampled at or after this datetime.
+    expand-on-evse-connectivity:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - latest_status_log
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    client_id:
+      name: client_id
+      in: query
+      required: true
+      schema:
+        type: string
+        example: sandbox-cc-id
+        minLength: 1
+      description: Your OAuth2 application client_id, issued when your ev.energy API integration was provisioned. This is the same value used when obtaining tokens via the Authorization Code or Client Credentials flows — not a user-created value. Passing an unrecognised string will result in an error. The onboarding endpoints redirect the user's browser through an OAuth flow to connect their device; the client_id determines which registered application is initiating the flow, so the correct branding, redirect URIs, and scopes are applied.
+    cpid:
+      name: cpid
+      in: query
+      required: false
+      schema:
+        type: string
+        example: SHIR100001
+      description: Filter EVSEs by chargepoint ID (exact match).
+    user:
+      name: EvEnergy-User
+      description: If the client is authenticated using Client Credentials, setting EvEnergy-User to a valid user ID allows requests to be made as if you were directly authenticated as that user.
+      in: header
+      required: false
+      schema:
+        type: string
+        pattern: user[A-Z\d]{26}
+        example: user01HN2NJ9NMRZBXT1H6FT9N7735
+    ocpp-error_code:
+      name: error_code
+      in: query
+      schema:
+        type: string
+        example: NoError
+        enum:
+        - NoError
+        - NotImplemented
+        - NotSupported
+        - InternalError
+        - ProtocolError
+        - SecurityError
+        - FormationViolation
+        - PropertyConstraintViolation
+        - OccurenceConstraintViolation
+        - TypeConstraintViolation
+        - GenericError
+        - UnknownError
+      description: Filter by OCPP response error code.
+    expand-on-evsecommandlog:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - evse
+          - evse.model
+          - evse.model.make
+          - evse.user
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    Accept-Language:
+      name: Accept-Language
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Indicates the natural language and locale that the client prefers.
+    logged_at__gte:
+      name: logged_at__gte
+      in: query
+      schema:
+        type: string
+        format: date-time
+        example: '2024-04-17T09:39:45.984584Z'
+      description: Filters for logs logged at or after this datetime.
+    user_id_onboarding:
+      name: user_id
+      in: query
+      required: true
+      schema:
+        type: string
+        pattern: user[A-Z\d]{26}
+        example: user01HN2NJ9NMRZBXT1H6FT9N7735
+      description: The ID of a user to onboard a device for.
+    expand-on-evseocpplog:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - evse
+          - evse.model
+          - evse.model.make
+          - evse.user
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    ocpp-direction:
+      name: direction
+      in: query
+      schema:
+        type: string
+        example: SENT
+        enum:
+        - SENT
+        - RECEIVED
+      description: Filter by message direction (SENT or RECEIVED).
+    sampled_at__lte:
+      name: sampled_at__lte
+      in: query
+      schema:
+        type: string
+        format: date-time
+        example: '2024-04-17T09:39:45.984584Z'
+      description: Filters for logs sampled at or before this datetime.
+    evse_make_id_q:
+      name: make_id
+      in: query
+      required: false
+      schema:
+        type: string
+        example: emak01HS8FRMXGE3566EDXCMWGW5W4
+      description: The ID of an EVSE Make to filter by.
+    evse_id:
+      name: evse_id
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: evse[A-Z\d]{26}
+        example: evse01HSH04KDEWF6Z4DB2J77J74K5
+      description: The ID of the specific EVSE to retrieve.
+    page_size:
+      name: page_size
+      description: Specify the number of results to return per page.
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 25
+        minimum: 1
+        maximum: 100
+        example: 10
+    evse_make_id:
+      name: evse_make_id
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: emak[A-Z\d]{26}
+        example: emak01HSB50J37V3Q5BKXSXTM64K7K
+      description: The ID of the specific EVSE make to retrieve.
+    previous:
+      name: page_before
+      description: Return results from the page after this ID.
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[a-z]{4}[A-Z\d]{26}'
+        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
+    next:
+      name: page_after
+      description: Return results from the page before this ID.
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[a-z]{4}[A-Z\d]{26}'
+        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
+    ocpp-error_code__in:
+      name: error_code__in
+      in: query
+      schema:
+        type: string
+        example: InternalError,ProtocolError
+      description: Filter by multiple OCPP response error codes (comma-separated).
+    expand-on-evse:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - user
+          - model
+          - model.make
+          - latest_status_log
+          - ct_clamp
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    version-2:
+      name: EvEnergy-Version
+      description: Specify the version of this endpoint to use.
+      required: false
+      in: header
+      schema:
+        type: number
+        enum:
+        - 2
+    logged_at__lte:
+      name: logged_at__lte
+      in: query
+      schema:
+        type: string
+        format: date-time
+        example: '2024-04-17T09:39:45.984584Z'
+      description: Filters for logs logged at or before this datetime.
+    evse_model_id:
+      name: evse_model_id
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: emod[A-Z\d]{26}
+        example: emod01HS9A05HDZKZ5GCW92HH6GJYN
+      description: The ID of the specific EVSE model to retrieve.
+    available_for_user_id:
+      name: available_for_user_id
+      in: query
+      schema:
+        type: string
+        pattern: user[A-Z\d]{26}
+        example: user01HN2NJ9NMRZBXT1H6FT9N7735
+      description: Filter to only return resources available in the user's region and program.
+    expand-on-evsemodel:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - make
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    expand-on-evsestatuslog:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - evse
+          - evse.model
+          - evse.model.make
+          - evse.user
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    expand-on-evseerrorlog:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - evse
+          - evse.model
+          - evse.model.make
+          - evse.user
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    ocpp-action:
+      name: action
+      in: query
+      schema:
+        type: string
+        example: Heartbeat
+        enum:
+        - Authorize
+        - BootNotification
+        - CancelReservation
+        - CertificateSigned
+        - ChangeAvailability
+        - ChangeConfiguration
+        - ClearCache
+        - ClearChargingProfile
+        - DataTransfer
+        - DeleteCertificate
+        - DiagnosticsStatusNotification
+        - ExtendedTriggerMessage
+        - FirmwareStatusNotification
+        - GetCompositeSchedule
+        - GetConfiguration
+        - GetDiagnostics
+        - GetInstalledCertificateIds
+        - GetLocalListVersion
+        - GetLog
+        - Heartbeat
+        - InstallCertificate
+        - LogStatusNotification
+        - MeterValues
+        - RemoteStartTransaction
+        - RemoteStopTransaction
+        - ReserveNow
+        - Reset
+        - SecurityEventNotification
+        - SendLocalList
+        - SetChargingProfile
+        - SignCertificate
+        - SignedFirmwareStatusNotification
+        - SignedUpdateFirmware
+        - StartTransaction
+        - StatusNotification
+        - StopTransaction
+        - TriggerMessage
+        - UnlockConnector
+        - UpdateFirmware
+      description: Filter by OCPP action label.
+    ocpp-action__in:
+      name: action__in
+      in: query
+      schema:
+        type: string
+        example: Heartbeat,StatusNotification
+      description: Filter by multiple OCPP action labels (comma-separated).
+  headers:
+    version-2:
+      description: Indicates the version of the API that generated this response. If EvEnergy-Version was not specified in the request, this will be your OAuth application's default version.
+      schema:
+        type: number
+        enum:
+        - 2
+    link:
+      description: Provides links to the previous and next pages of data, if they exist.
+      example: <https://api.ev.energy/v2/vehicles?page_size=25&page_before=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="previous", <https://api.ev.energy/v2/vehicles?page_size=25&page_after=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="next"
+      schema:
+        type: string
+    x-ratelimit-remaining:
+      description: The number of requests remaining until this client's rate limit is reached.
+      schema:
+        type: number
+        default: 999
+    x-ratelimit-limit:
+      description: The maximum number of requests that can be made to this endpoint per hour. Defaults to 1000 but may vary per client.
+      schema:
+        type: number
+        default: 1000
+    retry-after:
+      description: The number of seconds until this client's requests will not be rate limited.
+      schema:
+        type: number
+        default: 3600
+    link-timestamps:
+      description: Provides links to the previous and next pages of data, if they exist.
+      example: <https://api.ev.energy/v2/vehicles?page_size=25&page_before=2024-04-18T08:53:52.225655Z>; rel="previous", <https://api.ev.energy/v2/vehicles?page_size=25&page_after=2024-04-18T08:53:52.225655Z>; rel="next"
+      schema:
+        type: string
+  examples:
+    ProblemInvalidPaginationParameter:
+      value:
+        type: https://api.ev.energy/v2/problems/pagination-parameters/
+        status: 400
+        title: Invalid pagination parameter
+        detail: 'Invalid value for pagination parameter: page_size'
+    ProblemValidationFailedVehicle:
+      value:
+        type: https://api.ev.energy/v2/problems/validation-failed-create-vehicle/
+        status: 400
+        title: Request failed validation.
+        detail: 'Error on fields: user, trim'
+        field_errors:
+          user:
+          - This field is required.
+          trim:
+          - Invalid hyperlink - Object does not exist.
+    ProblemUnsupportedVersion:
+      value:
+        type: https://api.ev.energy/v2/problems/pagination-parameters/
+        status: 400
+        title: Unsupported version
+        detail: 'Unsupported version requested: 3.0'
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.ev.energy/o/token/
+          refreshUrl: https://api.ev.energy/o/token/
+          scopes:
+            carbon:read: ''
+            grid:read: ''
+            evse:read: ''
+            evse:write: ''
+            vehicle:read: ''
+            user:read: ''
+            charging_session:read: ''
+            tariff:read: ''
+            tariff:prices:read: ''
+            user:write: ''
+            inverter:read: ''
+            inverter:write: ''
+            home_battery:read: ''
+            home_energy:read: ''
+            boundary_meter:read: ''
+            vehicle:write: ''
+            vehicle_catalogue:write: Update shared vehicle-catalogue reference data (e.g. a model's default connector type)
+            charging_session:write: ''
+            solar:write: ''
+            solar:read: ''
+            subscription:read: ''
+            debug:read: ''
+            dispatch_coordinator:read: ''
+            dispatch_event:write: ''
+            solar_forecast:read: ''
+            payout_method:read: Read a user's preferred payout method
+            payout_method:write: Set, update, or clear a user's preferred payout method
+            notification_preferences:read: Read a user's notification group opt-in state
+            notification_preferences:write: Update a user's notification group opt-in state
+            route_planner_preferences:read: Read a user's EV Route Planner preferences
+            route_planner_preferences:write: Update a user's EV Route Planner preferences
+            saved_routes:read: Read a user's saved route-planner routes
+            saved_routes:write: Create, update, or delete a user's saved routes
+            region:read: Read region and region group boundary data
+            region:write: Create regions and region groups
+        authorizationCode:
+          authorizationUrl: https://api.ev.energy/o/authorize/
+          tokenUrl: https://api.ev.energy/o/token/
+          refreshUrl: https://api.ev.energy/o/token/
+          scopes: {}
+x-redocly:
+  openapi:
+    hideSchemaTitles: true
+x-internal: false

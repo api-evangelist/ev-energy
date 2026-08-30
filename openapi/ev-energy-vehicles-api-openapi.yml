@@ -1,0 +1,4929 @@
+openapi: 3.2.0
+info:
+  title: ev.energy v2 Vehicles API
+  version: '2.0'
+  contact:
+    email: developers@ev.energy
+    url: developers.ev.energy
+    name: ev.energy developers
+  description: The official API for ev.energy, version 2.
+  license:
+    name: Proprietary
+    url: https://ev.energy
+  termsOfService: ''
+servers:
+- url: https://api.ev.energy/v2
+  description: Live API for both production and sandbox requests.
+  x-internal: false
+- description: Staging server for internal testing only.
+  url: https://api-staging.ev.energy/v2
+  x-internal: true
+security:
+- oauth2: []
+tags:
+- name: Vehicles
+  description: Endpoints for interacting with vehicles.
+paths:
+  /vehicles/{vehicle_id}/connectors:
+    parameters:
+    - $ref: '#/components/parameters/vehicle_id'
+    get:
+      summary: Retrieve a vehicle's charging connectors
+      description: 'Retrieve the vehicle''s DC-fast charging connectors: its native plug and
+
+        any adapters it carries. `native_connector` is the per-vehicle value,
+
+        falling back to the vehicle model''s default when not overridden (both
+
+        may be null when not yet known).'
+      tags:
+      - Vehicles
+      responses:
+        '200':
+          description: Returns the vehicle's connector configuration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleConnectors'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '405':
+          $ref: '#/components/responses/Problem405MethodNotAllowed'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-vehicles-vehicle_id-connectors
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      security:
+      - oauth2:
+        - vehicle:read
+    patch:
+      summary: Update a vehicle's charging connectors
+      description: 'Update the vehicle''s connectors. The body is a partial map: only the
+
+        keys you include are changed. Set `native_connector` to override the
+
+        model default for this vehicle, or `null` to inherit it. `adaptors`
+
+        replaces the adapter list (send `[]` to clear); adaptors must be
+
+        distinct and must not include the native connector. `PATCH {}` is a
+
+        valid no-op.'
+      tags:
+      - Vehicles
+      responses:
+        '200':
+          description: Connectors updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleConnectors'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+        '400':
+          $ref: '#/components/responses/Problem400UpdateVehicleConnectorsValidationFailed'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '405':
+          $ref: '#/components/responses/Problem405MethodNotAllowed'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: patch-vehicles-vehicle_id-connectors
+      security:
+      - oauth2:
+        - vehicle:write
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleConnectorsUpdate'
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+  /vehicles/{vehicle_id}/state_of_charge:
+    parameters:
+    - $ref: '#/components/parameters/vehicle_id'
+    get:
+      summary: Retrieve a vehicle's current state of charge
+      description: 'Retrieve the vehicle''s current battery percentage used to seed route
+
+        plans. `source` indicates where the value came from: `MANUAL` when the
+
+        driver entered it, or `CONNECTED` when it comes from the vehicle''s
+
+        telemetry. All fields are null when no value is available.'
+      tags:
+      - Vehicles
+      responses:
+        '200':
+          description: Returns the vehicle's current state of charge.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleStateOfCharge'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '405':
+          $ref: '#/components/responses/Problem405MethodNotAllowed'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-vehicles-vehicle_id-state_of_charge
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      security:
+      - oauth2:
+        - vehicle:read
+    patch:
+      summary: Update a vehicle's current state of charge
+      description: 'Set the vehicle''s current battery percentage (Mode-1 manual entry). The
+
+        body is a partial map: `PATCH {}` is a valid no-op. Send
+
+        `state_of_charge_percentage: null` to clear it. `source` is read-only.'
+      tags:
+      - Vehicles
+      responses:
+        '200':
+          description: State of charge updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleStateOfCharge'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+        '400':
+          $ref: '#/components/responses/Problem400UpdateVehicleStateOfChargeValidationFailed'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '405':
+          $ref: '#/components/responses/Problem405MethodNotAllowed'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: patch-vehicles-vehicle_id-state_of_charge
+      security:
+      - oauth2:
+        - vehicle:write
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleStateOfChargeUpdate'
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+  /vehicles:
+    get:
+      summary: List vehicles
+      tags:
+      - Vehicles
+      responses:
+        '200':
+          description: Return a list of vehicles.
+          headers:
+            Link:
+              $ref: '#/components/headers/link'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Vehicle'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-vehicles
+      parameters:
+      - $ref: '#/components/parameters/previous'
+      - $ref: '#/components/parameters/next'
+      - $ref: '#/components/parameters/page_size'
+      - $ref: '#/components/parameters/expand-on-vehicle'
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/user'
+      description: List all the vehicles that the authorization token has access to.
+      security:
+      - oauth2:
+        - vehicle:read
+    post:
+      summary: Create unintegrated vehicle
+      tags:
+      - Vehicles
+      responses:
+        '201':
+          description: Returns the newly created vehicle resource.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: post-vehicles
+      description: 'If a vehicle cannot be integrated with our system, an "unintegrated" vehicle must be created instead to represent it and record important details like battery size.
+
+
+        To add a vehicle that can be integrated, see the [Onboarding documentation](docs/howto/onboarding_custom.md).'
+      security:
+      - oauth2:
+        - vehicle:write
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/expand'
+      - $ref: '#/components/parameters/evenergy-user-required'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleWrite'
+  /vehicles/{vehicle_id}:
+    parameters:
+    - $ref: '#/components/parameters/vehicle_id'
+    get:
+      summary: Retrieve a vehicle
+      tags:
+      - Vehicles
+      responses:
+        '200':
+          description: Return a single vehicle.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-vehicles-vehicle_id
+      parameters:
+      - $ref: '#/components/parameters/expand-on-vehicle'
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/user'
+      description: Retrieve a single, specific vehicle's details.
+      security:
+      - oauth2:
+        - vehicle:read
+    patch:
+      summary: Update a vehicle
+      tags:
+      - Vehicles
+      responses:
+        '200':
+          description: Vehicle updated successfully.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/Vehicle'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: patch-vehicles
+      parameters:
+      - $ref: '#/components/parameters/expand-on-vehicle'
+      - $ref: '#/components/parameters/version-2'
+      description: Update a vehicle.
+      security:
+      - oauth2:
+        - vehicle:write
+      requestBody:
+        description: Details of Vehicle to be updated.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                battery_size_watt_hours:
+                  type: integer
+                  minimum: 1000
+                  maximum: 300000
+                  description: Battery size in watt-hours. Editable only for unintegrated vehicles; sending it for an integrated vehicle is rejected. Setting it flags the battery size as user-provided. Stored to the nearest 0.01 kWh (10 Wh), so the value read back may be rounded.
+                maximum_charge_limit_percentage:
+                  type: integer
+                  minimum: 50
+                  maximum: 100
+                  description: 'The required target state of charge of the car as a percentage between 50 and 100. The car will not be smart charged above this value.  '
+                smart_charging_enabled:
+                  type: boolean
+                  description: Whether smart (dynamic) charging is enabled for this vehicle.
+                vehicle_class:
+                  type:
+                  - string
+                  - 'null'
+                  enum:
+                  - PASSENGER
+                  - COMMERCIAL
+                  - null
+                  description: Class of vehicle, passenger or commercial.
+    delete:
+      summary: Remove a vehicle
+      tags:
+      - Vehicles
+      responses:
+        '200':
+          description: The vehicle has been deleted.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: integer
+              examples:
+                Example:
+                  value:
+                    remaining_car_count: 0
+        '204':
+          description: Sandbox vehicles are not deleted.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '405':
+          $ref: '#/components/responses/Problem405MethodNotAllowed'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: delete-vehicles
+      description: Remove a vehicle by disconnecting it from the ev.energy system.
+      security:
+      - oauth2:
+        - vehicle:write
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+  /vehicle_trims:
+    parameters: []
+    get:
+      summary: List vehicle trims
+      tags:
+      - Vehicles
+      responses:
+        '200':
+          description: Return a list of vehicle trims.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VehicleTrim'
+          headers:
+            Link:
+              $ref: '#/components/headers/link'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-vehicle_trims
+      parameters:
+      - $ref: '#/components/parameters/previous'
+      - $ref: '#/components/parameters/next'
+      - $ref: '#/components/parameters/page_size'
+      - $ref: '#/components/parameters/expand-on-vehicletrim'
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/user'
+      - $ref: '#/components/parameters/vehicle_model_id_q'
+      - $ref: '#/components/parameters/ordering_by_name'
+      description: 'List all the vehicle trims known by the ev.energy system.
+
+
+        Trim refers to a set of features that can be applied to a particular model of vehicle: https://en.wikipedia.org/wiki/Car_model#Trim_level.
+
+
+        Pass `?ordering=name` (or `-name`) to sort results alphabetically by name. Without an `ordering` parameter, results are returned in their default creation order.'
+      security:
+      - oauth2:
+        - vehicle:read
+    post:
+      summary: Create a custom vehicle trim
+      tags:
+      - Vehicles
+      responses:
+        '201':
+          description: Returns the newly created vehicle trim resource.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleTrim'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: post-vehicle_trims
+      description: 'Creates a new trim for the specified model that can be used if
+
+        we are missing a trim. These trims will not be available in the
+
+        list trims api call'
+      security:
+      - oauth2:
+        - vehicle:write
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleTrimCreate'
+  /vehicle_trims/{vehicle_trim_id}:
+    parameters:
+    - $ref: '#/components/parameters/vehicle_trim_id'
+    get:
+      summary: Retrieve a vehicle trim
+      tags:
+      - Vehicles
+      responses:
+        '200':
+          description: Return a single vehicle trim.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleTrim'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-vehicle_trims-vehicle_trim_id
+      parameters:
+      - $ref: '#/components/parameters/expand-on-vehicletrim'
+      - $ref: '#/components/parameters/version-2'
+      description: 'Retrieve details for a single, specific vehicle trim.
+
+
+        Trim refers to a set of features that can be applied to a particular model of vehicle: https://en.wikipedia.org/wiki/Car_model#Trim_level.'
+      security:
+      - oauth2:
+        - vehicle:read
+  /vehicle_models:
+    parameters: []
+    get:
+      summary: List vehicle models
+      tags:
+      - Vehicles
+      responses:
+        '200':
+          description: Return a list of vehicle models.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VehicleModel'
+          headers:
+            Link:
+              $ref: '#/components/headers/link'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-vehicle_models
+      parameters:
+      - $ref: '#/components/parameters/previous'
+      - $ref: '#/components/parameters/next'
+      - $ref: '#/components/parameters/page_size'
+      - $ref: '#/components/parameters/expand-on-vehiclemodel'
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/user'
+      - $ref: '#/components/parameters/vehicle_make_id_q'
+      - $ref: '#/components/parameters/available_for_user_id'
+      - $ref: '#/components/parameters/ordering_by_name'
+      description: 'List all the vehicle models known by the ev.energy system.
+
+
+        Use the `available_for_user_id` query parameter to narrow the list to only those supported for a specific user''s program and tier.
+
+
+        Pass `?ordering=name` (or `-name`) to sort results alphabetically by name. Without an `ordering` parameter, results are returned in their default creation order.
+
+
+        Anonymous callers are rate limited to 50 requests per hour per IP.'
+      security: []
+    post:
+      summary: Create vehicle model
+      tags:
+      - Vehicles
+      responses:
+        '201':
+          description: Returns the newly created vehicle model resource.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleModel'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: post-vehicle_models
+      description: 'Create a new vehicle model in the ev.energy system.
+
+
+        Newly created models are hidden by default and must be reviewed before becoming visible.'
+      security:
+      - oauth2:
+        - vehicle:write
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/user'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleModelWrite'
+  /vehicle_models/{vehicle_model_id}/connectors:
+    parameters:
+    - $ref: '#/components/parameters/vehicle_model_id'
+    get:
+      summary: List a vehicle model's regional connectors
+      description: 'List a vehicle model''s DC-fast connectors, one per charging region. A
+
+        model''s connector can differ by market (e.g. NACS in North America, CCS
+
+        in Europe), so each row records the connector for one region. Public
+
+        catalogue data.
+
+        '
+      tags:
+      - Vehicles
+      operationId: get-vehicle_models-vehicle_model_id-connectors
+      responses:
+        '200':
+          description: Returns the vehicle model's regional connectors.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VehicleModelConnector'
+          headers:
+            Link:
+              $ref: '#/components/headers/link'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '405':
+          $ref: '#/components/responses/Problem405MethodNotAllowed'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/page_size'
+      security: []
+    post:
+      summary: Add a regional connector to a vehicle model
+      description: 'Create a connector row for one region of a vehicle model.
+
+        `(vehicle_model, region)` is unique; adding a second row for the same
+
+        region returns a `400`. Requires the `vehicle_catalogue:write` scope.
+
+        '
+      tags:
+      - Vehicles
+      operationId: post-vehicle_models-vehicle_model_id-connectors
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleModelConnectorCreate'
+      responses:
+        '201':
+          description: The regional connector was created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleModelConnector'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+        '400':
+          $ref: '#/components/responses/Problem400VehicleModelConnectorValidationFailed'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '405':
+          $ref: '#/components/responses/Problem405MethodNotAllowed'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      security:
+      - oauth2:
+        - vehicle_catalogue:write
+  /vehicle_models/{vehicle_model_id}/connectors/{region}:
+    parameters:
+    - $ref: '#/components/parameters/vehicle_model_id'
+    - $ref: '#/components/parameters/region'
+    get:
+      summary: Retrieve a vehicle model's connector for a region
+      tags:
+      - Vehicles
+      operationId: get-vehicle_models-vehicle_model_id-connectors-region
+      responses:
+        '200':
+          description: Returns the vehicle model's connector for the region.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleModelConnector'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '405':
+          $ref: '#/components/responses/Problem405MethodNotAllowed'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      security: []
+    patch:
+      summary: Update a vehicle model's connector for a region
+      description: 'Partially update the connector row for one region. Only the fields
+
+        supplied are changed; `region` is the key and cannot be changed.
+
+        Requires the `vehicle_catalogue:write` scope.
+
+        '
+      tags:
+      - Vehicles
+      operationId: patch-vehicle_models-vehicle_model_id-connectors-region
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleModelConnectorPatch'
+      responses:
+        '200':
+          description: The regional connector was updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleModelConnector'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+        '400':
+          $ref: '#/components/responses/Problem400VehicleModelConnectorValidationFailed'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '405':
+          $ref: '#/components/responses/Problem405MethodNotAllowed'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      security:
+      - oauth2:
+        - vehicle_catalogue:write
+  /vehicle_models/{vehicle_model_id}:
+    parameters:
+    - $ref: '#/components/parameters/vehicle_model_id'
+    get:
+      summary: Retrieve a vehicle model
+      tags:
+      - Vehicles
+      responses:
+        '200':
+          description: Return a list of vehicle models.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleModel'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-vehicle_models-vehicle_model_id
+      parameters:
+      - $ref: '#/components/parameters/expand-on-vehiclemodel'
+      - $ref: '#/components/parameters/version-2'
+      description: 'Retrieve details for a single, specific vehicle model.
+
+
+        Anonymous callers are rate limited to 50 requests per hour per IP.'
+      security: []
+    patch:
+      summary: Update a vehicle model
+      description: 'Update editable catalogue fields on a vehicle model. Currently only
+
+        `default_connector_type` is editable. Intended for staff/agent
+
+        maintenance of the shared catalogue and requires the
+
+        `vehicle_catalogue:write` scope — ordinary user/app tokens cannot use it.'
+      tags:
+      - Vehicles
+      operationId: patch-vehicle_models-vehicle_model_id
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleModelUpdate'
+      responses:
+        '200':
+          description: The vehicle model was updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleModel'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '405':
+          $ref: '#/components/responses/Problem405MethodNotAllowed'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      security:
+      - oauth2:
+        - vehicle_catalogue:write
+  /vehicle_makes:
+    get:
+      summary: List vehicle makes
+      tags:
+      - Vehicles
+      responses:
+        '200':
+          description: Return a list of vehicle makes.
+          headers:
+            Link:
+              $ref: '#/components/headers/link'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VehicleMake'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-vehicle_makes
+      parameters:
+      - $ref: '#/components/parameters/previous'
+      - $ref: '#/components/parameters/next'
+      - $ref: '#/components/parameters/page_size'
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/user'
+      - $ref: '#/components/parameters/available_for_user_id'
+      - $ref: '#/components/parameters/ordering_by_name'
+      description: 'List all the vehicle makes known by the ev.energy system.
+
+
+        Use the `available_for_user_id` query parameter to narrow the list to only those supported for a specific user''s program and tier.
+
+
+        Pass `?ordering=name` (or `-name`) to sort results alphabetically by name. Without an `ordering` parameter, results are returned in their default creation order.
+
+
+        Anonymous callers are rate limited to 50 requests per hour per IP.'
+      security: []
+  /vehicle_makes/{vehicle_make_id}:
+    parameters:
+    - $ref: '#/components/parameters/vehicle_make_id'
+    get:
+      summary: Retrieve a vehicle make
+      description: 'Retrieve details for a single, specific vehicle make.
+
+
+        Anonymous callers are rate limited to 50 requests per hour per IP.'
+      tags:
+      - Vehicles
+      responses:
+        '200':
+          description: Return a single vehicle make.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleMake'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-vehicle_makes-vehicle_make_id
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      security: []
+  /vehicles/{vehicle_id}/status_logs:
+    parameters:
+    - $ref: '#/components/parameters/vehicle_id'
+    get:
+      summary: List status logs for a vehicle
+      description: List the historical status logs for a specific Vehicle. Used to find out the state of the Vehicle at each point it reported in to ev.energy.
+      tags:
+      - Vehicles
+      responses:
+        '200':
+          description: List all the status logs for a specific Vehicle, sorted newest first.
+          headers:
+            Link:
+              $ref: '#/components/headers/link-timestamps'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VehicleStatusLog'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-vehicles-vehicle_id-status_logs
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/previous'
+      - $ref: '#/components/parameters/next'
+      - $ref: '#/components/parameters/page_size'
+      - $ref: '#/components/parameters/sampled_at__gte'
+      - $ref: '#/components/parameters/sampled_at__lte'
+      - $ref: '#/components/parameters/expand-on-vehiclestatuslog'
+      security:
+      - oauth2:
+        - vehicle:read
+  /vehicles/{vehicle_id}/status_logs/{sampled_at}:
+    parameters:
+    - $ref: '#/components/parameters/vehicle_id'
+    - schema:
+        type: string
+        format: date-time
+      name: sampled_at
+      in: path
+      required: true
+      description: The time the log's data was recorded on the device.
+      example: '2024-04-17T09:39:45.984584Z'
+    get:
+      summary: Retrieve a specific status log for a vehicle
+      description: A single status log for a particular vehicle is uniquely identified by the timestamp it was logged at.
+      tags:
+      - Vehicles
+      responses:
+        '200':
+          description: Returns the Vehicle status logged at a specific time.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleStatusLog'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-vehicles-vehicle_id-status_logs-timestamp
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/expand-on-vehiclestatuslog'
+      security:
+      - oauth2:
+        - vehicle:read
+  /vehicles/{vehicle_id}/error_logs:
+    parameters:
+    - $ref: '#/components/parameters/vehicle_id'
+    get:
+      summary: List API error logs for a vehicle
+      description: List the historical API error logs for a specific Vehicle. These logs capture errors that occurred when attempting to communicate with the vehicle's telematics API.
+      tags:
+      - Vehicles
+      responses:
+        '200':
+          description: List all the API error logs for a specific Vehicle, sorted newest first.
+          headers:
+            Link:
+              $ref: '#/components/headers/link-timestamps'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VehicleAPIErrorLog'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-vehicles-vehicle_id-error_logs
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/previous'
+      - $ref: '#/components/parameters/next'
+      - $ref: '#/components/parameters/page_size'
+      - $ref: '#/components/parameters/logged_at__gte'
+      - $ref: '#/components/parameters/logged_at__lte'
+      - $ref: '#/components/parameters/expand-on-vehicleapierrorlog'
+      security:
+      - oauth2:
+        - vehicle:read
+  /vehicles/{vehicle_id}/error_logs/{logged_at}:
+    parameters:
+    - $ref: '#/components/parameters/vehicle_id'
+    - schema:
+        type: string
+        format: date-time
+      name: logged_at
+      in: path
+      required: true
+      description: The time the error was logged.
+      example: '2024-04-17T09:39:45.984584Z'
+    get:
+      summary: Retrieve a specific API error log for a vehicle
+      description: A single API error log for a particular vehicle is uniquely identified by the timestamp it was logged at.
+      tags:
+      - Vehicles
+      responses:
+        '200':
+          description: Returns the Vehicle API error logged at a specific time.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleAPIErrorLog'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-vehicles-vehicle_id-error_logs-timestamp
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/expand-on-vehicleapierrorlog'
+      security:
+      - oauth2:
+        - vehicle:read
+  /vehicles/{vehicle_id}/location_logs:
+    parameters:
+    - $ref: '#/components/parameters/vehicle_id'
+    get:
+      summary: List location logs for a vehicle
+      description: List the historical location log timestamps for a specific Vehicle. Returns metadata about when location data was recorded, without exposing the actual location coordinates.
+      tags:
+      - Vehicles
+      responses:
+        '200':
+          description: List all the location log timestamps for a specific Vehicle, sorted newest first.
+          headers:
+            Link:
+              $ref: '#/components/headers/link-timestamps'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VehicleLocationLog'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-vehicles-vehicle_id-location_logs
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/previous'
+      - $ref: '#/components/parameters/next'
+      - $ref: '#/components/parameters/page_size'
+      - $ref: '#/components/parameters/sampled_at__gte'
+      - $ref: '#/components/parameters/sampled_at__lte'
+      - $ref: '#/components/parameters/expand-on-vehiclelocationlog'
+      security:
+      - oauth2:
+        - vehicle:read
+  /vehicles/{vehicle_id}/location_logs/{sampled_at}:
+    parameters:
+    - $ref: '#/components/parameters/vehicle_id'
+    - schema:
+        type: string
+        format: date-time
+      name: sampled_at
+      in: path
+      required: true
+      description: The time the location data was sampled from the vehicle.
+      example: '2024-04-17T09:39:45.984584Z'
+    get:
+      summary: Retrieve a specific location log for a vehicle
+      description: A single location log for a particular vehicle is uniquely identified by the timestamp it was sampled at. Returns metadata only, without exposing the actual location coordinates.
+      tags:
+      - Vehicles
+      responses:
+        '200':
+          description: Returns the Vehicle location log metadata at a specific time.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleLocationLog'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-vehicles-vehicle_id-location_logs-timestamp
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/expand-on-vehiclelocationlog'
+      security:
+      - oauth2:
+        - vehicle:read
+  /vehicles/{vehicle_id}/command_logs:
+    parameters:
+    - $ref: '#/components/parameters/vehicle_id'
+    get:
+      summary: List command logs for a vehicle
+      description: List the historical command logs for a specific Vehicle. These logs record commands that were sent to the vehicle.
+      tags:
+      - Vehicles
+      responses:
+        '200':
+          description: List all the command logs for a specific Vehicle, sorted newest first.
+          headers:
+            Link:
+              $ref: '#/components/headers/link-timestamps'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VehicleCommandLog'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-vehicles-vehicle_id-command_logs
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/previous'
+      - $ref: '#/components/parameters/next'
+      - $ref: '#/components/parameters/page_size'
+      - $ref: '#/components/parameters/logged_at__gte'
+      - $ref: '#/components/parameters/logged_at__lte'
+      - $ref: '#/components/parameters/expand-on-vehiclecommandlog'
+      security:
+      - oauth2:
+        - debug:read
+  /vehicles/{vehicle_id}/command_logs/{logged_at}:
+    parameters:
+    - $ref: '#/components/parameters/vehicle_id'
+    - schema:
+        type: string
+        format: date-time
+      name: logged_at
+      in: path
+      required: true
+      description: The time the command was logged.
+      example: '2024-04-17T09:39:45.984584Z'
+    get:
+      summary: Retrieve a specific command log for a vehicle
+      description: A single command log for a particular vehicle is uniquely identified by the timestamp it was logged at.
+      tags:
+      - Vehicles
+      responses:
+        '200':
+          description: Returns the Vehicle command logged at a specific time.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleCommandLog'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-vehicles-vehicle_id-command_logs-timestamp
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/expand-on-vehiclecommandlog'
+      security:
+      - oauth2:
+        - debug:read
+  /vehicles/{vehicle_id}/vpp_modes:
+    parameters:
+    - $ref: '#/components/parameters/vehicle_id'
+    get:
+      summary: Get VPP modes for a vehicle
+      description: Returns the VPP (Virtual Power Plant) control modes supported by this vehicle.
+      tags:
+      - Vehicles
+      responses:
+        '200':
+          description: Returns the VPP modes supported by this vehicle.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VPPModes'
+              examples:
+                Vehicle VPP Modes:
+                  value:
+                    target_power: true
+                    import_max_power: false
+                    export_max_power: false
+                    charge_mode: true
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-vehicles-vehicle_id-vpp_modes
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      security:
+      - oauth2:
+        - vehicle:read
+  /vehicle_onboarding:
+    get:
+      summary: Initiate vehicle onboarding
+      tags:
+      - Vehicles
+      responses:
+        '200':
+          description: Returned only when `response_type=json` is supplied. Carries the integration provider's authorization URL plus the metadata native clients need (auth method, OAuth scopes, single-select hint) so they can either open the URL in a WebView or launch the provider's native SDK.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleOnboardingJsonResponse'
+        '302':
+          description: 'Have the user''s browser follow the redirect to be prompted to connect their vehicle to the ev.energy system.
+
+
+            If a make, model or trim were not provided, the user will first be redirect to a screen to select these.'
+          headers:
+            Location:
+              schema:
+                type: string
+              description: The URL that the users browser will be redirected to in order to integrate their Vehicle.
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '422':
+          description: Returned only on the `response_type=json` path when the integration provider could not produce an authorization URL — for example because the vehicle make is not supported, the provider is currently unavailable, or it returned an error code.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/RFC9457ProblemDetail'
+      operationId: get-vehicle_onboarding
+      description: 'Initiate the onboarding process for a new vehicle in your user''s browser (or an embedded web view in an app).
+
+
+        If none of `make_id`, `model_id` or `trim_id` are passed as query parameters, the user will be shown a user interface to pick their vehicle make.
+
+
+        ## Native clients (`response_type=json`)
+
+
+        Native mobile clients that need to launch a provider SDK (e.g. Smartcar Connect for BMW/MINI) instead of opening a WebView can pass `response_type=json` to receive a JSON payload instead of a 302 redirect. In that case at least one of `make_id`, `model_id` or `trim_id` is required (otherwise the endpoint responds with `400`).
+
+
+        ## Final redirect
+
+
+        After the user completes the web flow, the browser is redirected to the `redirect_uri` query parameter (when supplied and valid) or otherwise the `onboarding_redirect_url` configured on your application. The redirect URL will carry one or more query parameters identifying the onboarded vehicles:
+
+
+        - `vehicle_uid` — the v2 UID of each onboarded vehicle (preferred). Use this to call `GET /v2/vehicles/{vehicle_uid}` for further details.
+
+        - `vehicle_id` — the legacy integer primary key of each onboarded vehicle. Prefer `vehicle_uid`.
+
+
+        When multiple vehicles are onboarded in a single flow, both query parameters appear once per vehicle in matching order. For example: `https://your-redirect/?vehicle_id=1&vehicle_id=2&vehicle_uid=vhcl01...&vehicle_uid=vhcl02...`.'
+      security: []
+      parameters:
+      - $ref: '#/components/parameters/user_id_onboarding'
+      - schema:
+          type: string
+          example: vmak01J443798BF893ZHFQVCS0FA23
+        in: query
+        name: make_id
+        description: Specify the make of vehicle to be onboarded.
+      - schema:
+          type: string
+          example: vhcl01HNARS42AVJN9QWQF6J52B7MB
+        in: query
+        name: model_id
+        description: Specify the model of vehicle to be onboarded.
+      - schema:
+          type: string
+          example: vhcl01HNARS42AVJN9QWQF6J52B7MB
+        in: query
+        name: trim_id
+        description: Specify the trim of vehicle to be onboarded.
+      - $ref: '#/components/parameters/client_id'
+      - schema:
+          type: string
+          enum:
+          - json
+        in: query
+        name: response_type
+        description: When set to `json`, the endpoint returns a JSON payload (200) instead of a 302 redirect. Used by native mobile clients to choose between launching a provider SDK and opening a WebView. Requires at least one of `make_id`, `model_id` or `trim_id`.
+      - schema:
+          type: string
+          format: uri
+          example: https://drivers.ev.energy/acme
+        in: query
+        name: redirect_uri
+        description: Optional URL to return the user to after onboarding completes. Its scheme and host must match one of the application's registered `redirect_uris` or its `onboarding_redirect_url`, otherwise the endpoint responds with `400`. When omitted, the application's static `onboarding_redirect_url` is used.
+  /vehicle_onboarding/complete:
+    post:
+      summary: Complete vehicle onboarding
+      tags:
+      - Vehicles
+      responses:
+        '201':
+          description: Authorization code exchanged successfully. Returns the list of created vehicles. Always an array, even when only a single vehicle was created.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleOnboardingCompleteResponse'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestCreate'
+        '404':
+          description: No `AccountAuthorizationRequest` matches the supplied `authorization_request_uid`.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/RFC9457ProblemDetail'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '422':
+          description: Returned when the authorization request has expired, the integration provider rejected the supplied `auth_code`, or no vehicles could be retrieved from the provider.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/RFC9457ProblemDetail'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: post-vehicle_onboarding-complete
+      description: 'Exchanges a provider `auth_code` for a list of vehicles, completing an onboarding flow that was initiated via `GET /v2/vehicle_onboarding/?response_type=json`. Used primarily by native mobile clients integrating with the Smartcar Connect SDK (the SDK returns the `auth_code` directly to the app).
+
+
+        No OAuth bearer token is required, mirroring the init endpoint. The `authorization_request_uid` returned by the init call is what binds this request to the legitimate onboarding flow — it is treated as a single-use token.'
+      security: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleOnboardingCompleteRequest'
+  /vehicle_onboarding/onboarding_link:
+    post:
+      summary: Send vehicle onboarding link
+      tags:
+      - Vehicles
+      operationId: post-vehicle_onboarding-onboarding_link
+      description: 'Generates a vehicle onboarding deep link for the authenticated user and sends a Braze event containing the email, make name and onboarding URL.
+
+
+        Requires an OAuth token with `vehicle:write` scope.'
+      security:
+      - OAuth2:
+        - vehicle:write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - email
+              - make
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: Email address to send the onboarding link to.
+                  example: user@example.com
+                make:
+                  type: string
+                  description: UID of the vehicle make to onboard.
+      responses:
+        '204':
+          description: Onboarding link sent successfully.
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+  /vehicle_compatibility/check:
+    get:
+      summary: Check vehicle model compatibility in a country
+      description: "Returns whether the given vehicle model is supported in the supplied\ncountry. Used by the onboarding flow to tell the user upfront\nwhether their vehicle will work before any account-linking step.\n\nPublic endpoint — callable pre-account, no authentication required.\n\nCountry resolution follows this order: explicit `country` query\nparameter, then the `Accept-Language` header, then `US`.\n\nWhen `program_id` is supplied, the check is scoped to that program's\neffective supported-models list (inclusion/exclusion lists applied)\nand the program's country — the `country` query parameter and\n`Accept-Language` header are ignored.\n\nError responses follow RFC 9457 Problem Details. Problem types\nemitted by this endpoint:\n\n- `validation-failed-vehicle-compatibility-check` — missing or\n  invalid `vehicle_model_id` / `country` query parameter (`400`).\n- `vehicle-model-not-found` — `vehicle_model_id` does not resolve\n  to a vehicle model (`404`).\n- `program-not-found-vehicle-compatibility` — `program_id` does\n  not resolve to a program (`404`)."
+      tags:
+      - Vehicles
+      operationId: get-vehicle_compatibility-check
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - name: vehicle_model_id
+        in: query
+        required: true
+        description: Vehicle Model id to check compatibility for.
+        schema:
+          type: string
+          pattern: vmod[A-Z\d]{26}
+      - name: country
+        in: query
+        required: false
+        description: ISO-3166 alpha-2 country code. See description for fallback chain.
+        schema:
+          type: string
+          pattern: ^[A-Za-z]{2}$
+          minLength: 2
+          maxLength: 2
+      - $ref: '#/components/parameters/Accept-Language'
+      - name: client_id
+        in: query
+        required: false
+        description: 'OAuth `Application.client_id`. Mirrors the pre-account
+
+          onboarding endpoints: when supplied and the application has
+
+          sandbox mode enabled, the endpoint returns a canned response
+
+          without touching the database.'
+        schema:
+          type: string
+      - name: program_id
+        in: query
+        required: false
+        description: 'Program uid. When supplied, the check is scoped to the
+
+          program''s effective supported-models list (inclusion / exclusion
+
+          lists applied) and the program''s country. `country` and
+
+          `Accept-Language` are ignored in that case. Omit for the core
+
+          app''s pre-account flow where the program is not yet known.'
+        schema:
+          type: string
+          pattern: prog[A-Z\d]{26}
+      responses:
+        '200':
+          description: Compatibility verdict for the supplied model and country.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleCompatibilityCheckResult'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '405':
+          $ref: '#/components/responses/Problem405MethodNotAllowed'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+      security: []
+  /vehicle_waitlist:
+    post:
+      summary: Add user to the vehicle waitlist
+      description: 'Captures a user who hit an `incompatible` result on the vehicle compatibility check, so we can notify them once their hardware becomes supported. Pre-account, anonymous endpoint — no OAuth token required.
+
+
+        The request body must identify the device in exactly one of two modes:
+
+
+        - **Picker mode** — supply `vehicle_model_id` (uid of a `CarModel`). `vehicle_make_name` and `vehicle_model_name` must be omitted / null.
+
+        - **Manual entry** — supply both `vehicle_make_name` and `vehicle_model_name` as free-text strings. `vehicle_model_id` must be omitted / null.
+
+
+        Any other combination — including all three null — returns `400`.
+
+
+        Country is derived server-side: from `program.country` when `program_id` is supplied; otherwise from the `Accept-Language` header (defaulting to `US`).
+
+
+        Error responses follow RFC 9457 Problem Details. Problem types emitted by this endpoint:
+
+
+        - `validation-failed-vehicle-waitlist` — request body fails validation (missing required field, mode constraint violation, unknown `vehicle_model_id` / `program_id`).'
+      tags:
+      - Vehicles
+      operationId: post-vehicle_waitlist
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/Accept-Language'
+      - name: client_id
+        in: query
+        required: false
+        description: 'OAuth `Application.client_id`. Mirrors the pre-account onboarding and compatibility-check endpoints: when supplied and the application has sandbox mode enabled, the endpoint returns a canned `201` without persisting anything.'
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleWaitlistRequest'
+      responses:
+        '201':
+          description: Waitlist entry created. Body echoes the new entry's uid.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleWaitlistResponse'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '405':
+          $ref: '#/components/responses/Problem405MethodNotAllowed'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      security: []
+  /vehicles/{vehicle_id}/reconnect:
+    parameters:
+    - $ref: '#/components/parameters/vehicle_id'
+    post:
+      summary: Create reconnection URL
+      tags:
+      - Vehicles
+      responses:
+        '201':
+          description: Returns the newly generated reconnection URL and it's expiry time.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleReconnectionUrl'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestCreate'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: post-vehicles-vehicle_id-reconnect
+      description: Create a reconnection request URL for the Vehicle.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleReconnectionUrl'
+  /vehicles/{vehicle_id}/disconnect:
+    parameters:
+    - $ref: '#/components/parameters/vehicle_id'
+    post:
+      summary: Disconnect a vehicle's integration
+      tags:
+      - Vehicles
+      responses:
+        '200':
+          description: 'The disconnection request was processed. Returns the updated
+
+            Vehicle resource reflecting its current state — `INACTIVE` if
+
+            the vehicle was previously integrated, or `UNINTEGRATED` if it
+
+            had no active integration to disconnect.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: post-vehicles-vehicle_id-disconnect
+      description: 'Disconnect the vehicle''s integration. Revokes provider OAuth tokens
+
+        and invalidates the underlying account, leaving the vehicle in an
+
+        `INACTIVE` state. Any open charging sessions on cars sharing the
+
+        account are closed. The vehicle''s provider association is retained
+
+        so the user can re-link by POSTing to
+
+        `/vehicles/{vehicle_id}/reconnect`.
+
+
+        This action is idempotent — calling it on an unintegrated vehicle
+
+        is a no-op and still returns 200.'
+      security:
+      - oauth2:
+        - vehicle:write
+components:
+  responses:
+    Problem405MethodNotAllowed:
+      description: Could not satisfy this HTTP method.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 405
+              title:
+                type: string
+                example: Method Not Allowed
+              detail:
+                type: string
+                example: Could not satisfy this HTTP method.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem400BadRequestCreate:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Request failed validation:
+              $ref: '#/components/examples/ProblemValidationFailedVehicle'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem429TooManyRequests:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Example 1:
+              value:
+                type: https://api.ev.energy/v2/problems/rate-limit-exceeded/
+                status: 429
+                title: Too Many Requests
+                detail: Request was rate limited. Try again in 42 seconds
+      description: The client has exceeded its rate limit.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        Retry-After:
+          $ref: '#/components/headers/retry-after'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem401Unauthorized:
+      description: You need to authorise requests to access this resource.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 401
+              title:
+                type: string
+                example: Unauthorized
+              detail:
+                type: string
+                example: Authentication credentials were not provided.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem400UpdateVehicleStateOfChargeValidationFailed:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Request failed validation:
+              value:
+                type: https://api.ev.energy/v2/problems/validation-failed-update-vehicle-state-of-charge/
+                status: 400
+                title: Request failed validation.
+                detail: 'Error on fields: state_of_charge_percentage'
+                field_errors:
+                  state_of_charge_percentage:
+                  - Ensure this value is less than or equal to 100.
+      description: The vehicle state of charge update request body failed validation.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem400BadRequestList:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Invalid Pagination Parameter:
+              $ref: '#/components/examples/ProblemInvalidPaginationParameter'
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem406NotAcceptable:
+      description: Could not satisfy the request Accept header.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 406
+              title:
+                type: string
+                example: Not Acceptable
+              detail:
+                type: string
+                example: Could not satisfy the request Accept header.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem404NotFound:
+      description: This resource either does not exist or the client is not authorized to access it.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 404
+              title:
+                type: string
+                example: Not found
+              detail:
+                type: string
+                example: Resource does not exist or cannot be accessed.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem400VehicleModelConnectorValidationFailed:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Request failed validation:
+              value:
+                type: https://api.ev.energy/v2/problems/validation-failed-create-vehicle-model-connector/
+                status: 400
+                title: Request failed validation.
+                detail: 'Error on fields: region'
+                field_errors:
+                  region:
+                  - A connector for this region already exists.
+      description: The vehicle model connector request body failed validation.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem400BadRequestRetrieve:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem400UpdateVehicleConnectorsValidationFailed:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Request failed validation:
+              value:
+                type: https://api.ev.energy/v2/problems/validation-failed-update-vehicle-connectors/
+                status: 400
+                title: Request failed validation.
+                detail: 'Error on fields: adaptors'
+                field_errors:
+                  adaptors:
+                  - An adaptor cannot match the native connector.
+      description: The vehicle connectors update request body failed validation.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem403Forbidden:
+      description: You do not have permission to perform this action.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 403
+              title:
+                type: string
+                example: Forbidden
+              detail:
+                type: string
+                example: You do not have permission to perform this action.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+  schemas:
+    VehicleAPIErrorLog:
+      title: VehicleAPIErrorLog
+      description: Records an error that occurred when attempting to communicate with a vehicle's telematics API.
+      type: object
+      x-tags:
+      - Vehicles
+      properties:
+        url:
+          type: string
+          example: https://api.ev.energy/v2/vehicles/vhcl01HRFF3SEVSCRAV9B3CHVDFN0H/error_logs/2024-04-17T09:39:45.984584Z/
+          format: uri
+          readOnly: true
+        logged_at:
+          type: string
+          description: The date and time when this error was logged by the ev.energy system.
+          format: date-time
+          readOnly: true
+        vehicle:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/vehicles/vhcl01HRFF3SEVSCRAV9B3CHVDFN0H
+          - $ref: '#/components/schemas/Vehicle'
+        status_code:
+          type: integer
+          example: 401
+          description: The HTTP status code of the error response from the vehicle telematics API.
+          readOnly: true
+        controller:
+          type: string
+          example: ENODE
+          description: The vehicle controller/integration that was being used when the error occurred.
+          readOnly: true
+        error_code:
+          type: string
+          example: AUTHENTICATION_ERROR
+          description: The error code received from the provider or determined by the ev.energy system.
+          readOnly: true
+        error_type:
+          type: string
+          example: VehicleAPIUnauthorized
+          description: The error type received from the provider or determined by the ev.energy system.
+          readOnly: true
+        request_id:
+          type: string
+          example: 56rst-z2jku-tty9t-0dn2f-qazow
+          description: The request ID that resulted in this error. Used for tracing and debugging.
+          readOnly: true
+        command:
+          type: string
+          example: START_CHARGE
+          description: The command/method that was being executed when the error occurred.
+          readOnly: true
+        error_detail:
+          type: string
+          description: Detailed information about the error.
+          readOnly: true
+        internal_command_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+          description: Internal UUID to track the command dispatch. This can be used to correlate errors with commands.
+          readOnly: true
+    Supplier:
+      title: Supplier
+      type: object
+      description: An energy company who supplies electricity tariffs.
+      required:
+      - id
+      - url
+      - name
+      - icon
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given user.
+          pattern: supl[A-Z\d]{26}
+          example: supl01HN2NJ9NMRZBXT1H6FT9N7735
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/suppliers/supl01HN2NJ9NMRZBXT1H6FT9N7735
+        name:
+          type: string
+          example: Rivendell Renewables
+        icon:
+          type:
+          - string
+          - 'null'
+          format: uri
+          example: https://cdn.example.com/rivendell_renewables.jpg
+        highlighted:
+          type: boolean
+          description: A highlighted supplier is one that is often selected by users.
+      x-tags:
+      - Tariffs
+    VehicleModelWrite:
+      title: VehicleModelWrite
+      description: Fields that must be set when creating a VehicleModel resource.
+      type: object
+      x-tags:
+      - Vehicles
+      required:
+      - name
+      - make
+      properties:
+        name:
+          type: string
+          description: The name of the vehicle model.
+          example: Model 3
+        make:
+          type: string
+          format: uri
+          description: URL reference to the vehicle make.
+          example: https://api.ev.energy/v2/vehicle_makes/vmak01HRFHBCM7VBSWRPVYFBQMH2BR
+    Times:
+      title: Times
+      description: Defines a period of time.
+      type: object
+      x-tags:
+      - Tariffs
+      properties:
+        start:
+          type: string
+          example: '18:00:00'
+          pattern: \d\d:\d\d:\d\d
+        end:
+          type: string
+          example: 00:00:00
+          pattern: \d\d:\d\d:\d\d
+    VehicleCompatibilityCheckResult:
+      title: VehicleCompatibilityCheckResult
+      description: 'Compatibility verdict for a `(vehicle_model, country)` pair.
+
+        Returned by `GET /vehicle_compatibility/check`.'
+      type: object
+      required:
+      - compatible
+      - recommendation_rank
+      properties:
+        compatible:
+          type: boolean
+          description: True if the model is supported in the requested country.
+        recommendation_rank:
+          type:
+          - integer
+          - 'null'
+          minimum: 1
+          maximum: 10
+          description: 'Priority of the car make on the new device-selection screen.
+
+            Lower = higher priority (1 = top, 10 = lowest explicit value);
+
+            `null` means no rank set and should be treated as lower priority
+
+            than any explicit value. Always reflects the make''s current
+
+            value, independent of `compatible`.'
+    VehicleWaitlistRequest:
+      title: VehicleWaitlistRequest
+      description: 'Request body for `POST /vehicle_waitlist`. Device identification fields are mutually constrained: supply exactly one of (`vehicle_model_id`) or (both `vehicle_make_name` and `vehicle_model_name`). Any other combination returns `400`. Country is not part of the request body — see endpoint description for how it is derived.'
+      type: object
+      x-tags:
+      - Vehicles
+      required:
+      - email
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email address to notify when the user's hardware becomes supported.
+          example: user@example.com
+        program_id:
+          type:
+          - string
+          - 'null'
+          pattern: prog[A-Z\d]{26}
+          description: Optional `ProgramConfig` uid. Captured where known (web signup, whitelabel microsite) so later notification logic can scope by program.
+          example: prog01HRS4TSK26BPBV7127DH7E0HA
+        vehicle_model_id:
+          type:
+          - string
+          - 'null'
+          pattern: vmod[A-Z\d]{26}
+          description: Uid of a `CarModel`. Used when the user picked from the vehicle picker. Mutually exclusive with `vehicle_make_name` / `vehicle_model_name`.
+          example: vmod01HRS4TSK26BPBV7127DH7E0HA
+        vehicle_make_name:
+          type: string
+          description: Free-text make name from manual entry. Must be supplied together with `vehicle_model_name`. Mutually exclusive with `vehicle_model_id`.
+          example: Tesla
+        vehicle_model_name:
+          type: string
+          description: Free-text model name from manual entry. Must be supplied together with `vehicle_make_name`. Mutually exclusive with `vehicle_model_id`.
+          example: Model 3
+    DailyPrices:
+      title: DailyPrices
+      description: Information about the tariff's prices for different parts of the day.
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      maxProperties: 3
+      required:
+      - peak
+      properties:
+        peak:
+          $ref: '#/components/schemas/PriceSummary'
+        mid_peak:
+          $ref: '#/components/schemas/PriceSummary'
+        off_peak:
+          $ref: '#/components/schemas/PriceSummary'
+      x-tags:
+      - Tariffs
+    VehicleCommandLog:
+      title: VehicleCommandLog
+      description: Records a command that was sent to a vehicle.
+      type: object
+      x-tags:
+      - Vehicles
+      properties:
+        url:
+          type: string
+          example: https://api.ev.energy/v2/vehicles/vhcl01HRFF3SEVSCRAV9B3CHVDFN0H/command_logs/2024-04-17T09:39:45.984584Z/
+          format: uri
+          readOnly: true
+        logged_at:
+          type: string
+          description: The date and time when this command was logged by the ev.energy system.
+          format: date-time
+          readOnly: true
+        vehicle:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/vehicles/vhcl01HRFF3SEVSCRAV9B3CHVDFN0H
+          - $ref: '#/components/schemas/Vehicle'
+        command:
+          type: string
+          example: START_CHARGE
+          description: The type of command that was sent to the vehicle.
+          enum:
+          - START_CHARGE
+          - STOP_CHARGE
+          - WAKE_UP
+          - SEND_SCHEDULE
+          readOnly: true
+        external_command_id:
+          type:
+          - string
+          - 'null'
+          example: ext-cmd-12345
+          description: External command ID from the vehicle provider.
+          readOnly: true
+        current_milliamps:
+          type:
+          - integer
+          - 'null'
+          example: 32000
+          description: If a start/stop command was sent, this is the current level that was sent in milliamps.
+          readOnly: true
+        internal_command_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+          description: Internal UUID to track this command dispatch. This links with device command logs and error logs.
+          readOnly: true
+    Tariff:
+      title: Tariff
+      examples:
+      - id: tari01HN2NJ9NMRZBXT1H6FT9N7735
+        url: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7735
+        supplier: https://api.ev.energy/v2/suppliers/supl01HN2NJ9NMRZBXT1H6FT9N7735
+        name: Fangorn Biomass
+        currency: GBP
+        gsp_group: _C
+        valid_from: '2026-03-17'
+        valid_until: '2027-03-17'
+        daily_prices:
+          peak:
+            price: '0.30'
+            times:
+            - start: '18:00:00'
+              end: 00:00:00
+          mid_peak:
+            price: '0.20'
+            times:
+            - start: '10:00:00'
+              end: 08:00:00
+          off_peak:
+            price: '0.10'
+            times:
+            - start: 08:00:00
+              end: '18:00:00'
+        scheduler_tariff: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7835
+      description: 'Note: daily_prices and type are only available under contract. Please reach out to your account manager to find out more.'
+      x-tags:
+      - Tariffs
+      allOf:
+      - $ref: '#/components/schemas/TariffBase'
+      - type: object
+        properties:
+          scheduler_tariff:
+            oneOf:
+            - type: string
+              format: uri
+              example: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7835
+            - type: object
+              required:
+              - id
+              - url
+              - supplier
+              - name
+              - currency
+              properties:
+                id:
+                  type: string
+                  pattern: tari[A-Z\d]{26}
+                url:
+                  type: string
+                  format: uri
+                supplier:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+                currency:
+                  type: string
+              additionalProperties: true
+            - type: 'null'
+            description: The tariff used by the scheduler for charge optimisation, which may differ from the billing tariff. Returns a URL by default, or null if not set. Expandable with ?expand=scheduler_tariff to return a TariffBase object (additional fields may be present beyond those listed here).
+    EVSESite:
+      title: EVSESite
+      type: object
+      description: Represents a place with one or more EVSEs installed which can be accessed by multiple users.
+      required:
+      - id
+      - url
+      - evses
+      - cpms_connection
+      properties:
+        id:
+          type: string
+          pattern: site[A-Z\d]{26}
+          examples:
+          - site01JX2SZ0WAFTDYVYY0JRAYREY7
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/evse_sites/site01JX2SZ0WAFTDYVYY0JRAYREY7
+          readOnly: true
+        evses:
+          type: array
+          description: A list of all EVSEs that are currently associated with this site.
+          items:
+            type: string
+            format: uri
+            examples:
+            - https://api.ev.energy/v2/evses/evse01HSH04KDEWF6Z4DB2J77J74K5
+          readOnly: true
+        cpms_connection:
+          type:
+          - string
+          - 'null'
+          description: The type of ChargePoint Management System that this site is connected to, if there is one.
+          enum:
+          - null
+          - CHARGEPOINT
+          - SWTCH
+          readOnly: true
+        cpms_connection_display_name:
+          type:
+          - string
+          - 'null'
+          description: A human-readable name for the Chargepoint Management System that the site is connected to.
+          example: ChargePoint
+        user_connected:
+          type:
+          - boolean
+          - 'null'
+          description: When authenticated as a specific user (eg. via the Authorisation Code grant type) or when the EvEnergy-User header is set to a valid user ID, this field will indicate whether the user is currently connected to this EVSE Site's CPMS. If the request is not made in the context of a user, or the site does not have a CPMS connection, this field will be null.
+          readOnly: true
+    VehicleConnectorsUpdate:
+      title: VehicleConnectorsUpdate
+      description: Request body for `PATCH /vehicles/{vehicle_id}/connectors`.
+      type: object
+      properties:
+        native_connector:
+          type:
+          - string
+          - 'null'
+          enum:
+          - CCS
+          - NACS
+          - CHADEMO
+          - null
+        adaptors:
+          type: array
+          items:
+            type: string
+            enum:
+            - CCS
+            - NACS
+            - CHADEMO
+    VehicleStatusLog:
+      title: VehicleStatusLog
+      description: Records the state of a Vehicle at a particular point in time.
+      type: object
+      x-tags:
+      - Vehicles
+      properties:
+        url:
+          type: string
+          example: https://api.ev.energy/v2/vehicles/vhcl01HRFF3SEVSCRAV9B3CHVDFN0H/status_logs/2024-01-01T11:11:11.1111Z/
+          format: uri
+          readOnly: true
+        logged_at:
+          type: string
+          description: The date and time this status information was received and stored.
+          format: date-time
+          readOnly: true
+        sampled_at:
+          type: string
+          format: date-time
+          description: The date and time when this data was recorded. Likely to be earlier than `logged_at`, but how much earlier depends on the integration and other factors.
+        vehicle:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/vehicles/vhcl01HRFF3SEVSCRAV9B3CHVDFN0H
+          - $ref: '#/components/schemas/Vehicle'
+        state_of_charge_percentage:
+          type:
+          - integer
+          - 'null'
+          example: 70
+          description: How full the vehicle's battery is, as a percentage. Will be null if we are unable to get this information from the vehicle's telematics.
+          readOnly: true
+        is_charging:
+          type:
+          - boolean
+          - 'null'
+          default: false
+          description: Is the vehicle currently receiving charge? Will be null if we are unable to get this information from the vehicle's telematics.
+          readOnly: true
+        is_plugged_in:
+          type:
+          - boolean
+          - 'null'
+          default: false
+          description: Is the vehicle currently connected to an EVSE? Will be null if we are unable to get this information from the vehicle's telematics.
+          readOnly: true
+        charge_rate_watts:
+          type:
+          - integer
+          - 'null'
+          description: The current rate of charge being received, in watts. Will be null if we are unable to get this information from the Vehicle integration.
+        estimated_charge_rate_watts:
+          type:
+          - integer
+          - 'null'
+          description: The charge rate in watts estimated from the change in battery charge level. Useful when the Vehicle integration does not report charge_rate_watts directly. Will be null if it cannot be estimated.
+          readOnly: true
+        charge_level_watt_hours:
+          type:
+          - integer
+          - 'null'
+          description: The battery charge level in watt hours. Will be null if we are unable to get this information from the Vehicle integration.
+          readOnly: true
+        target_charge_level_percentage:
+          type:
+          - integer
+          - 'null'
+          description: The target charge level as a percentage. Will be null if we are unable to get this information from the Vehicle integration.
+          readOnly: true
+        target_charge_level_watt_hours:
+          type:
+          - integer
+          - 'null'
+          description: The target charge level in watt hours. Will be null if we are unable to get this information from the Vehicle integration.
+          readOnly: true
+        charge_energy_added_watt_hours:
+          type:
+          - integer
+          - 'null'
+          description: The amount of energy added during the most recent charge, as reported by the vehicle, in watt hours. Will be null if we are unable to get this information from the Vehicle integration.
+          readOnly: true
+        minutes_to_full_charge:
+          type:
+          - integer
+          - 'null'
+          description: The number of minutes the vehicle predicts until it is fully charged. Will be null if we are unable to get this information from the Vehicle integration.
+          readOnly: true
+        current_type:
+          type:
+          - string
+          - 'null'
+          enum:
+          - AC - Typically home chargers
+          - DC - Typically OTG chargers
+          - null
+          description: The current type of the EVSE the vehicle is connected to (AC or DC). Will be null if we are unable to get this information from the Vehicle integration.
+          readOnly: true
+        is_complete:
+          type:
+          - boolean
+          - 'null'
+          description: Whether the vehicle has reached the target charge level. Will be null if we are unable to get this information from the Vehicle integration.
+          readOnly: true
+        odometer_meters:
+          type:
+          - integer
+          - 'null'
+          description: The vehicle's odometer reading in meters. Will be null if we are unable to get this information from the Vehicle integration.
+          readOnly: true
+        data_source:
+          type:
+          - string
+          - 'null'
+          description: The integration that originated this data.
+          readOnly: true
+        state:
+          type:
+          - string
+          - 'null'
+          enum:
+          - DRIVING
+          - RECENTLY_FINISHED_DRIVING
+          - STATIONARY
+          - IN_SERVICE
+          - PLUGGED_IN_NOT_CHARGING
+          - PLUGGED_IN_CHARGING
+          - PLUGGED_IN_COMPLETE
+          - PLUGGED_IN_NEAR_READY_BY_TIME
+          - PLUGGED_IN_ALMOST_COMPLETE
+          - UNKNOWN
+          - null
+          description: The state of the vehicle. Will be null if we are unable to get this information from the Vehicle integration.
+          readOnly: true
+    VehicleModelConnectorPatch:
+      title: VehicleModelConnectorPatch
+      description: 'Request body for
+
+        `PATCH /vehicle_models/{vehicle_model_id}/connectors/{region}`. All
+
+        fields are optional; only those supplied are changed. `region` is the
+
+        key and cannot be changed.
+
+        '
+      type: object
+      properties:
+        connector_type:
+          type: string
+          enum:
+          - CCS
+          - NACS
+          - CHADEMO
+          - GBT
+        source:
+          type:
+          - string
+          - 'null'
+          enum:
+          - EV_ENERGY
+          - CAR_API
+          - USER
+          - DVLA
+          - PROVIDER
+          - FLEET
+          - null
+        confidence:
+          type:
+          - string
+          - 'null'
+          enum:
+          - HIGH
+          - MEDIUM
+          - LOW
+          - null
+        verified_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+    Location:
+      title: Location
+      type: object
+      description: 'Location model for charging locations.
+
+
+        **Address validation:** Address fields are optional as a group, but each field independently triggers the requirement. If any of `address_1`, `address_2`, `city`, `state`, `postal_code`, `country_code`, or `coordinates` is provided with a non-null value, then `address_1`, `city`, `postal_code`, and `country_code` must all be provided as non-null values. Sending the keys with explicit `null` values is allowed and does not trigger the requirement (this is how addresses are cleared via `PATCH`). Partial addresses are rejected with a 400.
+
+        '
+      properties:
+        address_1:
+          type:
+          - string
+          - 'null'
+          description: First line of address.
+        address_2:
+          type:
+          - string
+          - 'null'
+          description: Second line of address.
+        postal_code:
+          type:
+          - string
+          - 'null'
+          description: Postal Code.
+        country_code:
+          anyOf:
+          - $ref: '#/components/schemas/CountryCode'
+          - type: 'null'
+          $ref: '#/components/schemas/CountryCode'
+        coordinates:
+          anyOf:
+          - $ref: '#/components/schemas/LatLong'
+          - type: 'null'
+        tariff:
+          oneOf:
+          - format: uri
+            type:
+            - string
+            - 'null'
+            example: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7735
+          - $ref: '#/components/schemas/Tariff'
+        city:
+          type:
+          - string
+          - 'null'
+        state:
+          type:
+          - string
+          - 'null'
+        evse_site:
+          oneOf:
+          - type:
+            - string
+            - 'null'
+          - $ref: '#/components/schemas/EVSESite'
+          description: If null, the user's location is not an EVSE Site. Otherwise, this field references the site they are a part of.
+      dependentSchemas:
+        address_1:
+          if:
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - city
+            - postal_code
+            - country_code
+            properties:
+              city:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+        address_2:
+          if:
+            properties:
+              address_2:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - city
+            - postal_code
+            - country_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              city:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+        city:
+          if:
+            properties:
+              city:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - postal_code
+            - country_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+        state:
+          if:
+            properties:
+              state:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - city
+            - postal_code
+            - country_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              city:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+        postal_code:
+          if:
+            properties:
+              postal_code:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - city
+            - country_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              city:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+        country_code:
+          if:
+            properties:
+              country_code:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - city
+            - postal_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              city:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+        coordinates:
+          if:
+            properties:
+              coordinates:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - city
+            - postal_code
+            - country_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              city:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+    Vehicle:
+      title: Vehicle
+      description: A resource representing a single, physical electric vehicle.
+      type: object
+      x-tags:
+      - Vehicles
+      required:
+      - id
+      - url
+      - integrated
+      - battery_size_watt_hours
+      - effective_battery_size_watt_hours
+      - maximum_charge_limit_percentage
+      - description
+      - disabled
+      - smart_charging_enabled
+      - vehicle_class
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given Vehicle.
+          pattern: vhcl[A-Z\d]{26}
+          example: vhcl01HRFF3SEVSCRAV9B3CHVDFN0H
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/vehicles/vhcl01HRFF3SEVSCRAV9B3CHVDFN0H
+          readOnly: true
+        trim:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/trim/vehicle_trim01HRFHBCM7VBSWRPVYFBQMH2BR
+          - $ref: '#/components/schemas/VehicleTrim'
+          description: Defaults to a url, but can be expanded to the full Trim resource via the `expand` query parameter.
+          readOnly: true
+        user:
+          example: https://api.ev.energy/v2/users/user01HN2NJ9NMRZBXT1H6FT9N7735
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/user/user01HN2NJ9NMRZBXT1H6FT9N7735
+          - $ref: '#/components/schemas/User'
+          description: Defaults to a url, but can be expanded to the full User resource via the `expand` query parameter.
+        latest_status_log:
+          example: https://api.ev.energy/v2/vehicles/vhcl01HRFF3SEVSCRAV9B3CHVDFN0H/status_logs/2024-04-17T09:39:45.994584Z/
+          oneOf:
+          - type:
+            - string
+            - 'null'
+            example: https://api.ev.energy/v2/vehicles/vhcl01HRFF3SEVSCRAV9B3CHVDFN0H/status_logs/2024-04-17T09:39:45.994584Z/
+            format: uri
+          - $ref: '#/components/schemas/VehicleStatusLog'
+          description: An expandable reference to the most recent status log for this Vehicle. This can be requested or expanded to get the most accurate information we have on the device's current status.
+        charging_sub_sessions:
+          type: string
+          format: uri
+          example: https://api.ev.energy/charging_sub_sessions/?vehicle_id=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H
+          description: Provides a pre-constructed URL to list charging sub-sessions involving this Vehicle.
+        integrated:
+          enum:
+          - UNINTEGRATED
+          - ACTIVE
+          - INACTIVE
+          description: 'Whether we have an integration with this vehicle.
+
+            - `UNINTEGRATED`: This vehicle is not integrated
+
+            - `ACTIVE`: This vehicle is integrated and the connection is working.
+
+            - `INACTIVE`: This vehicle has been integrated but the connection has been severed, usually because the user needs to reconnect it.'
+          readOnly: true
+        battery_size_watt_hours:
+          type: integer
+          minimum: 1000
+          maximum: 300000
+          description: The nominal battery capacity of the vehicle in watt-hours according to the vehicle integration or trim. Editable via PATCH only for unintegrated vehicles; sending it for an integrated vehicle is rejected. Setting it flags the battery size as user-provided. Stored to the nearest 0.01 kWh (10 Wh), so the value read back may be rounded.
+          example: 60000
+        effective_battery_size_watt_hours:
+          type: integer
+          description: The effective battery capacity of the vehicle in watt-hours, accounting for estimated degradation based on odometer reading. This is the value used by the smart charging scheduler.
+          readOnly: true
+          example: 60000
+        maximum_charge_limit_percentage:
+          type: integer
+          minimum: 50
+          maximum: 100
+          description: The target state of charge of the car as a percentage between 50 and 100. The car will not be smart charged above this value. Can be null if target charge level has not been set or we don't know the car's battery size.
+          default: 100
+        description:
+          type: string
+          maxLength: 200
+          description: Human-readable label for the vehicle.
+          example: My Volvo C40
+          readOnly: true
+        disabled:
+          type: boolean
+          description: 'Whether the vehicle has been disabled and can no longer be smart-charged or controlled. Set when the user unenrolls the vehicle, when an integrated vehicle is switched to unintegrated (''dumb''), or when the owning account is pending deletion. Disabled vehicles that have not been permanently deleted are still returned by this endpoint. This is independent of integrated: a disabled vehicle can still report integrated=ACTIVE (e.g. pending deletion), and a healthy never-integrated vehicle is not disabled.'
+          example: false
+          readOnly: true
+        smart_charging_enabled:
+          type: boolean
+          description: Whether smart (dynamic) charging is enabled for this vehicle.
+          example: true
+        vehicle_class:
+          type:
+          - string
+          - 'null'
+          enum:
+          - PASSENGER
+          - COMMERCIAL
+          - null
+          description: Class of vehicle, passenger or commercial.
+          example: PASSENGER
+    VehicleReconnectionUrl:
+      title: VehicleReconnectionUrl
+      type: object
+      examples:
+      - url: https://app.ev.energy/vehicle-onboarding/start/56091b3b-86e9-4e7c-a825-f99e5d131234
+        expiry: '2022-11-03T20:26:10.344522Z'
+      description: A URL for a user to re-authenticate their vehicle alongside it's metadata.
+      properties:
+        url:
+          type: string
+          format: uri
+          example: https://app.ev.energy/vehicle-onboarding/start/56091b3b-86e9-4e7c-a825-f99e5d131234
+          readOnly: true
+        expires_at:
+          type: string
+          format: date-time
+          example: '2022-11-03T20:26:10.344522Z'
+          readOnly: true
+    VehicleWaitlistResponse:
+      title: VehicleWaitlistResponse
+      description: Response body for `POST /vehicle_waitlist`. Echoes just the new entry's uid; no `url` is returned because the endpoint exposes no retrieve action (privacy by design — waitlist entries cannot be enumerated or looked up via the public API).
+      type: object
+      x-tags:
+      - Vehicles
+      required:
+      - id
+      properties:
+        id:
+          type: string
+          pattern: vwlt[A-Z\d]{26}
+          description: Uid of the created waitlist entry.
+          example: vwlt01HRS4TSK26BPBV7127DH7E0HA
+    VehicleModelUpdate:
+      title: VehicleModelUpdate
+      description: Request body for `PATCH /vehicle_models/{vehicle_model_id}`.
+      type: object
+      properties:
+        default_connector_type:
+          type:
+          - string
+          - 'null'
+          enum:
+          - CCS
+          - NACS
+          - CHADEMO
+          - null
+    CountryCode:
+      description: ISO 3166-1 2 letter Country Codes.
+      type: string
+      enum:
+      - AD
+      - AE
+      - AF
+      - AG
+      - AI
+      - AL
+      - AM
+      - AO
+      - AQ
+      - AR
+      - AS
+      - AT
+      - AU
+      - AW
+      - AX
+      - AZ
+      - BA
+      - BB
+      - BD
+      - BE
+      - BF
+      - BG
+      - BH
+      - BI
+      - BJ
+      - BL
+      - BM
+      - BN
+      - BO
+      - BQ
+      - BR
+      - BS
+      - BT
+      - BV
+      - BW
+      - BY
+      - BZ
+      - CA
+      - CC
+      - CD
+      - CF
+      - CG
+      - CH
+      - CI
+      - CK
+      - CL
+      - CM
+      - CN
+      - CO
+      - CR
+      - CU
+      - CV
+      - CW
+      - CX
+      - CY
+      - CZ
+      - DE
+      - DJ
+      - DK
+      - DM
+      - DO
+      - DZ
+      - EC
+      - EE
+      - EG
+      - EH
+      - ER
+      - ES
+      - ET
+      - FI
+      - FJ
+      - FK
+      - FM
+      - FO
+      - FR
+      - GA
+      - GB
+      - GD
+      - GE
+      - GF
+      - GG
+      - GH
+      - GI
+      - GL
+      - GM
+      - GN
+      - GP
+      - GQ
+      - GR
+      - GS
+      - GT
+      - GU
+      - GW
+      - GY
+      - HK
+      - HM
+      - HN
+      - HR
+      - HT
+      - HU
+      - ID
+      - IE
+      - IL
+      - IM
+      - IN
+      - IO
+      - IQ
+      - IR
+      - IS
+      - IT
+      - JE
+      - JM
+      - JO
+      - JP
+      - KE
+      - KG
+      - KH
+      - KI
+      - KM
+      - KN
+      - KP
+      - KR
+      - KW
+      - KY
+      - KZ
+      - LA
+      - LB
+      - LC
+      - LI
+      - LK
+      - LR
+      - LS
+      - LT
+      - LU
+      - LV
+      - LY
+      - MA
+      - MC
+      - MD
+      - ME
+      - MF
+      - MG
+      - MH
+      - MK
+      - ML
+      - MM
+      - MN
+      - MO
+      - MP
+      - MQ
+      - MR
+      - MS
+      - MT
+      - MU
+      - MV
+      - MW
+      - MX
+      - MY
+      - MZ
+      - NA
+      - NC
+      - NE
+      - NF
+      - NG
+      - NI
+      - NL
+      - 'NO'
+      - NP
+      - NR
+      - NU
+      - NZ
+      - OM
+      - PA
+      - PE
+      - PF
+      - PG
+      - PH
+      - PK
+      - PL
+      - PM
+      - PN
+      - PR
+      - PS
+      - PT
+      - PW
+      - PY
+      - QA
+      - RE
+      - RO
+      - RS
+      - RU
+      - RW
+      - SA
+      - SB
+      - SC
+      - SD
+      - SE
+      - SG
+      - SH
+      - SI
+      - SJ
+      - SK
+      - SL
+      - SM
+      - SN
+      - SO
+      - SR
+      - SS
+      - ST
+      - SV
+      - SX
+      - SY
+      - SZ
+      - TC
+      - TD
+      - TF
+      - TG
+      - TH
+      - TJ
+      - TK
+      - TL
+      - TM
+      - TN
+      - TO
+      - TR
+      - TT
+      - TV
+      - TW
+      - TZ
+      - UA
+      - UG
+      - UM
+      - US
+      - UY
+      - UZ
+      - VA
+      - VC
+      - VE
+      - VG
+      - VI
+      - VN
+      - VU
+      - WF
+      - WS
+      - YE
+      - YT
+      - ZA
+      - ZM
+      - ZW
+    VehicleStateOfCharge:
+      title: VehicleStateOfCharge
+      description: A vehicle's current battery state of charge.
+      type: object
+      x-tags:
+      - Vehicles
+      required:
+      - url
+      - vehicle
+      - state_of_charge_percentage
+      - source
+      - updated_at
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+          example: https://api.ev.energy/v2/vehicles/vhcl01HRFF3SEVSCRAV9B3CHVDFN0H/state_of_charge
+        vehicle:
+          type: string
+          format: uri
+          readOnly: true
+          example: https://api.ev.energy/v2/vehicles/vhcl01HRFF3SEVSCRAV9B3CHVDFN0H
+        state_of_charge_percentage:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          maximum: 100
+          description: Current battery percentage. Null when unknown.
+        source:
+          type:
+          - string
+          - 'null'
+          enum:
+          - MANUAL
+          - CONNECTED
+          - null
+          readOnly: true
+          description: 'Where the current value came from: MANUAL (driver-entered) or
+
+            CONNECTED (vehicle telemetry). Null when no value is available.'
+        updated_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+    LocationDetail:
+      title: Location
+      description: Extra fields only included when a single location is requested but omitted when locations are listed.
+      allOf:
+      - type: object
+        properties:
+          current_carbon_intensity_grams_per_kilowatt_hour:
+            type:
+            - integer
+            - 'null'
+            example: 300
+            description: The current carbon intensity associated with the location in gCO2/kWh.
+      - $ref: '#/components/schemas/Location'
+    PriceSummary:
+      title: PriceSummary
+      description: A single price for a certain time range.
+      type: object
+      examples:
+      - price: '0.10'
+        times:
+        - start: '18:00:00'
+          end: 00:00:00
+      x-tags:
+      - Tariffs
+      properties:
+        price:
+          type: string
+          example: '0.10'
+          description: The price is in major currency units e.g. 0.10 means £0.10.
+        times:
+          type: array
+          items:
+            $ref: '#/components/schemas/Times'
+    VehicleMake:
+      title: VehicleMake
+      description: A resource representing a vehicle manufacturer.
+      type: object
+      x-tags:
+      - Vehicles
+      required:
+      - id
+      - url
+      - name
+      - icon
+      - onboarding_url
+      - models
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given Vehicle Make.
+          pattern: vmak[A-Z\d]{26}
+          example: vmak01HRFHBCM7VBSWRPVYFBQMH2BR
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/vehicle_makes/vmak01HRFHBCM7VBSWRPVYFBQMH2BR
+          readOnly: true
+        name:
+          type: string
+          example: Volvo
+          readOnly: true
+        icon:
+          type:
+          - string
+          - 'null'
+          format: uri
+          example: https://cdn.example.com/volvo.png
+          description: A url for an image of the make's logo.
+          readOnly: true
+        onboarding_url:
+          type:
+          - string
+          - 'null'
+          example: https://api.ev.energy/v2/vehicle_onboarding/?make_id=vmak01HN2P75GBNFRJPCZJXEFVXH5E&user_id=user01HN2NJ9NMRZBXT1H6FT9N7735&client_id=your_client_id
+          description: 'A pre-constructed link to initiate onboarding for a vehicle of this make. If it is null, then it cannot be onboarded with make alone. You should filter the list of [vehicle models](ev.energy-API-v2.yaml/paths/~1vehicle_models/get) by this make and then have the user select their model.
+
+
+            Your `client_id` and the user''s `user_id` are automatically included based on your authentication token. If you are using client credentials authentication, the user ID will not be automatically included unless you set the EvEnergy-User header on your request.'
+          readOnly: true
+        models:
+          type: string
+          format: uri
+          example: https://api.ev.energy/vehicle_models?make_id=vmak01HN2P75GBNFRJPCZJXEFVXH5E
+          description: A pre-constructed link to a list of vehicle models filtered for this make.
+          readOnly: true
+        subscription_name:
+          type:
+          - string
+          - 'null'
+          description: Full OEM telematics subscription name required for vehicle connectivity (e.g. 'Volkswagen We Connect ID'). Null if no subscription is required.
+          example: Volkswagen We Connect ID
+          readOnly: true
+        subscription_package:
+          type:
+          - string
+          - 'null'
+          description: Specific OEM subscription package required (e.g. 'We Connect ID'). Null if no subscription is required.
+          example: We Connect ID
+          readOnly: true
+    VehicleConnectors:
+      title: VehicleConnectors
+      description: A vehicle's DC-fast charging connectors (native plug + adapters).
+      type: object
+      x-tags:
+      - Vehicles
+      required:
+      - url
+      - vehicle
+      - native_connector
+      - adaptors
+      - updated_at
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+          example: https://api.ev.energy/v2/vehicles/vhcl01HRFF3SEVSCRAV9B3CHVDFN0H/connectors
+        vehicle:
+          type: string
+          format: uri
+          readOnly: true
+          example: https://api.ev.energy/v2/vehicles/vhcl01HRFF3SEVSCRAV9B3CHVDFN0H
+        native_connector:
+          type:
+          - string
+          - 'null'
+          enum:
+          - CCS
+          - NACS
+          - CHADEMO
+          - null
+          description: 'The vehicle''s built-in DC-fast plug. A per-vehicle override, falling
+
+            back to the model''s default connector when unset; null when not yet
+
+            known.'
+        adaptors:
+          type: array
+          items:
+            type: string
+            enum:
+            - CCS
+            - NACS
+            - CHADEMO
+          description: Additional connectors usable via an adapter. Empty when none.
+        updated_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+    VehicleModel:
+      title: VehicleModel
+      description: A resource representing a model of vehicle.
+      type: object
+      x-tags:
+      - Vehicles
+      required:
+      - id
+      - url
+      - name
+      - default_battery_size_watt_hours
+      - default_connector_type
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given Vehicle Model.
+          pattern: vmod[A-Z\d]{26}
+          example: vmod01HSBR8Z36GD7A46K7M4R12VG0
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/vehicle_models/vmod01HSBR8Z36GD7A46K7M4R12VG0
+          readOnly: true
+        name:
+          type: string
+          example: C40
+          readOnly: true
+        make:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/vehicle_makes/vmak01HRFHBCM7VBSWRPVYFBQMH2BR
+          - $ref: '#/components/schemas/VehicleMake'
+        onboarding_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+          example: https://api.ev.energy/v2/vehicle_onboarding?model_id=vmod01HN2P436099PEQ20B7TKPGTEJ&user_id=user01HN2NJ9NMRZBXT1H6FT9N7735&client_id=your_client_id
+          description: 'A pre-constructed link to initiate onboarding for a vehicle of this model. If it is null, then it cannot be onboarded with model alone. You should filter the list of [vehicle trims](ev.energy-API-v2.yaml/paths/~1vehicle_trims/get) by this model and then have the user select their trim.
+
+
+            Your `client_id` and the user''s `user_id` are automatically included based on your authentication token. If you are using client credentials authentication, the user ID will not be automatically included unless you set the EvEnergy-User header on your request.'
+        vehicle_trims:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/vehicle_trims?model_id=vmod01HN2P436099PEQ20B7TKPGTEJ
+          description: 'A pre-constructed link to a list of vehicle trims filtered for this model.
+
+            '
+          readOnly: true
+        default_battery_size_watt_hours:
+          type: integer
+          description: Default battery size in watt-hours for this model, derived from the most common battery size across trims. Falls back to 45000 Wh if no trim data exists.
+          example: 79000
+          readOnly: true
+        default_connector_type:
+          type:
+          - string
+          - 'null'
+          enum:
+          - CCS
+          - NACS
+          - CHADEMO
+          - null
+          description: 'Default charging connector type for this model, used to pre-fill
+
+            connector selection during vehicle onboarding. Null when not yet
+
+            known. Editable via PATCH with the `vehicle_catalogue:write` scope.'
+    VehicleOnboardingCompleteResponse:
+      title: VehicleOnboardingCompleteResponse
+      description: Response body for `POST /vehicle_onboarding/complete`. Always an array; the single-vehicle case is returned as a one-element list.
+      type: object
+      x-tags:
+      - Vehicles
+      required:
+      - vehicles
+      properties:
+        vehicles:
+          type: array
+          items:
+            type: object
+            required:
+            - id
+            - url
+            properties:
+              id:
+                type: string
+                description: V2 UID of the created vehicle.
+                example: vhcl01HRFF3SEVSCRAV9B3CHVDFN0H
+              url:
+                type: string
+                format: uri
+                description: Absolute URL of the vehicle resource (suitable for `GET /v2/vehicles/{uid}`).
+                example: https://api.ev.energy/v2/vehicles/vhcl01HRFF3SEVSCRAV9B3CHVDFN0H/
+    VehicleTrim:
+      title: VehicleTrim
+      description: A resource representing a "trim level" of a particular vehicle model, which captures a specific set of features.
+      type: object
+      x-tags:
+      - Vehicles
+      required:
+      - id
+      - url
+      - name
+      - onboarding_url
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given Vehicle Trim.
+          pattern: trim[A-Z\d]{26}
+          example: trim01HRFHBCM7VBSWRPVYFBQMH2BR
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/vehicle_trim/trim01HRFHBCM7VBSWRPVYFBQMH2BR
+          readOnly: true
+        name:
+          type: string
+          example: Recharge Core (69 kWh)
+          readOnly: true
+        model:
+          oneOf:
+          - type: string
+            format: uri
+          - $ref: '#/components/schemas/VehicleModel'
+        battery_size_watt_hours:
+          type:
+          - integer
+          - 'null'
+          description: Battery size in watt-hours. null if not known for this trim.
+          example: 75500
+          readOnly: true
+        onboarding_url:
+          type:
+          - string
+          - 'null'
+          example: https://api.ev.energy/v2/vehicle_onboarding?trim_id=trim01HN2NZ1040Y8E77CQGXADC2TZ&user_id=user01HN2NJ9NMRZBXT1H6FT9N7735&client_id=your_client_id
+          format: uri
+          description: 'A pre-constructed link to initiate onboarding for a vehicle with this trim. If it is null, then we do not support intergrating with this vehicle and you should POST the trim to [/vehicles](ev.energy-API-v2.yaml/paths/~1vehicles/post) to create an unintegrated vehicle.
+
+
+            Your `client_id` and the user''s `user_id` are automatically included based on your authentication token. If you are using client credentials authentication, the user ID will not be automatically included unless you set the EvEnergy-User header on your request.'
+          readOnly: true
+    RFC9457ProblemDetail:
+      title: RFC 9457 Problem Detail
+      x-tags:
+      - problems
+      type: object
+      required:
+      - title
+      - detail
+      properties:
+        type:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/problems/example-problem/
+        status:
+          type: number
+          example: 400
+        title:
+          type: string
+          example: Short description
+        detail:
+          type: string
+          example: Long, more specific description.
+        instance:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
+        notification:
+          $ref: '#/components/schemas/Notification'
+      examples:
+      - type: https://api.ev.energy/v2/problems/example-problem/
+        status: 400
+        title: Short description
+        detail: Long, more specific description.
+        instance: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
+        notification:
+          id: notf01HTHKTXVB77901324BCQPF1RB
+          url: https://api.ev.energy/notifications/notf01HTHKTXVB77901324BCQPF1RB
+          message_id: ERR0123
+          category: ACTIONABLE
+          event_time: '2019-08-24T14:15:22Z'
+          short_text_title: Your car is disconnected
+          short_text_body: We need to reconnect to keep smart charging your car
+          detail_page_title: Your car is disconnected
+          detail_page_body: Your car has been disconnected. This happens when your password is reset. We need you to re-authorise ev.energy to access your account in order for us to keep managing your charging. Blah blah blah.
+          external_link: http://example.com
+          external_button_label: More info
+          read_at: '2019-08-24T14:20:22Z'
+          resolved_at: '2019-08-25T14:15:22Z'
+    VehicleOnboardingJsonResponse:
+      title: VehicleOnboardingJsonResponse
+      description: JSON payload returned by `GET /vehicle_onboarding?response_type=json`. Used by native mobile clients to launch the onboarding flow.
+      type: object
+      x-tags:
+      - Vehicles
+      required:
+      - authorization_request_id
+      - url
+      - auth_method
+      properties:
+        authorization_request_id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: UUID identifying the in-flight onboarding request. Echo it back to `POST /vehicle_onboarding/complete` (as `authorization_request_uid`) to finish onboarding.
+        url:
+          type: string
+          format: uri
+          description: The integration provider's authorization URL the client should navigate to (or pass to the native SDK).
+          example: https://connect.smartcar.com/oauth/authorize?response_type=code&client_id=...
+        auth_method:
+          type: string
+          enum:
+          - api
+          - native
+          description: Whether the client should open `url` in a WebView (`api`) or launch the provider's native SDK with the supplied scopes (`native`). `native` is currently used for Smartcar BMW/MINI when the `smartcar_native_sdk` waffle flag is enabled.
+        scopes:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: OAuth scopes that the SDK should request when `auth_method=native`. Null when the field does not apply (for example for `auth_method=api` providers that do not surface scopes here).
+          example:
+          - read_vehicle_info
+          - read_charge
+          - control_charge
+        single_select:
+          type:
+          - boolean
+          - 'null'
+          description: Whether the SDK should restrict the user to picking a single vehicle. Null when the field does not apply.
+    Notification:
+      title: Notification
+      description: Something that the user should be informed about.
+      type: object
+      examples:
+      - id: notf67O36PLTFDB57M0E5L33JZLGM0
+        url: https://api.ev.energy/notifications/notf67O36PLTFDB57M0E5L33JZLGM0
+        message_id: ERR0123
+        category: ACTIONABLE
+        event_time: '2019-08-24T14:15:22Z'
+        short_text_title: Your car is disconnected
+        short_text_body: We need to reconnect to keep smart charging your car
+        detail_page_title: Your car is disconnected
+        detail_page_body: Your car has been disconnected. This happens when your password is reset. We need you to re-authorise ev.energy to access your account in order for us to keep managing your charging. Blah blah blah.
+        external_link: http://example.com
+        external_button_label: More info
+        read_at: '2019-08-24T14:20:22Z'
+        resolved_at: '2019-08-25T14:15:22Z'
+      required:
+      - id
+      - url
+      - message_id
+      - category
+      - event_time
+      - short_text_title
+      - short_text_body
+      - detail_page_title
+      - detail_page_body
+      - external_link
+      - external_button_label
+      properties:
+        id:
+          type: string
+          pattern: notf[A-Z\d]{26}
+          example: notf67O36PLTFDB57M0E5L33JZLGM0
+          description: Unique identifier for the Notification
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/notifications/notf67O36PLTFDB57M0E5L33JZLGM0
+        message_id:
+          type: string
+          description: Internal identifier for this notification type. E.g. 'ERR0023'
+        category:
+          description: Category of this notification type
+          enum:
+          - ACTIONABLE
+          - SERVICE
+          - RETRY
+          - MARKETING
+          - INTERNAL
+        event_time:
+          type: string
+          format: date-time
+          description: The timestamp of the event described by this notification
+        short_text_title:
+          type: string
+          description: Short title for the notification
+          maxLength: 33
+        short_text_body:
+          type: string
+          description: Short description of the event being notified
+          maxLength: 49
+        detail_page_title:
+          type: string
+          description: Title of a help page giving more information about this notification
+        detail_page_body:
+          type: string
+          description: Text of a help page giving more information about this notification
+        external_link:
+          type:
+          - string
+          - 'null'
+          description: URL of a web page giving further information about this notification
+          format: uri
+        external_button_label:
+          type: string
+          description: Text to be displayed on a button leading to the external_link location
+        read_at:
+          type: string
+          format: date-time
+          description: When the user examined the contents of this notification
+        resolved_at:
+          type: string
+          format: date-time
+          description: When the problem associated with this notification was resolved
+    VehicleWrite:
+      title: Vehicle
+      description: Fields that can be set when creating an unintegrated Vehicle resource. The client supplies a `model` (and optional `battery_size_watt_hours`); the backend resolves or creates a hidden trim under the hood.
+      type: object
+      x-tags:
+      - Vehicles
+      required:
+      - model
+      properties:
+        model:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/vehicle_models/vmod01HN2P436099PEQ20B7TKPGTEJ
+          readOnly: false
+          description: UID-based URL of an existing CarModel. The backend resolves or creates a hidden trim for the given model and (optional) battery size.
+        battery_size_watt_hours:
+          type: integer
+          minimum: 1000
+          maximum: 300000
+          example: 60000
+          description: Battery size in watt-hours.
+        description:
+          type: string
+          maxLength: 200
+          example: My Volvo C40
+          description: Optional human-readable label for the vehicle. Defaults to a string built from the user's email and the resolved make/model when omitted.
+        vehicle_class:
+          type:
+          - string
+          - 'null'
+          enum:
+          - PASSENGER
+          - COMMERCIAL
+          - null
+          description: Class of vehicle, passenger or commercial.
+          example: PASSENGER
+        user:
+          example: https://api.ev.energy/v2/users/user01HN2NJ9NMRZBXT1H6FT9N7735
+          type: string
+          format: uri
+          readOnly: false
+          description: Required if using Client Credentials authentication.
+    VehicleLocationLog:
+      title: VehicleLocationLog
+      description: Records when location data was sampled for a vehicle. The actual location coordinates are not exposed through this resource.
+      type: object
+      x-tags:
+      - Vehicles
+      properties:
+        url:
+          type: string
+          example: https://api.ev.energy/v2/vehicles/vhcl01HRFF3SEVSCRAV9B3CHVDFN0H/location_logs/2024-04-17T09:39:45.984584Z/
+          format: uri
+          readOnly: true
+        sampled_at:
+          type: string
+          description: The date and time when the location data was sampled from the vehicle (supplied by the API).
+          format: date-time
+          readOnly: true
+        logged_at:
+          type: string
+          description: The server time the location event was received at.
+          format: date-time
+          readOnly: true
+        vehicle:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/vehicles/vhcl01HRFF3SEVSCRAV9B3CHVDFN0H
+          - $ref: '#/components/schemas/Vehicle'
+        at_home:
+          type:
+          - boolean
+          - 'null'
+          description: Whether the vehicle was at the user's home location when this data was sampled. Will be null if the user has no home location configured.
+          readOnly: true
+    VehicleModelConnectorCreate:
+      title: VehicleModelConnectorCreate
+      description: Request body for `POST /vehicle_models/{vehicle_model_id}/connectors`.
+      type: object
+      required:
+      - region
+      - connector_type
+      properties:
+        region:
+          type: string
+          enum:
+          - NORTH_AMERICA
+          - EUROPE
+        connector_type:
+          type: string
+          enum:
+          - CCS
+          - NACS
+          - CHADEMO
+          - GBT
+        source:
+          type:
+          - string
+          - 'null'
+          enum:
+          - EV_ENERGY
+          - CAR_API
+          - USER
+          - DVLA
+          - PROVIDER
+          - FLEET
+          - null
+        confidence:
+          type:
+          - string
+          - 'null'
+          enum:
+          - HIGH
+          - MEDIUM
+          - LOW
+          - null
+        verified_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+    VPPModes:
+      title: VPPModes
+      type: object
+      description: VPP (Virtual Power Plant) mode capabilities indicating which control modes are supported by the resource.
+      required:
+      - target_power
+      - import_max_power
+      - export_max_power
+      - charge_mode
+      properties:
+        target_power:
+          type: boolean
+          description: Whether target power control mode is supported.
+          readOnly: true
+          example: true
+        import_max_power:
+          type: boolean
+          description: Whether import maximum power control mode is supported.
+          readOnly: true
+          example: true
+        export_max_power:
+          type: boolean
+          description: Whether export maximum power control mode is supported.
+          readOnly: true
+          example: false
+        charge_mode:
+          type: boolean
+          description: Whether charge mode control is supported.
+          readOnly: true
+          example: true
+      examples:
+      - target_power: true
+        import_max_power: true
+        export_max_power: false
+        charge_mode: true
+    TariffBase:
+      title: TariffBase
+      type: object
+      description: 'Core tariff properties shared by Tariff and expanded scheduler_tariff. Note: daily_prices and type are only available under contract. Please reach out to your account manager to find out more.'
+      x-tags:
+      - Tariffs
+      required:
+      - id
+      - url
+      - supplier
+      - name
+      - currency
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given user.
+          pattern: tari[A-Z\d]{26}
+          example: tari01HN2NJ9NMRZBXT1H6FT9N7735
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7735
+        supplier:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/suppliers/supl01HN2NJ9NMRZBXT1H6FT9N7735
+          - $ref: '#/components/schemas/Supplier'
+          description: The energy company that supplies this tariff.
+        name:
+          type: string
+          example: Fangorn Biomass
+        currency:
+          type: string
+          example: GBP
+        highlighted:
+          type: boolean
+          description: A highlighted tariff is one that is often selected by users.
+        type:
+          enum:
+          - FLAT_RATE
+          - DUAL_RATE
+          - THREE_RATE
+          - DYNAMIC
+          - EXTERNALLY_MANAGED
+          - OTHER
+        daily_prices:
+          $ref: '#/components/schemas/DailyPrices'
+          description: 'The times returned here are localised to the timezone the tariff is in.
+
+            The timezone is returned in `timezone_name`.'
+        timezone_name:
+          type: string
+          example: Europe/London
+        price_chart_url:
+          type:
+          - string
+          - 'null'
+          description: The url of a website which can display a chart of prices for the tariff. This website is an external resource and is not affiliated with ev.energy.
+          example: https://www.example.com/
+        gsp_group:
+          type:
+          - string
+          - 'null'
+          description: The GB Grid Supply Point (DNO region) the tariff applies to. Suppliers publish region-specific rates, so the same named tariff can appear once per region with differing prices; this field distinguishes them. `null` for tariffs that are not region-specific.
+          example: _C
+        valid_from:
+          type: string
+          format: date
+          description: The date from which this tariff became available to new customers.
+          example: '2026-03-17'
+        valid_until:
+          type:
+          - string
+          - 'null'
+          format: date
+          description: The date after which this tariff is no longer available to new customers (it has been superseded). `null` if the tariff is still open to new sign-ups. Use the `valid` query parameter to filter the list to only currently-available tariffs.
+          example: '2027-03-17'
+    User:
+      title: User
+      description: A resource that represents an individual user in the ev.energy system.
+      type: object
+      x-tags:
+      - Users
+      required:
+      - id
+      - url
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given user.
+          pattern: user[A-Z\d]{26}
+          example: user01HN2NJ9NMRZBXT1H6FT9N7735
+          readOnly: true
+        url:
+          type: string
+          example: https://api.ev.energy/v2/users/user01HN2NJ9NMRZBXT1H6FT9N7735
+          format: uri
+          readOnly: true
+        email:
+          type: string
+          format: email
+        full_name:
+          type: string
+          readOnly: true
+          description: The user's full name.
+          example: Frodo Baggins
+        joined_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: The date and time when the user joined the platform.
+          example: '2023-06-15T10:00:00Z'
+        terms_consent_datetime:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+          description: When the user gave their terms and conditions consent, or null if they have not.
+          example: '2023-06-15T10:00:00Z'
+        default_location:
+          anyOf:
+          - $ref: '#/components/schemas/Location'
+          - $ref: '#/components/schemas/LocationDetail'
+          description: LocationDetail is served when a single user is requested, otherwise Location is served for user lists.
+        vehicles:
+          type: array
+          items:
+            type: string
+            format: uri
+            example: https://api.ev.energy/v2/vehicles/vhcl01HRFF3SEVSCRAV9B3CHVDFN0H
+            readOnly: true
+          readOnly: true
+        evses:
+          type: array
+          items:
+            type: string
+            format: uri
+            example: https://api.ev.energy/v2/evses/evse01HSH04XHZCT92RN018F0236ZM
+            readOnly: true
+          readOnly: true
+    VehicleModelConnector:
+      title: VehicleModelConnector
+      description: 'A vehicle model''s DC-fast connector for one charging region. A model''s
+
+        connector can differ by market, so each row records the connector (and
+
+        its provenance) for one region.
+
+        '
+      type: object
+      x-tags:
+      - Vehicles
+      required:
+      - url
+      - vehicle_model
+      - region
+      - connector_type
+      - source
+      - confidence
+      - verified_at
+      - updated_at
+      properties:
+        url:
+          type: string
+          format: uri
+          readOnly: true
+          example: https://api.ev.energy/v2/vehicle_models/vmod01HRFF3SEVSCRAV9B3CHVDFN0H/connectors/NORTH_AMERICA
+        vehicle_model:
+          type: string
+          format: uri
+          readOnly: true
+          example: https://api.ev.energy/v2/vehicle_models/vmod01HRFF3SEVSCRAV9B3CHVDFN0H
+          description: Link to the vehicle model this connector belongs to.
+        region:
+          type: string
+          enum:
+          - NORTH_AMERICA
+          - EUROPE
+          description: The charging region this connector applies in.
+        connector_type:
+          type: string
+          enum:
+          - CCS
+          - NACS
+          - CHADEMO
+          - GBT
+          description: The model's native DC-fast connector in this region.
+        source:
+          type:
+          - string
+          - 'null'
+          enum:
+          - EV_ENERGY
+          - CAR_API
+          - USER
+          - DVLA
+          - PROVIDER
+          - FLEET
+          - null
+          description: Provenance of this regional connector value.
+        confidence:
+          type:
+          - string
+          - 'null'
+          enum:
+          - HIGH
+          - MEDIUM
+          - LOW
+          - null
+          description: Curator confidence in this value.
+        verified_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: When this value was last verified.
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    VehicleStateOfChargeUpdate:
+      title: VehicleStateOfChargeUpdate
+      description: Request body for `PATCH /vehicles/{vehicle_id}/state_of_charge`.
+      type: object
+      properties:
+        state_of_charge_percentage:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          maximum: 100
+    VehicleTrimCreate:
+      title: VehicleTrimCreate
+      description: Request body for creating a custom vehicle trim.
+      type: object
+      x-tags:
+      - Vehicles
+      required:
+      - name
+      - model
+      - battery_size_watt_hours
+      properties:
+        name:
+          type: string
+          description: The name of the vehicle trim.
+          example: Custom Trim
+        model:
+          type: string
+          format: uri
+          description: URL reference to the vehicle model this trim belongs to.
+          example: https://api.ev.energy/v2/vehicle_models/vmod01HSBR8Z36GD7A46K7M4R12VG0
+        battery_size_watt_hours:
+          type: integer
+          description: Battery size in watt hours. Must be between 1000 and 300000.
+          minimum: 1000
+          maximum: 300000
+          example: 75500
+    LatLong:
+      title: LatLong
+      type: object
+      description: Coordinates model used for locations.
+      required:
+      - latitude
+      - longitude
+      properties:
+        latitude:
+          type: number
+          format: float
+          example: 51.52576576674041
+        longitude:
+          type: number
+          format: float
+          example: -0.08366433371722264
+    VehicleOnboardingCompleteRequest:
+      title: VehicleOnboardingCompleteRequest
+      description: Request body for `POST /vehicle_onboarding/complete`. Exchanges a provider `auth_code` (typically returned by the Smartcar Connect native SDK) for the list of vehicles created on the user's account.
+      type: object
+      x-tags:
+      - Vehicles
+      required:
+      - authorization_request_uid
+      - auth_code
+      properties:
+        authorization_request_uid:
+          type: string
+          format: uuid
+          description: UUID of the `AccountAuthorizationRequest` returned by the init endpoint.
+          example: 4d4ce3d9-8a16-46a8-99e1-3f3f9b8a3a5b
+        auth_code:
+          type: string
+          description: OAuth `auth_code` returned by the integration provider.
+          example: SC-AUTH-CODE-EXAMPLE
+        smartcar_user_id:
+          type:
+          - string
+          - 'null'
+          writeOnly: true
+          maxLength: 100
+          description: SmartCar user UUID (the `userId` returned alongside `auth_code` on the Connect redirect / native SDK callback). Optional; only set for the SmartCar provider.
+          example: a4c82e9f-0b1c-4d2e-8f3a-5b6c7d8e9f01
+  parameters:
+    region:
+      name: region
+      in: path
+      required: true
+      schema:
+        type: string
+        enum:
+        - NORTH_AMERICA
+        - EUROPE
+        example: NORTH_AMERICA
+      description: The charging region of the connector.
+    page:
+      name: page
+      description: The page number to return results for.
+      in: query
+      required: false
+      schema:
+        type: number
+        example: 2
+    evenergy-user-required:
+      name: EvEnergy-User
+      in: header
+      required: false
+      description: This endpoints requires a user ID to be specified via this header when using Client Credentials authentication.
+      schema:
+        type: string
+        pattern: user[A-Z\d]{26}
+        example: user01HN2NJ9NMRZBXT1H6FT9N7735
+    expand-on-vehiclestatuslog:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - vehicle
+          - vehicle.trim
+          - vehicle.trim.model
+          - vehicle.trim.model.make
+          - vehicle.user
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    expand-on-vehicleapierrorlog:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - vehicle
+          - vehicle.trim
+          - vehicle.trim.model
+          - vehicle.trim.model.make
+          - vehicle.user
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    sampled_at__gte:
+      name: sampled_at__gte
+      in: query
+      schema:
+        type: string
+        format: date-time
+        example: '2024-04-17T09:39:45.984584Z'
+      description: Filters for logs sampled at or after this datetime.
+    expand-on-vehicle:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - user
+          - trim
+          - trim.model
+          - trim.model.make
+          - latest_status_log
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    client_id:
+      name: client_id
+      in: query
+      required: true
+      schema:
+        type: string
+        example: sandbox-cc-id
+        minLength: 1
+      description: Your OAuth2 application client_id, issued when your ev.energy API integration was provisioned. This is the same value used when obtaining tokens via the Authorization Code or Client Credentials flows — not a user-created value. Passing an unrecognised string will result in an error. The onboarding endpoints redirect the user's browser through an OAuth flow to connect their device; the client_id determines which registered application is initiating the flow, so the correct branding, redirect URIs, and scopes are applied.
+    vehicle_id:
+      name: vehicle_id
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: vhcl[A-Z\d]{26}
+        example: vhcl01HRFF3SEVSCRAV9B3CHVDFN0H
+      description: The ID of the specific vehicle to retrieve.
+    user:
+      name: EvEnergy-User
+      description: If the client is authenticated using Client Credentials, setting EvEnergy-User to a valid user ID allows requests to be made as if you were directly authenticated as that user.
+      in: header
+      required: false
+      schema:
+        type: string
+        pattern: user[A-Z\d]{26}
+        example: user01HN2NJ9NMRZBXT1H6FT9N7735
+    vehicle_make_id_q:
+      name: make_id
+      in: query
+      required: false
+      schema:
+        type: string
+        example: vmak01HN2NV5DY9C262PQKG75GHN8K
+      description: The ID of a Vehicle Make to filter by
+    vehicle_model_id:
+      name: vehicle_model_id
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: vmod[A-Z\d]{26}
+        example: vmod01HSBR8Z36GD7A46K7M4R12VG0
+      description: The ID of the specific vehicle model to retrieve.
+    Accept-Language:
+      name: Accept-Language
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Indicates the natural language and locale that the client prefers.
+    expand-on-vehiclelocationlog:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - vehicle
+          - vehicle.trim
+          - vehicle.trim.model
+          - vehicle.trim.model.make
+          - vehicle.user
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    expand-on-vehicletrim:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - model
+          - model.make
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    logged_at__gte:
+      name: logged_at__gte
+      in: query
+      schema:
+        type: string
+        format: date-time
+        example: '2024-04-17T09:39:45.984584Z'
+      description: Filters for logs logged at or after this datetime.
+    expand-on-vehiclemodel:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - make
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    user_id_onboarding:
+      name: user_id
+      in: query
+      required: true
+      schema:
+        type: string
+        pattern: user[A-Z\d]{26}
+        example: user01HN2NJ9NMRZBXT1H6FT9N7735
+      description: The ID of a user to onboard a device for.
+    vehicle_make_id:
+      name: vehicle_make_id
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: vmak[A-Z\d]{26}
+        example: vmak01HRFHBCM7VBSWRPVYFBQMH2BR
+      description: The ID of the specific vehicle make to retrieve.
+    ordering_by_name:
+      name: ordering
+      in: query
+      schema:
+        type: string
+        enum:
+        - name
+        - -name
+      description: 'Sort the list alphabetically by `name` (`-name` for reverse). When omitted, results are returned in their default creation order.
+
+        Unrecognised values silently fall back to the default ordering.'
+    expand-on-vehiclecommandlog:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - vehicle
+          - vehicle.trim
+          - vehicle.trim.model
+          - vehicle.trim.model.make
+          - vehicle.user
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    sampled_at__lte:
+      name: sampled_at__lte
+      in: query
+      schema:
+        type: string
+        format: date-time
+        example: '2024-04-17T09:39:45.984584Z'
+      description: Filters for logs sampled at or before this datetime.
+    expand:
+      name: expand
+      in: query
+      schema:
+        type: string
+        example: user
+      description: Specify a url field to expand into a nested resource.
+    page_size:
+      name: page_size
+      description: Specify the number of results to return per page.
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 25
+        minimum: 1
+        maximum: 100
+        example: 10
+    previous:
+      name: page_before
+      description: Return results from the page after this ID.
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[a-z]{4}[A-Z\d]{26}'
+        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
+    vehicle_model_id_q:
+      name: model_id
+      in: query
+      required: false
+      schema:
+        type: string
+        example: vmod01HN2NV5DY9C262PQKG75GHN8K
+      description: The ID of a Vehicle Model to filter by.
+    next:
+      name: page_after
+      description: Return results from the page before this ID.
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[a-z]{4}[A-Z\d]{26}'
+        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
+    vehicle_trim_id:
+      name: vehicle_trim_id
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: trim[A-Z\d]{26}
+        example: trim01HRFHBCM7VBSWRPVYFBQMH2BR
+      description: The ID of the specific vehicle trim to retrieve.
+    version-2:
+      name: EvEnergy-Version
+      description: Specify the version of this endpoint to use.
+      required: false
+      in: header
+      schema:
+        type: number
+        enum:
+        - 2
+    logged_at__lte:
+      name: logged_at__lte
+      in: query
+      schema:
+        type: string
+        format: date-time
+        example: '2024-04-17T09:39:45.984584Z'
+      description: Filters for logs logged at or before this datetime.
+    available_for_user_id:
+      name: available_for_user_id
+      in: query
+      schema:
+        type: string
+        pattern: user[A-Z\d]{26}
+        example: user01HN2NJ9NMRZBXT1H6FT9N7735
+      description: Filter to only return resources available in the user's region and program.
+  headers:
+    version-2:
+      description: Indicates the version of the API that generated this response. If EvEnergy-Version was not specified in the request, this will be your OAuth application's default version.
+      schema:
+        type: number
+        enum:
+        - 2
+    link:
+      description: Provides links to the previous and next pages of data, if they exist.
+      example: <https://api.ev.energy/v2/vehicles?page_size=25&page_before=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="previous", <https://api.ev.energy/v2/vehicles?page_size=25&page_after=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="next"
+      schema:
+        type: string
+    x-ratelimit-remaining:
+      description: The number of requests remaining until this client's rate limit is reached.
+      schema:
+        type: number
+        default: 999
+    x-ratelimit-limit:
+      description: The maximum number of requests that can be made to this endpoint per hour. Defaults to 1000 but may vary per client.
+      schema:
+        type: number
+        default: 1000
+    retry-after:
+      description: The number of seconds until this client's requests will not be rate limited.
+      schema:
+        type: number
+        default: 3600
+    link-timestamps:
+      description: Provides links to the previous and next pages of data, if they exist.
+      example: <https://api.ev.energy/v2/vehicles?page_size=25&page_before=2024-04-18T08:53:52.225655Z>; rel="previous", <https://api.ev.energy/v2/vehicles?page_size=25&page_after=2024-04-18T08:53:52.225655Z>; rel="next"
+      schema:
+        type: string
+  examples:
+    ProblemInvalidPaginationParameter:
+      value:
+        type: https://api.ev.energy/v2/problems/pagination-parameters/
+        status: 400
+        title: Invalid pagination parameter
+        detail: 'Invalid value for pagination parameter: page_size'
+    ProblemValidationFailedVehicle:
+      value:
+        type: https://api.ev.energy/v2/problems/validation-failed-create-vehicle/
+        status: 400
+        title: Request failed validation.
+        detail: 'Error on fields: user, trim'
+        field_errors:
+          user:
+          - This field is required.
+          trim:
+          - Invalid hyperlink - Object does not exist.
+    ProblemUnsupportedVersion:
+      value:
+        type: https://api.ev.energy/v2/problems/pagination-parameters/
+        status: 400
+        title: Unsupported version
+        detail: 'Unsupported version requested: 3.0'
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.ev.energy/o/token/
+          refreshUrl: https://api.ev.energy/o/token/
+          scopes:
+            carbon:read: ''
+            grid:read: ''
+            evse:read: ''
+            evse:write: ''
+            vehicle:read: ''
+            user:read: ''
+            charging_session:read: ''
+            tariff:read: ''
+            tariff:prices:read: ''
+            user:write: ''
+            inverter:read: ''
+            inverter:write: ''
+            home_battery:read: ''
+            home_energy:read: ''
+            boundary_meter:read: ''
+            vehicle:write: ''
+            vehicle_catalogue:write: Update shared vehicle-catalogue reference data (e.g. a model's default connector type)
+            charging_session:write: ''
+            solar:write: ''
+            solar:read: ''
+            subscription:read: ''
+            debug:read: ''
+            dispatch_coordinator:read: ''
+            dispatch_event:write: ''
+            solar_forecast:read: ''
+            payout_method:read: Read a user's preferred payout method
+            payout_method:write: Set, update, or clear a user's preferred payout method
+            notification_preferences:read: Read a user's notification group opt-in state
+            notification_preferences:write: Update a user's notification group opt-in state
+            route_planner_preferences:read: Read a user's EV Route Planner preferences
+            route_planner_preferences:write: Update a user's EV Route Planner preferences
+            saved_routes:read: Read a user's saved route-planner routes
+            saved_routes:write: Create, update, or delete a user's saved routes
+            region:read: Read region and region group boundary data
+            region:write: Create regions and region groups
+        authorizationCode:
+          authorizationUrl: https://api.ev.energy/o/authorize/
+          tokenUrl: https://api.ev.energy/o/token/
+          refreshUrl: https://api.ev.energy/o/token/
+          scopes: {}
+x-redocly:
+  openapi:
+    hideSchemaTitles: true
+x-internal: false

@@ -1,0 +1,2755 @@
+openapi: 3.2.0
+info:
+  title: ev.energy v2 Support Tickets API
+  version: '2.0'
+  contact:
+    email: developers@ev.energy
+    url: developers.ev.energy
+    name: ev.energy developers
+  description: The official API for ev.energy, version 2.
+  license:
+    name: Proprietary
+    url: https://ev.energy
+  termsOfService: ''
+servers:
+- url: https://api.ev.energy/v2
+  description: Live API for both production and sandbox requests.
+  x-internal: false
+- description: Staging server for internal testing only.
+  url: https://api-staging.ev.energy/v2
+  x-internal: true
+security:
+- oauth2: []
+tags:
+- name: Support Tickets
+  description: Endpoints for interacting with customer support tickets.
+paths:
+  /support_tickets:
+    get:
+      summary: List support tickets
+      tags:
+      - Support Tickets
+      responses:
+        '200':
+          description: Returns a list of support tickets.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SupportTicket'
+          headers:
+            Link:
+              $ref: '#/components/headers/link'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-support_tickets
+      description: 'List all support tickets that the authorization token has access to.
+
+
+        Access control:
+
+        - User-scoped tokens: Returns only tickets belonging to that user
+
+        - Organization-scoped tokens: Returns only tickets belonging to users in that organization
+
+        - Tokens with access_all_areas: Returns all tickets including those without a user
+
+
+        Note: Tickets without a user (null user field) are only accessible to applications with access_all_areas permission. These tickets represent inquiries from channels where a user account may not exist (e.g., pre-signup inquiries, web forms).'
+      parameters:
+      - $ref: '#/components/parameters/previous'
+      - $ref: '#/components/parameters/next'
+      - $ref: '#/components/parameters/page_size'
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/expand-on-supportticket'
+      - schema:
+          type: string
+        in: query
+        name: external_ticket_id
+        description: Filter by external ticket ID from support system
+      - schema:
+          type: string
+        in: query
+        name: human_verified_category
+        description: Filter by human verified category
+      - schema:
+          type: string
+        in: query
+        name: human_verified_subcategory
+        description: Filter by human verified subcategory
+      - schema:
+          type: string
+        in: query
+        name: ai_generated_category
+        description: Filter by AI generated category
+      - schema:
+          type: string
+        in: query
+        name: ai_generated_subcategory
+        description: Filter by AI generated subcategory
+      - schema:
+          type: boolean
+        in: query
+        name: human_verified_category__isnull
+        description: Filter for tickets with or without human verified category
+      - schema:
+          type: boolean
+        in: query
+        name: human_verified_subcategory__isnull
+        description: Filter for tickets with or without human verified subcategory
+      - schema:
+          type: boolean
+        in: query
+        name: ai_generated_category__isnull
+        description: Filter for tickets with or without AI generated category
+      - schema:
+          type: boolean
+        in: query
+        name: ai_generated_subcategory__isnull
+        description: Filter for tickets with or without AI generated subcategory
+      - schema:
+          type: string
+        in: query
+        name: status
+        description: Filter by ticket status (e.g., Open, Resolved, Closed)
+      - schema:
+          type: string
+        in: query
+        name: status__in
+        description: Filter by multiple status values (comma-separated)
+      - schema:
+          type: string
+        in: query
+        name: priority
+        description: Filter by ticket priority (e.g., Low, Medium, High, Urgent)
+      - schema:
+          type: string
+        in: query
+        name: priority__in
+        description: Filter by multiple priority values (comma-separated)
+      - schema:
+          type: boolean
+        in: query
+        name: priority__isnull
+        description: Filter for tickets with or without priority
+      - schema:
+          type: string
+          format: date-time
+        in: query
+        name: created_at__gte
+        description: Filter tickets created on or after this date
+      - schema:
+          type: string
+          format: date-time
+        in: query
+        name: created_at__lte
+        description: Filter tickets created on or before this date
+      - schema:
+          type: string
+        in: query
+        name: created_at__range
+        description: Filter tickets created within a date range (comma-separated start and end dates)
+      - schema:
+          type: string
+          format: uri
+        in: query
+        name: user
+        description: Filter tickets by a specific user ID
+      - schema:
+          type: boolean
+        in: query
+        name: user__isnull
+        description: Filter for tickets with or without an associated user
+      - schema:
+          type: string
+        in: query
+        name: tags
+        description: Filter by tag (checks if the tag exists in the tags array)
+      - schema:
+          type: string
+        in: query
+        name: source
+        description: Filter by ticket source (e.g., Email, Phone, Feedback Widget)
+      - schema:
+          type: string
+        in: query
+        name: source__in
+        description: Filter by multiple sources (comma-separated)
+      - schema:
+          type: string
+          format: date-time
+        in: query
+        name: resolved_at__gte
+        description: Filter tickets resolved on or after this date
+      - schema:
+          type: string
+          format: date-time
+        in: query
+        name: resolved_at__lte
+        description: Filter tickets resolved on or before this date
+      - schema:
+          type: string
+        in: query
+        name: resolved_at__range
+        description: Filter tickets resolved within a date range (comma-separated start and end dates)
+      - schema:
+          type: boolean
+        in: query
+        name: resolved_at__isnull
+        description: Filter for unresolved tickets (true) or resolved tickets (false)
+      - schema:
+          type: string
+          format: date-time
+        in: query
+        name: ticket_updated_at__gte
+        description: Filter tickets updated on or after this date
+      - schema:
+          type: string
+          format: date-time
+        in: query
+        name: ticket_updated_at__lte
+        description: Filter tickets updated on or before this date
+      - schema:
+          type: string
+        in: query
+        name: ticket_updated_at__range
+        description: Filter tickets updated within a date range (comma-separated start and end dates)
+      - schema:
+          type: boolean
+        in: query
+        name: ticket_updated_at__isnull
+        description: Filter for tickets with or without an update timestamp
+      - $ref: '#/components/parameters/user'
+      security:
+      - oauth2:
+        - support:read
+  /support_tickets/{support_ticket_id}:
+    parameters:
+    - $ref: '#/components/parameters/support_ticket_id'
+    get:
+      summary: Retrieve support ticket
+      description: 'Retrieve information about a single, specific support ticket.
+
+
+        Access control:
+
+        - User-scoped tokens: Can only access tickets belonging to that user
+
+        - Organization-scoped tokens: Can only access tickets belonging to users in that organization
+
+        - Tokens with access_all_areas: Can access all tickets including those without a user
+
+
+        Note: Tickets without a user (null user field) will return 404 for tokens without access_all_areas permission.'
+      tags:
+      - Support Tickets
+      responses:
+        '200':
+          description: Returns a single support ticket.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupportTicket'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-support_tickets-support_ticket_id
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/expand-on-supportticket'
+      security:
+      - oauth2:
+        - support:read
+    patch:
+      summary: Update support ticket
+      tags:
+      - Support Tickets
+      responses:
+        '200':
+          description: Support ticket updated successfully.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupportTicket'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: patch-support_tickets-support_ticket_id
+      security:
+      - oauth2:
+        - support:write
+      description: 'Update support ticket categorization.
+
+
+        Access control follows the same rules as retrieval:
+
+        - User-scoped tokens: Can only update tickets belonging to that user
+
+        - Organization-scoped tokens: Can only update tickets belonging to users in that organization
+
+        - Tokens with access_all_areas: Can update all tickets including those without a user'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupportTicket'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SupportTicket'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SupportTicket'
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+  /support_tickets/{support_ticket_id}/messages:
+    parameters:
+    - $ref: '#/components/parameters/support_ticket_id'
+    get:
+      summary: List messages for a support ticket
+      description: 'List all messages in a support ticket conversation, ordered by position.
+
+
+        Access control follows the same rules as the parent support ticket:
+
+        - User-scoped tokens: Can only access messages for tickets belonging to that user
+
+        - Organization-scoped tokens: Can only access messages for tickets belonging to users in that organization
+
+        - Tokens with access_all_areas: Can access messages for all tickets including those without a user'
+      tags:
+      - Support Tickets
+      responses:
+        '200':
+          description: Returns a list of messages for the specified support ticket.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SupportTicketMessage'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-support_tickets-support_ticket_id-messages
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - schema:
+          type: string
+        in: query
+        name: message_type
+        description: Filter by message type (e.g., INITIAL_REQUEST, CUSTOMER_RESPONSE, HUMAN_AGENT_RESPONSE, AI_AGENT_RESPONSE)
+      - schema:
+          type: string
+        in: query
+        name: message_type__in
+        description: Filter by multiple message types (comma-separated)
+      - schema:
+          type: integer
+        in: query
+        name: position
+        description: Filter by message position in the conversation (0 is first message)
+      - schema:
+          type: integer
+        in: query
+        name: position__gte
+        description: Filter for messages at or after this position
+      - schema:
+          type: integer
+        in: query
+        name: position__lte
+        description: Filter for messages at or before this position
+      security:
+      - oauth2:
+        - support:read
+  /support_tickets/{support_ticket_id}/messages/{message_id}:
+    parameters:
+    - $ref: '#/components/parameters/support_ticket_id'
+    - $ref: '#/components/parameters/message_id'
+    get:
+      summary: Retrieve a message for a support ticket
+      description: 'Retrieve a single message from a support ticket conversation.
+
+
+        Access control follows the same rules as the parent support ticket.'
+      tags:
+      - Support Tickets
+      responses:
+        '200':
+          description: Returns a single support ticket message.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupportTicketMessage'
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-support_tickets-support_ticket_id-messages-message_id
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      security:
+      - oauth2:
+        - support:read
+  /support_tickets/categories:
+    get:
+      summary: Get support ticket categories
+      tags:
+      - Support Tickets
+      description: Returns all available support ticket categories and subcategories.
+      operationId: get-support_tickets-categories
+      responses:
+        '200':
+          description: Returns all available categories and subcategories.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  categories:
+                    type: array
+                    description: List of all available ticket categories. Each category includes the enum value and its human-readable label.
+                    items:
+                      type: object
+                      required:
+                      - value
+                      - label
+                      properties:
+                        value:
+                          allOf:
+                          - $ref: '#/components/schemas/SupportTicketCategoryEnum'
+                          description: The enum value (ALL_CAPS format) for programmatic use.
+                          example: CHARGER
+                        label:
+                          type: string
+                          description: Human-readable label for display.
+                          example: Charger
+                  subcategories:
+                    type: array
+                    description: List of all available ticket subcategories. Each subcategory includes the enum value and its human-readable label.
+                    items:
+                      type: object
+                      required:
+                      - value
+                      - label
+                      properties:
+                        value:
+                          allOf:
+                          - $ref: '#/components/schemas/SupportTicketSubcategoryEnum'
+                          description: The enum value (ALL_CAPS format) for programmatic use.
+                          example: HARDWARE_ISSUE
+                        label:
+                          type: string
+                          description: Human-readable label for display.
+                          example: Hardware Issue
+              examples:
+                Example:
+                  value:
+                    categories:
+                    - value: ACCOUNT
+                      label: Account
+                    - value: CHARGER
+                      label: Charger
+                    - value: CHARGING_SESSION
+                      label: Charging Session
+                    - value: MOBILE_APP
+                      label: Mobile App
+                    - value: OTHER
+                      label: Other
+                    - value: SOLAR
+                      label: Solar
+                    - value: USABILITY_UX
+                      label: Usability/UX
+                    - value: VEHICLE
+                      label: Vehicle
+                    subcategories:
+                    - value: ACCESSIBILITY
+                      label: Accessibility
+                    - value: HARDWARE_ISSUE
+                      label: Hardware Issue
+                    - value: APP_CRASH_FREEZE
+                      label: App crash / freeze
+                    - value: TELEMATICS_ISSUE
+                      label: Telematics issue
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+  /support-ticket-stats/sankey:
+    get:
+      summary: Get support ticket Sankey diagram data
+      tags:
+      - Support Tickets
+      description: Returns aggregated data for visualizing ticket flow from category to subcategory in a Sankey diagram. Only includes tickets with human-verified categories.
+      operationId: get-support_ticket_stats-sankey
+      responses:
+        '200':
+          description: Returns Sankey diagram nodes and links.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  nodes:
+                    type: array
+                    description: List of nodes in the Sankey diagram (categories and subcategories).
+                    items:
+                      type: object
+                      required:
+                      - id
+                      - label
+                      properties:
+                        id:
+                          type: string
+                          description: Unique identifier for the node (prefixed with 'category:' or 'subcategory:').
+                          example: category:Charger
+                        label:
+                          type: string
+                          description: Human-readable label for display.
+                          example: Charger
+                  links:
+                    type: array
+                    description: List of links between nodes representing ticket flows.
+                    items:
+                      type: object
+                      required:
+                      - source
+                      - target
+                      - value
+                      properties:
+                        source:
+                          type: string
+                          description: ID of the source node (category).
+                          example: category:Charger
+                        target:
+                          type: string
+                          description: ID of the target node (subcategory).
+                          example: subcategory:Hardware Issue
+                        value:
+                          type: integer
+                          description: Number of tickets flowing from source to target.
+                          example: 42
+              examples:
+                Example:
+                  value:
+                    nodes:
+                    - id: category:Charger
+                      label: Charger
+                    - id: subcategory:Hardware Issue
+                      label: Hardware Issue
+                    links:
+                    - source: category:Charger
+                      target: subcategory:Hardware Issue
+                      value: 42
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+  /support-ticket-stats/volume:
+    get:
+      summary: Get support ticket volume time series
+      tags:
+      - Support Tickets
+      description: Returns time series data showing ticket volume over time. Can be grouped by day, week, or month.
+      operationId: get-support_ticket_stats-volume
+      responses:
+        '200':
+          description: Returns time series data for ticket volume.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  time_series:
+                    type: array
+                    description: List of time periods with ticket counts.
+                    items:
+                      type: object
+                      required:
+                      - date
+                      - count
+                      properties:
+                        date:
+                          type: string
+                          format: date
+                          description: ISO 8601 date string for the time period.
+                          example: '2024-01-15'
+                        count:
+                          type: integer
+                          description: Number of distinct tickets created in this period.
+                          example: 23
+              examples:
+                Example:
+                  value:
+                    time_series:
+                    - date: '2024-01-15'
+                      count: 23
+                    - date: '2024-01-16'
+                      count: 31
+                    - date: '2024-01-17'
+                      count: 18
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - name: group_by
+        in: query
+        description: Time period to group by (day, week, or month). Defaults to day.
+        schema:
+          type: string
+          enum:
+          - day
+          - week
+          - month
+          default: day
+  /support-ticket-stats/resolution:
+    get:
+      summary: Get support ticket resolution metrics
+      tags:
+      - Support Tickets
+      description: Returns metrics about ticket resolution including resolution rate, average and median resolution times.
+      operationId: get-support_ticket_stats-resolution
+      responses:
+        '200':
+          description: Returns resolution metrics.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - resolution_rate
+                - total_resolved
+                - total_unresolved
+                properties:
+                  resolution_rate:
+                    type: number
+                    format: float
+                    description: Percentage of tickets that have been resolved (0-1).
+                    example: 0.85
+                  avg_resolution_time_hours:
+                    type:
+                    - number
+                    - 'null'
+                    format: float
+                    description: Average time to resolve a ticket in hours. Null if no tickets resolved.
+                    example: 24.5
+                  median_resolution_time_hours:
+                    type:
+                    - number
+                    - 'null'
+                    format: float
+                    description: Median time to resolve a ticket in hours. Null if no tickets resolved.
+                    example: 18.2
+                  total_resolved:
+                    type: integer
+                    description: Total number of resolved tickets.
+                    example: 170
+                  total_unresolved:
+                    type: integer
+                    description: Total number of unresolved tickets.
+                    example: 30
+              examples:
+                Example:
+                  value:
+                    resolution_rate: 0.85
+                    avg_resolution_time_hours: 24.5
+                    median_resolution_time_hours: 18.2
+                    total_resolved: 170
+                    total_unresolved: 30
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+  /support-ticket-stats/status:
+    get:
+      summary: Get support ticket status breakdown
+      tags:
+      - Support Tickets
+      description: Returns the distribution of tickets across different status values.
+      operationId: get-support_ticket_stats-status
+      responses:
+        '200':
+          description: Returns ticket breakdown by status.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  breakdown:
+                    type: array
+                    description: List of status values with counts and percentages.
+                    items:
+                      type: object
+                      required:
+                      - status
+                      - count
+                      - percentage
+                      properties:
+                        status:
+                          type: string
+                          description: Status value.
+                          example: open
+                        count:
+                          type: integer
+                          description: Number of distinct tickets with this status.
+                          example: 45
+                        percentage:
+                          type: number
+                          format: float
+                          description: Percentage of total tickets (0-1).
+                          example: 0.45
+              examples:
+                Example:
+                  value:
+                    breakdown:
+                    - status: open
+                      count: 45
+                      percentage: 0.45
+                    - status: closed
+                      count: 55
+                      percentage: 0.55
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+  /support-ticket-stats/priority:
+    get:
+      summary: Get support ticket priority breakdown
+      tags:
+      - Support Tickets
+      description: Returns the distribution of tickets across different priority values.
+      operationId: get-support_ticket_stats-priority
+      responses:
+        '200':
+          description: Returns ticket breakdown by priority.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  breakdown:
+                    type: array
+                    description: List of priority values with counts and percentages.
+                    items:
+                      type: object
+                      required:
+                      - priority
+                      - count
+                      - percentage
+                      properties:
+                        priority:
+                          type: string
+                          description: Priority value.
+                          example: high
+                        count:
+                          type: integer
+                          description: Number of distinct tickets with this priority.
+                          example: 12
+                        percentage:
+                          type: number
+                          format: float
+                          description: Percentage of total tickets (0-1).
+                          example: 0.12
+              examples:
+                Example:
+                  value:
+                    breakdown:
+                    - priority: high
+                      count: 12
+                      percentage: 0.12
+                    - priority: medium
+                      count: 58
+                      percentage: 0.58
+                    - priority: low
+                      count: 30
+                      percentage: 0.3
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+  /support-ticket-stats/source:
+    get:
+      summary: Get support ticket source breakdown
+      tags:
+      - Support Tickets
+      description: Returns the distribution of tickets across different source values.
+      operationId: get-support_ticket_stats-source
+      responses:
+        '200':
+          description: Returns ticket breakdown by source.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  breakdown:
+                    type: array
+                    description: List of source values with counts and percentages.
+                    items:
+                      type: object
+                      required:
+                      - source
+                      - count
+                      - percentage
+                      properties:
+                        source:
+                          type: string
+                          description: Source value.
+                          example: mobile_app
+                        count:
+                          type: integer
+                          description: Number of distinct tickets from this source.
+                          example: 67
+                        percentage:
+                          type: number
+                          format: float
+                          description: Percentage of total tickets (0-1).
+                          example: 0.67
+              examples:
+                Example:
+                  value:
+                    breakdown:
+                    - source: mobile_app
+                      count: 67
+                      percentage: 0.67
+                    - source: web
+                      count: 33
+                      percentage: 0.33
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+  /support-ticket-stats/top-categories:
+    get:
+      summary: Get top support ticket categories and subcategories
+      tags:
+      - Support Tickets
+      description: Returns the most common categories and subcategories sorted by ticket count. Supports a limit parameter to control the number of results.
+      operationId: get-support_ticket_stats-top-categories
+      responses:
+        '200':
+          description: Returns top categories and subcategories.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  categories:
+                    type: array
+                    description: List of most common categories.
+                    items:
+                      type: object
+                      required:
+                      - category
+                      - count
+                      - percentage
+                      properties:
+                        category:
+                          allOf:
+                          - $ref: '#/components/schemas/SupportTicketCategoryEnum'
+                          description: Category enum value.
+                          example: CHARGER
+                        count:
+                          type: integer
+                          description: Number of distinct tickets with this category.
+                          example: 145
+                        percentage:
+                          type: number
+                          format: float
+                          description: Percentage of total tickets (0-1).
+                          example: 0.45
+                  subcategories:
+                    type: array
+                    description: List of most common subcategories with their parent category.
+                    items:
+                      type: object
+                      required:
+                      - subcategory
+                      - category
+                      - count
+                      - percentage
+                      properties:
+                        subcategory:
+                          allOf:
+                          - $ref: '#/components/schemas/SupportTicketSubcategoryEnum'
+                          description: Subcategory enum value.
+                          example: HARDWARE_ISSUE
+                        category:
+                          allOf:
+                          - $ref: '#/components/schemas/SupportTicketCategoryEnum'
+                          description: Parent category enum value.
+                          example: CHARGER
+                        count:
+                          type: integer
+                          description: Number of distinct tickets with this subcategory.
+                          example: 78
+                        percentage:
+                          type: number
+                          format: float
+                          description: Percentage of total tickets (0-1).
+                          example: 0.24
+              examples:
+                Example:
+                  value:
+                    categories:
+                    - category: CHARGER
+                      count: 145
+                      percentage: 0.45
+                    - category: MOBILE_APP
+                      count: 89
+                      percentage: 0.28
+                    subcategories:
+                    - subcategory: HARDWARE_ISSUE
+                      category: CHARGER
+                      count: 78
+                      percentage: 0.24
+                    - subcategory: APP_CRASH_FREEZE
+                      category: MOBILE_APP
+                      count: 45
+                      percentage: 0.14
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - name: limit
+        in: query
+        description: Maximum number of categories/subcategories to return. Defaults to 10.
+        schema:
+          type: integer
+          default: 10
+          minimum: 1
+components:
+  responses:
+    Problem404NotFound:
+      description: This resource either does not exist or the client is not authorized to access it.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 404
+              title:
+                type: string
+                example: Not found
+              detail:
+                type: string
+                example: Resource does not exist or cannot be accessed.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem400BadRequestRetrieve:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem401Unauthorized:
+      description: You need to authorise requests to access this resource.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 401
+              title:
+                type: string
+                example: Unauthorized
+              detail:
+                type: string
+                example: Authentication credentials were not provided.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem429TooManyRequests:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Example 1:
+              value:
+                type: https://api.ev.energy/v2/problems/rate-limit-exceeded/
+                status: 429
+                title: Too Many Requests
+                detail: Request was rate limited. Try again in 42 seconds
+      description: The client has exceeded its rate limit.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        Retry-After:
+          $ref: '#/components/headers/retry-after'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem400BadRequestList:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Invalid Pagination Parameter:
+              $ref: '#/components/examples/ProblemInvalidPaginationParameter'
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem403Forbidden:
+      description: You do not have permission to perform this action.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 403
+              title:
+                type: string
+                example: Forbidden
+              detail:
+                type: string
+                example: You do not have permission to perform this action.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem406NotAcceptable:
+      description: Could not satisfy the request Accept header.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 406
+              title:
+                type: string
+                example: Not Acceptable
+              detail:
+                type: string
+                example: Could not satisfy the request Accept header.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+  parameters:
+    user:
+      name: EvEnergy-User
+      description: If the client is authenticated using Client Credentials, setting EvEnergy-User to a valid user ID allows requests to be made as if you were directly authenticated as that user.
+      in: header
+      required: false
+      schema:
+        type: string
+        pattern: user[A-Z\d]{26}
+        example: user01HN2NJ9NMRZBXT1H6FT9N7735
+    expand-on-supportticket:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - user
+          - messages
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    version-2:
+      name: EvEnergy-Version
+      description: Specify the version of this endpoint to use.
+      required: false
+      in: header
+      schema:
+        type: number
+        enum:
+        - 2
+    page_size:
+      name: page_size
+      description: Specify the number of results to return per page.
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 25
+        minimum: 1
+        maximum: 100
+        example: 10
+    message_id:
+      name: message_id
+      description: The ID of the specific support ticket message to retrieve.
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: tmsg[A-Z0-9]{26}
+        example: tmsgA1B2C3D4E5F6G7H8I9J0K1L2M3
+    previous:
+      name: page_before
+      description: Return results from the page after this ID.
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[a-z]{4}[A-Z\d]{26}'
+        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
+    next:
+      name: page_after
+      description: Return results from the page before this ID.
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[a-z]{4}[A-Z\d]{26}'
+        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
+    support_ticket_id:
+      name: support_ticket_id
+      description: The ID of the specific support ticket to retrieve.
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: tick[A-Z\d]{26}
+        example: tick01HN2NJ9NMRZBXT1H6FT9N7735
+  schemas:
+    RFC9457ProblemDetail:
+      title: RFC 9457 Problem Detail
+      x-tags:
+      - problems
+      type: object
+      required:
+      - title
+      - detail
+      properties:
+        type:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/problems/example-problem/
+        status:
+          type: number
+          example: 400
+        title:
+          type: string
+          example: Short description
+        detail:
+          type: string
+          example: Long, more specific description.
+        instance:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
+        notification:
+          $ref: '#/components/schemas/Notification'
+      examples:
+      - type: https://api.ev.energy/v2/problems/example-problem/
+        status: 400
+        title: Short description
+        detail: Long, more specific description.
+        instance: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
+        notification:
+          id: notf01HTHKTXVB77901324BCQPF1RB
+          url: https://api.ev.energy/notifications/notf01HTHKTXVB77901324BCQPF1RB
+          message_id: ERR0123
+          category: ACTIONABLE
+          event_time: '2019-08-24T14:15:22Z'
+          short_text_title: Your car is disconnected
+          short_text_body: We need to reconnect to keep smart charging your car
+          detail_page_title: Your car is disconnected
+          detail_page_body: Your car has been disconnected. This happens when your password is reset. We need you to re-authorise ev.energy to access your account in order for us to keep managing your charging. Blah blah blah.
+          external_link: http://example.com
+          external_button_label: More info
+          read_at: '2019-08-24T14:20:22Z'
+          resolved_at: '2019-08-25T14:15:22Z'
+    Supplier:
+      title: Supplier
+      type: object
+      description: An energy company who supplies electricity tariffs.
+      required:
+      - id
+      - url
+      - name
+      - icon
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given user.
+          pattern: supl[A-Z\d]{26}
+          example: supl01HN2NJ9NMRZBXT1H6FT9N7735
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/suppliers/supl01HN2NJ9NMRZBXT1H6FT9N7735
+        name:
+          type: string
+          example: Rivendell Renewables
+        icon:
+          type:
+          - string
+          - 'null'
+          format: uri
+          example: https://cdn.example.com/rivendell_renewables.jpg
+        highlighted:
+          type: boolean
+          description: A highlighted supplier is one that is often selected by users.
+      x-tags:
+      - Tariffs
+    DailyPrices:
+      title: DailyPrices
+      description: Information about the tariff's prices for different parts of the day.
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      maxProperties: 3
+      required:
+      - peak
+      properties:
+        peak:
+          $ref: '#/components/schemas/PriceSummary'
+        mid_peak:
+          $ref: '#/components/schemas/PriceSummary'
+        off_peak:
+          $ref: '#/components/schemas/PriceSummary'
+      x-tags:
+      - Tariffs
+    Notification:
+      title: Notification
+      description: Something that the user should be informed about.
+      type: object
+      examples:
+      - id: notf67O36PLTFDB57M0E5L33JZLGM0
+        url: https://api.ev.energy/notifications/notf67O36PLTFDB57M0E5L33JZLGM0
+        message_id: ERR0123
+        category: ACTIONABLE
+        event_time: '2019-08-24T14:15:22Z'
+        short_text_title: Your car is disconnected
+        short_text_body: We need to reconnect to keep smart charging your car
+        detail_page_title: Your car is disconnected
+        detail_page_body: Your car has been disconnected. This happens when your password is reset. We need you to re-authorise ev.energy to access your account in order for us to keep managing your charging. Blah blah blah.
+        external_link: http://example.com
+        external_button_label: More info
+        read_at: '2019-08-24T14:20:22Z'
+        resolved_at: '2019-08-25T14:15:22Z'
+      required:
+      - id
+      - url
+      - message_id
+      - category
+      - event_time
+      - short_text_title
+      - short_text_body
+      - detail_page_title
+      - detail_page_body
+      - external_link
+      - external_button_label
+      properties:
+        id:
+          type: string
+          pattern: notf[A-Z\d]{26}
+          example: notf67O36PLTFDB57M0E5L33JZLGM0
+          description: Unique identifier for the Notification
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/notifications/notf67O36PLTFDB57M0E5L33JZLGM0
+        message_id:
+          type: string
+          description: Internal identifier for this notification type. E.g. 'ERR0023'
+        category:
+          description: Category of this notification type
+          enum:
+          - ACTIONABLE
+          - SERVICE
+          - RETRY
+          - MARKETING
+          - INTERNAL
+        event_time:
+          type: string
+          format: date-time
+          description: The timestamp of the event described by this notification
+        short_text_title:
+          type: string
+          description: Short title for the notification
+          maxLength: 33
+        short_text_body:
+          type: string
+          description: Short description of the event being notified
+          maxLength: 49
+        detail_page_title:
+          type: string
+          description: Title of a help page giving more information about this notification
+        detail_page_body:
+          type: string
+          description: Text of a help page giving more information about this notification
+        external_link:
+          type:
+          - string
+          - 'null'
+          description: URL of a web page giving further information about this notification
+          format: uri
+        external_button_label:
+          type: string
+          description: Text to be displayed on a button leading to the external_link location
+        read_at:
+          type: string
+          format: date-time
+          description: When the user examined the contents of this notification
+        resolved_at:
+          type: string
+          format: date-time
+          description: When the problem associated with this notification was resolved
+    Tariff:
+      title: Tariff
+      examples:
+      - id: tari01HN2NJ9NMRZBXT1H6FT9N7735
+        url: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7735
+        supplier: https://api.ev.energy/v2/suppliers/supl01HN2NJ9NMRZBXT1H6FT9N7735
+        name: Fangorn Biomass
+        currency: GBP
+        gsp_group: _C
+        valid_from: '2026-03-17'
+        valid_until: '2027-03-17'
+        daily_prices:
+          peak:
+            price: '0.30'
+            times:
+            - start: '18:00:00'
+              end: 00:00:00
+          mid_peak:
+            price: '0.20'
+            times:
+            - start: '10:00:00'
+              end: 08:00:00
+          off_peak:
+            price: '0.10'
+            times:
+            - start: 08:00:00
+              end: '18:00:00'
+        scheduler_tariff: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7835
+      description: 'Note: daily_prices and type are only available under contract. Please reach out to your account manager to find out more.'
+      x-tags:
+      - Tariffs
+      allOf:
+      - $ref: '#/components/schemas/TariffBase'
+      - type: object
+        properties:
+          scheduler_tariff:
+            oneOf:
+            - type: string
+              format: uri
+              example: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7835
+            - type: object
+              required:
+              - id
+              - url
+              - supplier
+              - name
+              - currency
+              properties:
+                id:
+                  type: string
+                  pattern: tari[A-Z\d]{26}
+                url:
+                  type: string
+                  format: uri
+                supplier:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+                currency:
+                  type: string
+              additionalProperties: true
+            - type: 'null'
+            description: The tariff used by the scheduler for charge optimisation, which may differ from the billing tariff. Returns a URL by default, or null if not set. Expandable with ?expand=scheduler_tariff to return a TariffBase object (additional fields may be present beyond those listed here).
+    EVSESite:
+      title: EVSESite
+      type: object
+      description: Represents a place with one or more EVSEs installed which can be accessed by multiple users.
+      required:
+      - id
+      - url
+      - evses
+      - cpms_connection
+      properties:
+        id:
+          type: string
+          pattern: site[A-Z\d]{26}
+          examples:
+          - site01JX2SZ0WAFTDYVYY0JRAYREY7
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/evse_sites/site01JX2SZ0WAFTDYVYY0JRAYREY7
+          readOnly: true
+        evses:
+          type: array
+          description: A list of all EVSEs that are currently associated with this site.
+          items:
+            type: string
+            format: uri
+            examples:
+            - https://api.ev.energy/v2/evses/evse01HSH04KDEWF6Z4DB2J77J74K5
+          readOnly: true
+        cpms_connection:
+          type:
+          - string
+          - 'null'
+          description: The type of ChargePoint Management System that this site is connected to, if there is one.
+          enum:
+          - null
+          - CHARGEPOINT
+          - SWTCH
+          readOnly: true
+        cpms_connection_display_name:
+          type:
+          - string
+          - 'null'
+          description: A human-readable name for the Chargepoint Management System that the site is connected to.
+          example: ChargePoint
+        user_connected:
+          type:
+          - boolean
+          - 'null'
+          description: When authenticated as a specific user (eg. via the Authorisation Code grant type) or when the EvEnergy-User header is set to a valid user ID, this field will indicate whether the user is currently connected to this EVSE Site's CPMS. If the request is not made in the context of a user, or the site does not have a CPMS connection, this field will be null.
+          readOnly: true
+    SupportTicketMessage:
+      title: Support Ticket Message
+      type: object
+      description: A message within a support ticket conversation.
+      required:
+      - id
+      - position
+      - message_type
+      - message
+      - created_at
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the message.
+          pattern: tmsg[A-Z0-9]{26}
+          example: tmsgA1B2C3D4E5F6G7H8I9J0K1L2M3
+          readOnly: true
+        position:
+          type: integer
+          description: The position in the conversation history. 0 is the first message.
+          example: 0
+          readOnly: true
+        message_type:
+          allOf:
+          - $ref: '#/components/schemas/SupportTicketMessageTypeEnum'
+          description: The type of message in the ticket conversation.
+          example: INITIAL_REQUEST
+          readOnly: true
+        message:
+          type: string
+          description: The message from the agent or customer.
+          example: I am having trouble connecting my Tesla to the app.
+          readOnly: true
+        message_clean:
+          type:
+          - string
+          - 'null'
+          description: A cleaned version of the message with all unnecessary text removed.
+          example: Having trouble connecting Tesla to app.
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          description: When the message was created in the support system.
+          example: '2019-08-24T14:15:22Z'
+          readOnly: true
+    CountryCode:
+      description: ISO 3166-1 2 letter Country Codes.
+      type: string
+      enum:
+      - AD
+      - AE
+      - AF
+      - AG
+      - AI
+      - AL
+      - AM
+      - AO
+      - AQ
+      - AR
+      - AS
+      - AT
+      - AU
+      - AW
+      - AX
+      - AZ
+      - BA
+      - BB
+      - BD
+      - BE
+      - BF
+      - BG
+      - BH
+      - BI
+      - BJ
+      - BL
+      - BM
+      - BN
+      - BO
+      - BQ
+      - BR
+      - BS
+      - BT
+      - BV
+      - BW
+      - BY
+      - BZ
+      - CA
+      - CC
+      - CD
+      - CF
+      - CG
+      - CH
+      - CI
+      - CK
+      - CL
+      - CM
+      - CN
+      - CO
+      - CR
+      - CU
+      - CV
+      - CW
+      - CX
+      - CY
+      - CZ
+      - DE
+      - DJ
+      - DK
+      - DM
+      - DO
+      - DZ
+      - EC
+      - EE
+      - EG
+      - EH
+      - ER
+      - ES
+      - ET
+      - FI
+      - FJ
+      - FK
+      - FM
+      - FO
+      - FR
+      - GA
+      - GB
+      - GD
+      - GE
+      - GF
+      - GG
+      - GH
+      - GI
+      - GL
+      - GM
+      - GN
+      - GP
+      - GQ
+      - GR
+      - GS
+      - GT
+      - GU
+      - GW
+      - GY
+      - HK
+      - HM
+      - HN
+      - HR
+      - HT
+      - HU
+      - ID
+      - IE
+      - IL
+      - IM
+      - IN
+      - IO
+      - IQ
+      - IR
+      - IS
+      - IT
+      - JE
+      - JM
+      - JO
+      - JP
+      - KE
+      - KG
+      - KH
+      - KI
+      - KM
+      - KN
+      - KP
+      - KR
+      - KW
+      - KY
+      - KZ
+      - LA
+      - LB
+      - LC
+      - LI
+      - LK
+      - LR
+      - LS
+      - LT
+      - LU
+      - LV
+      - LY
+      - MA
+      - MC
+      - MD
+      - ME
+      - MF
+      - MG
+      - MH
+      - MK
+      - ML
+      - MM
+      - MN
+      - MO
+      - MP
+      - MQ
+      - MR
+      - MS
+      - MT
+      - MU
+      - MV
+      - MW
+      - MX
+      - MY
+      - MZ
+      - NA
+      - NC
+      - NE
+      - NF
+      - NG
+      - NI
+      - NL
+      - 'NO'
+      - NP
+      - NR
+      - NU
+      - NZ
+      - OM
+      - PA
+      - PE
+      - PF
+      - PG
+      - PH
+      - PK
+      - PL
+      - PM
+      - PN
+      - PR
+      - PS
+      - PT
+      - PW
+      - PY
+      - QA
+      - RE
+      - RO
+      - RS
+      - RU
+      - RW
+      - SA
+      - SB
+      - SC
+      - SD
+      - SE
+      - SG
+      - SH
+      - SI
+      - SJ
+      - SK
+      - SL
+      - SM
+      - SN
+      - SO
+      - SR
+      - SS
+      - ST
+      - SV
+      - SX
+      - SY
+      - SZ
+      - TC
+      - TD
+      - TF
+      - TG
+      - TH
+      - TJ
+      - TK
+      - TL
+      - TM
+      - TN
+      - TO
+      - TR
+      - TT
+      - TV
+      - TW
+      - TZ
+      - UA
+      - UG
+      - UM
+      - US
+      - UY
+      - UZ
+      - VA
+      - VC
+      - VE
+      - VG
+      - VI
+      - VN
+      - VU
+      - WF
+      - WS
+      - YE
+      - YT
+      - ZA
+      - ZM
+      - ZW
+    LocationDetail:
+      title: Location
+      description: Extra fields only included when a single location is requested but omitted when locations are listed.
+      allOf:
+      - type: object
+        properties:
+          current_carbon_intensity_grams_per_kilowatt_hour:
+            type:
+            - integer
+            - 'null'
+            example: 300
+            description: The current carbon intensity associated with the location in gCO2/kWh.
+      - $ref: '#/components/schemas/Location'
+    SupportTicketCategoryEnum:
+      title: Support Ticket Category
+      type: string
+      description: Main category for a support ticket.
+      enum:
+      - ACCOUNT
+      - CHARGER
+      - CHARGING_SESSION
+      - MOBILE_APP
+      - OTHER
+      - SOLAR
+      - USABILITY_UX
+      - VEHICLE
+    PriceSummary:
+      title: PriceSummary
+      description: A single price for a certain time range.
+      type: object
+      examples:
+      - price: '0.10'
+        times:
+        - start: '18:00:00'
+          end: 00:00:00
+      x-tags:
+      - Tariffs
+      properties:
+        price:
+          type: string
+          example: '0.10'
+          description: The price is in major currency units e.g. 0.10 means £0.10.
+        times:
+          type: array
+          items:
+            $ref: '#/components/schemas/Times'
+    Location:
+      title: Location
+      type: object
+      description: 'Location model for charging locations.
+
+
+        **Address validation:** Address fields are optional as a group, but each field independently triggers the requirement. If any of `address_1`, `address_2`, `city`, `state`, `postal_code`, `country_code`, or `coordinates` is provided with a non-null value, then `address_1`, `city`, `postal_code`, and `country_code` must all be provided as non-null values. Sending the keys with explicit `null` values is allowed and does not trigger the requirement (this is how addresses are cleared via `PATCH`). Partial addresses are rejected with a 400.
+
+        '
+      properties:
+        address_1:
+          type:
+          - string
+          - 'null'
+          description: First line of address.
+        address_2:
+          type:
+          - string
+          - 'null'
+          description: Second line of address.
+        postal_code:
+          type:
+          - string
+          - 'null'
+          description: Postal Code.
+        country_code:
+          anyOf:
+          - $ref: '#/components/schemas/CountryCode'
+          - type: 'null'
+          $ref: '#/components/schemas/CountryCode'
+        coordinates:
+          anyOf:
+          - $ref: '#/components/schemas/LatLong'
+          - type: 'null'
+        tariff:
+          oneOf:
+          - format: uri
+            type:
+            - string
+            - 'null'
+            example: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7735
+          - $ref: '#/components/schemas/Tariff'
+        city:
+          type:
+          - string
+          - 'null'
+        state:
+          type:
+          - string
+          - 'null'
+        evse_site:
+          oneOf:
+          - type:
+            - string
+            - 'null'
+          - $ref: '#/components/schemas/EVSESite'
+          description: If null, the user's location is not an EVSE Site. Otherwise, this field references the site they are a part of.
+      dependentSchemas:
+        address_1:
+          if:
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - city
+            - postal_code
+            - country_code
+            properties:
+              city:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+        address_2:
+          if:
+            properties:
+              address_2:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - city
+            - postal_code
+            - country_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              city:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+        city:
+          if:
+            properties:
+              city:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - postal_code
+            - country_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+        state:
+          if:
+            properties:
+              state:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - city
+            - postal_code
+            - country_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              city:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+        postal_code:
+          if:
+            properties:
+              postal_code:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - city
+            - country_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              city:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+        country_code:
+          if:
+            properties:
+              country_code:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - city
+            - postal_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              city:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+        coordinates:
+          if:
+            properties:
+              coordinates:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - city
+            - postal_code
+            - country_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              city:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+    TariffBase:
+      title: TariffBase
+      type: object
+      description: 'Core tariff properties shared by Tariff and expanded scheduler_tariff. Note: daily_prices and type are only available under contract. Please reach out to your account manager to find out more.'
+      x-tags:
+      - Tariffs
+      required:
+      - id
+      - url
+      - supplier
+      - name
+      - currency
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given user.
+          pattern: tari[A-Z\d]{26}
+          example: tari01HN2NJ9NMRZBXT1H6FT9N7735
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7735
+        supplier:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/suppliers/supl01HN2NJ9NMRZBXT1H6FT9N7735
+          - $ref: '#/components/schemas/Supplier'
+          description: The energy company that supplies this tariff.
+        name:
+          type: string
+          example: Fangorn Biomass
+        currency:
+          type: string
+          example: GBP
+        highlighted:
+          type: boolean
+          description: A highlighted tariff is one that is often selected by users.
+        type:
+          enum:
+          - FLAT_RATE
+          - DUAL_RATE
+          - THREE_RATE
+          - DYNAMIC
+          - EXTERNALLY_MANAGED
+          - OTHER
+        daily_prices:
+          $ref: '#/components/schemas/DailyPrices'
+          description: 'The times returned here are localised to the timezone the tariff is in.
+
+            The timezone is returned in `timezone_name`.'
+        timezone_name:
+          type: string
+          example: Europe/London
+        price_chart_url:
+          type:
+          - string
+          - 'null'
+          description: The url of a website which can display a chart of prices for the tariff. This website is an external resource and is not affiliated with ev.energy.
+          example: https://www.example.com/
+        gsp_group:
+          type:
+          - string
+          - 'null'
+          description: The GB Grid Supply Point (DNO region) the tariff applies to. Suppliers publish region-specific rates, so the same named tariff can appear once per region with differing prices; this field distinguishes them. `null` for tariffs that are not region-specific.
+          example: _C
+        valid_from:
+          type: string
+          format: date
+          description: The date from which this tariff became available to new customers.
+          example: '2026-03-17'
+        valid_until:
+          type:
+          - string
+          - 'null'
+          format: date
+          description: The date after which this tariff is no longer available to new customers (it has been superseded). `null` if the tariff is still open to new sign-ups. Use the `valid` query parameter to filter the list to only currently-available tariffs.
+          example: '2027-03-17'
+    Times:
+      title: Times
+      description: Defines a period of time.
+      type: object
+      x-tags:
+      - Tariffs
+      properties:
+        start:
+          type: string
+          example: '18:00:00'
+          pattern: \d\d:\d\d:\d\d
+        end:
+          type: string
+          example: 00:00:00
+          pattern: \d\d:\d\d:\d\d
+    SupportTicketSubcategoryEnum:
+      title: Support Ticket Subcategory
+      type: string
+      description: Subcategory for a support ticket.
+      enum:
+      - ACCESSIBILITY
+      - ACCURACY
+      - ADD_NON_INTEGRATED_VEHICLE
+      - ADD_NEW_TARIFF
+      - API_ACCESS_TOKEN
+      - APP_CRASH_FREEZE
+      - APP_OR_EMAIL_NOTIFICATIONS
+      - APP_SETTINGS_CONFUSION
+      - BOOST_CONFUSION
+      - BUSINESS_LEAD_NON_SUPPORT
+      - CAMPAIGN_MARKETING_FEEDBACK
+      - CARBON_FEED
+      - CHARGE_LOCATION
+      - CHARGE_PAST_READY_BY_TIME
+      - CHARGING_ON_PEAK
+      - COMMISSIONING
+      - COMPATIBILITY
+      - COMPLAINT
+      - CONFLICTING_SCHEDULE
+      - DASHBOARD_COSMETIC_ISSUE
+      - DASHBOARD_UI_ISSUE
+      - DATA_EXPORT
+      - DELETION
+      - DUPLICATE
+      - ELIGIBILITY
+      - ENERGY_DELIVERED_CALCULATION
+      - ERROR_REPORT
+      - FEATURE_REQUEST_FEEDBACK
+      - FIRMWARE
+      - HARDWARE
+      - HARDWARE_ISSUE
+      - HIDDEN_INCENTIVES
+      - INCENTIVES_BILL_CREDITS
+      - INCOMPLETE_CHARGE
+      - INCORRECT_CHARGE_TIME_DURATION
+      - INCORRECT_INCENTIVES_DISPLAYED
+      - INCORRECT_KWH_DISPLAYED
+      - INCORRECT_LOCATION_DISPLAYED
+      - INCORRECT_MESSAGING
+      - INCORRECT_PRICE_THRESHOLD
+      - INCORRECT_TRIM
+      - INVERTER
+      - LOCALISATION
+      - LOCATION_INCORRECT
+      - LOGIN_CREDENTIALS
+      - MANUAL_UPLOAD
+      - MAX_CHARGE_LIMIT
+      - MISSING_SESSIONS
+      - MISSING_TARIFF
+      - MOBILE_COMPATIBILITY
+      - MULTI_VEHICLE
+      - NETWORK
+      - NO_CHARGE
+      - NON_SUPPORT_EXTERNAL
+      - NOT_COMPATIBLE
+      - MANGED_TARIFF_INTERFERENCE
+      - OFFLINE
+      - OFF_PEAK_HOURS_CONFUSION
+      - ONBOARDING
+      - ONLY_CHARGE_OFF_PEAK_OFF
+      - OTHER
+      - OUTAGE
+      - OWNERSHIP_TRANSFER
+      - PASSWORD
+      - PLATFORM_OUTAGE
+      - POOR_UPTIME
+      - PRIVACY_CONCERNS
+      - REAUTHENTICATION
+      - REBATE_REQUEST
+      - REFERRAL_PROMO_CODE
+      - REFUNDS
+      - REFUSING_COMMANDS
+      - RELIABILITY
+      - REPLACE_VEHICLE
+      - REQUEST_TO_DISCONNECT
+      - REWARDS
+      - REWARDS_INCENTIVES_UI_ISSUE
+      - SESSION_RECALCULATION
+      - SESSION_START_END_TIME
+      - SESSION_START_END_TIME_CONFUSION
+      - SMART_CHARGING_CONFUSION
+      - SMART_TAB_UI_ISSUE
+      - SOLAR_CHARGING_CONFUSION
+      - SOLAR_FEED
+      - SOLAR_PAYMENT
+      - SPAM
+      - STATS_COSMETIC_ISSUE
+      - STATS_UI_ISSUE
+      - SUBSCRIPTION_ISSUE
+      - TARIFF_IS_OUTDATED_INCORRECT
+      - TARIFF_REQUEST
+      - TELEMATICS_ISSUE
+      - TIER_SELECTION
+      - TRIM
+      - UI_ISSUE
+      - UNABLE_TO_DETECT_CAR_PLUGGED_IN
+      - UTILITY_PARTNER_INQUIRY
+      - VEHICLE_DELETION
+      - VERIFICATION
+      - WRONG_COMPANY
+    User:
+      title: User
+      description: A resource that represents an individual user in the ev.energy system.
+      type: object
+      x-tags:
+      - Users
+      required:
+      - id
+      - url
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given user.
+          pattern: user[A-Z\d]{26}
+          example: user01HN2NJ9NMRZBXT1H6FT9N7735
+          readOnly: true
+        url:
+          type: string
+          example: https://api.ev.energy/v2/users/user01HN2NJ9NMRZBXT1H6FT9N7735
+          format: uri
+          readOnly: true
+        email:
+          type: string
+          format: email
+        full_name:
+          type: string
+          readOnly: true
+          description: The user's full name.
+          example: Frodo Baggins
+        joined_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: The date and time when the user joined the platform.
+          example: '2023-06-15T10:00:00Z'
+        terms_consent_datetime:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+          description: When the user gave their terms and conditions consent, or null if they have not.
+          example: '2023-06-15T10:00:00Z'
+        default_location:
+          anyOf:
+          - $ref: '#/components/schemas/Location'
+          - $ref: '#/components/schemas/LocationDetail'
+          description: LocationDetail is served when a single user is requested, otherwise Location is served for user lists.
+        vehicles:
+          type: array
+          items:
+            type: string
+            format: uri
+            example: https://api.ev.energy/v2/vehicles/vhcl01HRFF3SEVSCRAV9B3CHVDFN0H
+            readOnly: true
+          readOnly: true
+        evses:
+          type: array
+          items:
+            type: string
+            format: uri
+            example: https://api.ev.energy/v2/evses/evse01HSH04XHZCT92RN018F0236ZM
+            readOnly: true
+          readOnly: true
+    LatLong:
+      title: LatLong
+      type: object
+      description: Coordinates model used for locations.
+      required:
+      - latitude
+      - longitude
+      properties:
+        latitude:
+          type: number
+          format: float
+          example: 51.52576576674041
+        longitude:
+          type: number
+          format: float
+          example: -0.08366433371722264
+    SupportTicket:
+      title: Support Ticket
+      type: object
+      description: A resource that represents a support ticket from a customer support system.
+      x-tags:
+      - Support Tickets
+      required:
+      - id
+      - url
+      - external_ticket_id
+      - created_at
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given support ticket.
+          pattern: tick[A-Z\d]{26}
+          example: tick01HN2NJ9NMRZBXT1H6FT9N7735
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/support_tickets/tick01HN2NJ9NMRZBXT1H6FT9N7735
+          readOnly: true
+        user:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/users/user01HN2NJ9NMRZBXT1H6FT9N7735
+          - $ref: '#/components/schemas/User'
+          - type: 'null'
+          description: 'Reference to the user who created the ticket. Can be null for tickets created through channels where a user account may not exist (e.g., pre-signup inquiries, web forms).
+
+
+            Access control:
+
+            - Tickets with a user are accessible based on user/organization permissions
+
+            - Tickets without a user (null) are only accessible to applications with access_all_areas permission'
+          readOnly: true
+        external_ticket_id:
+          type: string
+          description: External ticket ID from Freshdesk or other support system.
+          example: '12345'
+          readOnly: true
+        subject:
+          type:
+          - string
+          - 'null'
+          description: The subject or title of the ticket.
+          example: Unable to connect my vehicle
+          readOnly: true
+        status:
+          type:
+          - string
+          - 'null'
+          description: Status name (e.g., Open, Resolved, Closed).
+          example: Open
+          readOnly: true
+        priority:
+          type:
+          - string
+          - 'null'
+          description: Priority name (e.g., Low, Medium, High, Urgent).
+          example: Medium
+          readOnly: true
+        source:
+          type:
+          - string
+          - 'null'
+          description: Source name (e.g., Email, Phone, Feedback Widget).
+          example: Email
+          readOnly: true
+        human_verified_category:
+          oneOf:
+          - $ref: '#/components/schemas/SupportTicketCategoryEnum'
+          - type: 'null'
+          description: Human verified category for the ticket.
+          example: VEHICLE
+        human_verified_subcategory:
+          oneOf:
+          - $ref: '#/components/schemas/SupportTicketSubcategoryEnum'
+          - type: 'null'
+          description: Human verified subcategory for the ticket.
+          example: TELEMATICS_ISSUE
+        ai_generated_category:
+          oneOf:
+          - $ref: '#/components/schemas/SupportTicketCategoryEnum'
+          - type: 'null'
+          description: AI generated category for the ticket.
+          example: VEHICLE
+        ai_generated_subcategory:
+          oneOf:
+          - $ref: '#/components/schemas/SupportTicketSubcategoryEnum'
+          - type: 'null'
+          description: AI generated subcategory for the ticket.
+          example: TELEMATICS_ISSUE
+        type_deprecated:
+          type:
+          - string
+          - 'null'
+          description: Legacy ticket type (phased out for category/subcategory system).
+          example: Vehicle API error
+          readOnly: true
+        tags:
+          type: array
+          description: List of tags (e.g., ['ai-categorised', 'escalated']).
+          items:
+            type: string
+          example:
+          - ai-categorised
+          readOnly: true
+        messages:
+          oneOf:
+          - type: array
+            items:
+              type: string
+              format: uri
+              example: https://api.ev.energy/v2/support_tickets/tick01HN2NJ9NMRZBXT1H6FT9N7735/messages/tmsgA1B2C3D4E5F6G7H8I9J0K1L2M3
+          - type: array
+            items:
+              $ref: '#/components/schemas/SupportTicketMessage'
+          description: Array of message URLs by default. When expanded with ?expand=messages, returns full message objects.
+          readOnly: true
+        conversation_summary:
+          type:
+          - string
+          - 'null'
+          description: An AI generated summary of the conversation.
+          example: Customer experiencing issues with Tesla vehicle connection to mobile app.
+          readOnly: true
+        custom_fields:
+          type: object
+          description: Additional custom fields from support system (e.g., car_manufacturer, mobile_app, legal_country, membership_level).
+          additionalProperties: true
+          example:
+            car_manufacturer: Tesla
+            mobile_app: iOS
+          readOnly: true
+        attributes:
+          type: object
+          description: Additional information about the user and their hardware.
+          additionalProperties: true
+          example:
+            evse_model: ChargePoint Home Flex
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          description: When the ticket was created in the support system.
+          example: '2019-08-24T14:15:22Z'
+          readOnly: true
+        ticket_updated_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: When the ticket was last updated in the support system.
+          example: '2019-08-24T15:30:00Z'
+          readOnly: true
+        resolved_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: When the ticket was resolved in the support system.
+          example: '2019-08-25T10:00:00Z'
+          readOnly: true
+    SupportTicketMessageTypeEnum:
+      title: Support Ticket Message Type
+      type: string
+      description: The type of message in a support ticket conversation.
+      enum:
+      - INITIAL_REQUEST
+      - CUSTOMER_RESPONSE
+      - HUMAN_AGENT_RESPONSE
+      - AI_AGENT_RESPONSE
+  examples:
+    ProblemInvalidPaginationParameter:
+      value:
+        type: https://api.ev.energy/v2/problems/pagination-parameters/
+        status: 400
+        title: Invalid pagination parameter
+        detail: 'Invalid value for pagination parameter: page_size'
+    ProblemUnsupportedVersion:
+      value:
+        type: https://api.ev.energy/v2/problems/pagination-parameters/
+        status: 400
+        title: Unsupported version
+        detail: 'Unsupported version requested: 3.0'
+  headers:
+    link:
+      description: Provides links to the previous and next pages of data, if they exist.
+      example: <https://api.ev.energy/v2/vehicles?page_size=25&page_before=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="previous", <https://api.ev.energy/v2/vehicles?page_size=25&page_after=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="next"
+      schema:
+        type: string
+    x-ratelimit-remaining:
+      description: The number of requests remaining until this client's rate limit is reached.
+      schema:
+        type: number
+        default: 999
+    version-2:
+      description: Indicates the version of the API that generated this response. If EvEnergy-Version was not specified in the request, this will be your OAuth application's default version.
+      schema:
+        type: number
+        enum:
+        - 2
+    retry-after:
+      description: The number of seconds until this client's requests will not be rate limited.
+      schema:
+        type: number
+        default: 3600
+    x-ratelimit-limit:
+      description: The maximum number of requests that can be made to this endpoint per hour. Defaults to 1000 but may vary per client.
+      schema:
+        type: number
+        default: 1000
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.ev.energy/o/token/
+          refreshUrl: https://api.ev.energy/o/token/
+          scopes:
+            carbon:read: ''
+            grid:read: ''
+            evse:read: ''
+            evse:write: ''
+            vehicle:read: ''
+            user:read: ''
+            charging_session:read: ''
+            tariff:read: ''
+            tariff:prices:read: ''
+            user:write: ''
+            inverter:read: ''
+            inverter:write: ''
+            home_battery:read: ''
+            home_energy:read: ''
+            boundary_meter:read: ''
+            vehicle:write: ''
+            vehicle_catalogue:write: Update shared vehicle-catalogue reference data (e.g. a model's default connector type)
+            charging_session:write: ''
+            solar:write: ''
+            solar:read: ''
+            subscription:read: ''
+            debug:read: ''
+            dispatch_coordinator:read: ''
+            dispatch_event:write: ''
+            solar_forecast:read: ''
+            payout_method:read: Read a user's preferred payout method
+            payout_method:write: Set, update, or clear a user's preferred payout method
+            notification_preferences:read: Read a user's notification group opt-in state
+            notification_preferences:write: Update a user's notification group opt-in state
+            route_planner_preferences:read: Read a user's EV Route Planner preferences
+            route_planner_preferences:write: Update a user's EV Route Planner preferences
+            saved_routes:read: Read a user's saved route-planner routes
+            saved_routes:write: Create, update, or delete a user's saved routes
+            region:read: Read region and region group boundary data
+            region:write: Create regions and region groups
+        authorizationCode:
+          authorizationUrl: https://api.ev.energy/o/authorize/
+          tokenUrl: https://api.ev.energy/o/token/
+          refreshUrl: https://api.ev.energy/o/token/
+          scopes: {}
+x-redocly:
+  openapi:
+    hideSchemaTitles: true
+x-internal: false

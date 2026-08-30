@@ -1,0 +1,2374 @@
+openapi: 3.2.0
+info:
+  title: ev.energy v2 Solar API
+  version: '2.0'
+  contact:
+    email: developers@ev.energy
+    url: developers.ev.energy
+    name: ev.energy developers
+  description: The official API for ev.energy, version 2.
+  license:
+    name: Proprietary
+    url: https://ev.energy
+  termsOfService: ''
+servers:
+- url: https://api.ev.energy/v2
+  description: Live API for both production and sandbox requests.
+  x-internal: false
+- description: Staging server for internal testing only.
+  url: https://api-staging.ev.energy/v2
+  x-internal: true
+security:
+- oauth2: []
+tags:
+- name: Solar
+  description: Endpoints for interacting with solar arrays and inverters.
+paths:
+  /solar_arrays:
+    parameters:
+    - $ref: '#/components/parameters/version-2'
+    - $ref: '#/components/parameters/Accept-Language'
+    get:
+      summary: List solar arrays
+      responses:
+        '200':
+          description: Returns a list of solar arrays.
+          headers:
+            Link:
+              $ref: '#/components/headers/link'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SolarArray'
+              examples:
+                Example 1:
+                  value:
+                  - id: solr01JASZTD3T7N39DTZPBJVXNPKP
+                    url: https://api.ev.energy/v2/solar_arrays/solr01JASZTD3T7N39DTZPBJVXNPKP
+                    capacity_watts: 7000
+                    inverter: https://api.ev.energy/v2/inverters/invtFB08NVS8KADFY6GAQ9C6RMFGUY
+                    forecast:
+                      solar_watt_hours_until_midnight: 19
+                      percent_vehicle_battery_charge_until_midnight: 30
+                      last_updated_at: '2024-10-16T11:26:16'
+                    user: https://api.ev.energy/v2/users/user01HN2NJ9NMRZBXT1H6FT9N7735
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-solar-arrays
+      description: List all the solar arrays that the authorization token has access to.
+      parameters:
+      - $ref: '#/components/parameters/previous'
+      - $ref: '#/components/parameters/next'
+      - $ref: '#/components/parameters/page_size'
+      - $ref: '#/components/parameters/expand-on-solararray'
+      - $ref: '#/components/parameters/user'
+      - schema:
+          type: string
+          example: vhcl01HRFF3SEVSCRAV9B3CHVDFN0H
+        in: query
+        name: vehicle_id
+        description: When provided, populates the `percent_vehicle_battery_charge_until_midnight` field.
+      tags:
+      - Solar
+      security:
+      - oauth2:
+        - solar:read
+    post:
+      description: 'Creates a solar array and associates it with the user.
+
+        '
+      summary: Create a solar array
+      operationId: post-solar-arrays
+      parameters: []
+      requestBody:
+        description: Details of Solar Array to be created.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                capacity_watts:
+                  type: integer
+                  minimum: 0
+      responses:
+        '201':
+          description: Solar Array created.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/SolarArray'
+              examples:
+                Example 1:
+                  value:
+                    id: solr01JASZTD3T7N39DTZPBJVXNPKP
+                    url: https://api.ev.energy/solar_arrays/solr01JASZTD3T7N39DTZPBJVXNPKP
+                    capacity_watts: 7000
+                    inverter: https://api.ev.energy/inverters/invtFB08NVS8KADFY6GAQ9C6RMFGUY
+                    forecast:
+                      solar_watt_hours_until_midnight: 19
+                      percent_vehicle_battery_charge_until_midnight: 30
+                      last_updated_at: '2024-10-16T11:26:16'
+                    user: https://api.ev.energy/v2/users/user01HN2NJ9NMRZBXT1H6FT9N7735
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestCreate'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      tags:
+      - Solar
+      security:
+      - oauth2:
+        - solar:write
+  /solar_arrays/{solar_array_id}:
+    parameters:
+    - schema:
+        type: string
+        example: solr01JASZTD3T7N39DTZPBJVXNPKP
+        pattern: solr[A-Z\d]{26}
+      name: solar_array_id
+      in: path
+      required: true
+      description: The ID of the specific Solar Array to retrieve or update.
+    - $ref: '#/components/parameters/version-2'
+    - $ref: '#/components/parameters/Accept-Language'
+    get:
+      description: Retrieve a single, specific solar array's details.
+      operationId: get-solar-arrays-solar_array_id
+      summary: Retrieve a solar array
+      parameters:
+      - $ref: '#/components/parameters/expand-on-solararray'
+      - $ref: '#/components/parameters/version-2'
+      - schema:
+          type: string
+          example: vhcl01HRFF3SEVSCRAV9B3CHVDFN0H
+        in: query
+        name: vehicle_id
+        description: When provided, populates the `percent_vehicle_battery_charge_until_midnight` field.
+      responses:
+        '200':
+          description: Returns a single solar array.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/SolarArray'
+              examples:
+                Example 1:
+                  value:
+                    id: solr01JASZTD3T7N39DTZPBJVXNPKP
+                    url: https://api.ev.energy/solar_arrays/solr01JASZTD3T7N39DTZPBJVXNPKP
+                    capacity_watts: 7000
+                    inverter: https://api.ev.energy/inverters/invtFB08NVS8KADFY6GAQ9C6RMFGUY
+                    forecast:
+                      solar_watt_hours_until_midnight: 19
+                      percent_vehicle_battery_charge_until_midnight: 30
+                      last_updated_at: '2024-10-16T11:26:16'
+                    user: https://api.ev.energy/v2/users/user01HN2NJ9NMRZBXT1H6FT9N7735
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      tags:
+      - Solar
+      security:
+      - oauth2:
+        - solar:read
+    patch:
+      summary: Update a solar array
+      tags:
+      - Solar
+      responses:
+        '200':
+          description: Solar array updated successfully.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/SolarArray'
+              examples:
+                Example 1:
+                  value:
+                    id: solr01JASZTD3T7N39DTZPBJVXNPKP
+                    url: https://api.ev.energy/solar_arrays/solr01JASZTD3T7N39DTZPBJVXNPKP
+                    capacity_watts: 7000
+                    inverter: https://api.ev.energy/inverters/invtFB08NVS8KADFY6GAQ9C6RMFGUY
+                    forecast:
+                      solar_watt_hours_until_midnight: 19
+                      percent_vehicle_battery_charge_until_midnight: 30
+                      last_updated_at: '2024-10-16T11:26:16'
+                    user: https://api.ev.energy/v2/users/user01HN2NJ9NMRZBXT1H6FT9N7735
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestCreate'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: patch-solar_arrays-solar_array_id
+      description: Update a solar array.
+      parameters:
+      - $ref: '#/components/parameters/expand-on-solararray'
+      - $ref: '#/components/parameters/version-2'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                capacity_watts:
+                  type: integer
+                  minimum: 0
+            examples:
+              Example 1:
+                value:
+                  capacity_watts: 7000
+        description: Details of Solar Array to be updated.
+      security:
+      - oauth2:
+        - solar:write
+  /inverters:
+    post:
+      summary: Create an Inverter
+      responses:
+        '201':
+          description: Inverter created.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Inverter'
+              examples:
+                Example 1:
+                  value:
+                    id: invtFB08NVS8KADFY6GAQ9C6RMFGUY
+                    url: https://api.ev.energy/inverters/invtFB08NVS8KADFY6GAQ9C6RMFGUY
+                    model:
+                      id: imodT4J2GW1IOPAA7FRW53R8P4UXCB
+                      url: https://api.ev.energy/inverters/imodT4J2GW1IOPAA7FRW53R8P4UXCB
+                      name: Envoy-R
+                      make:
+                        id: imakK7XDPL63NNBDQ5DPB6K3TP87JA
+                        url: https://api.ev.energy/inverter_makes/imakK7XDPL63NNBDQ5DPB6K3TP87JA
+                        name: Enphase
+                    user: https://api.ev.energy/v2/users/user01HN2NJ9NMRZBXT1H6FT9N7735
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: post-inverters
+      description: Creates an Inverter and associates it with a user's solar array.
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/user'
+      security:
+      - oauth2:
+        - inverter:write
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              x-examples:
+                Example 1:
+                  model: imod7XL7Q5294J6TUZARBQT2D1EOHY
+              properties:
+                model:
+                  type: string
+                  format: uri
+                  example: https://api.ev.energy/v2/inverter_models/imodOTQRGK9OKMPDU63SYGJ9T6FH3A
+                user:
+                  type: string
+                  format: uri
+                  example: https://api.ev.energy/v2/users/user01HN2NJ9NMRZBXT1H6FT9N7735
+            examples:
+              Example 1:
+                value:
+                  model: https://api.ev.energy/inverters/imod7XL7Q5294J6TUZARBQT2D1EOHY
+        description: Details of the Inverter to be created.
+      tags:
+      - Solar
+    get:
+      summary: List inverters
+      responses:
+        '200':
+          description: Returns a list of inverters.
+          headers:
+            Link:
+              $ref: '#/components/headers/link'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Inverter'
+              examples:
+                Example 1:
+                  value:
+                  - id: invtFB08NVS8KADFY6GAQ9C6RMFGUY
+                    url: https://api.ev.energy/inverters/invtFB08NVS8KADFY6GAQ9C6RMFGUY
+                    model: https://api.ev.energy/inverters/imodT4J2GW1IOPAA7FRW53R8P4UXCB
+                    user: https://api.ev.energy/v2/users/user01HN2NJ9NMRZBXT1H6FT9N7735
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-inverters
+      description: List all the inverters that the authorization token has access to.
+      security:
+      - oauth2:
+        - inverter:read
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/previous'
+      - $ref: '#/components/parameters/next'
+      - $ref: '#/components/parameters/page_size'
+      - $ref: '#/components/parameters/expand-on-inverter'
+      - $ref: '#/components/parameters/Accept-Language'
+      - $ref: '#/components/parameters/user'
+      tags:
+      - Solar
+  /inverters/{inverter_id}:
+    parameters:
+    - schema:
+        type: string
+      name: inverter_id
+      in: path
+      required: true
+      description: The ID of the specific Inverter to retrieve or update.
+    get:
+      summary: Retrieve an inverter
+      responses:
+        '200':
+          description: Returns a single inverter.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Inverter'
+              examples:
+                Example 1:
+                  value:
+                    id: invtFB08NVS8KADFY6GAQ9C6RMFGUY
+                    url: https://api.ev.energy/inverters/invtFB08NVS8KADFY6GAQ9C6RMFGUY
+                    model:
+                      id: imodT4J2GW1IOPAA7FRW53R8P4UXCB
+                      url: https://api.ev.energy/inverters/imodT4J2GW1IOPAA7FRW53R8P4UXCB
+                      name: Envoy-R
+                      make:
+                        id: imakK7XDPL63NNBDQ5DPB6K3TP87JA
+                        url: https://api.ev.energy/inverter_makes/imakK7XDPL63NNBDQ5DPB6K3TP87JA
+                        name: Enphase
+                    user: https://api.ev.energy/v2/users/user01HN2NJ9NMRZBXT1H6FT9N7735
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-inverters-inverter_id
+      description: Retrieve a single, specific inverter's details.
+      security:
+      - oauth2:
+        - inverter:read
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/expand-on-inverter'
+      - $ref: '#/components/parameters/Accept-Language'
+      tags:
+      - Solar
+  /inverter_makes:
+    get:
+      summary: List inverter makes
+      tags:
+      - Solar
+      responses:
+        '200':
+          description: Return a list of Inverter Makes.
+          headers:
+            Link:
+              $ref: '#/components/headers/link'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InverterMake'
+              examples:
+                Example 1:
+                  value:
+                  - id: imakK7XDPL63NNBDQ5DPB6K3TP87JA
+                    url: https://api.ev.energy/inverter_makes/imakK7XDPL63NNBDQ5DPB6K3TP87JA
+                    name: Enphase
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-inverter_makes
+      description: List all the inverter makes known by the ev.energy system.
+      security:
+      - oauth2:
+        - inverter:read
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/previous'
+      - $ref: '#/components/parameters/next'
+      - $ref: '#/components/parameters/page_size'
+      - $ref: '#/components/parameters/available_for_user_id'
+      - $ref: '#/components/parameters/Accept-Language'
+  /inverter_makes/{inverter_make_id}:
+    parameters:
+    - schema:
+        type: string
+      name: inverter_make_id
+      in: path
+      required: true
+      description: The ID of the specific inverter make to retrieve.
+    get:
+      summary: Retrieve an inverter make
+      tags:
+      - Solar
+      responses:
+        '200':
+          description: Return a single inverter make.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InverterMake'
+              examples:
+                Example 1:
+                  value:
+                    id: imakK7XDPL63NNBDQ5DPB6K3TP87JA
+                    url: https://api.ev.energy/inverter_makes/imakK7XDPL63NNBDQ5DPB6K3TP87JA
+                    name: Enphase
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem404NotFound'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-inverter_makes-inverter_make_id
+      description: Retrieve details for a single, specific EVSE make.
+      security:
+      - oauth2:
+        - inverter:read
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/Accept-Language'
+  /inverter_models:
+    get:
+      summary: List inverter models
+      tags:
+      - Solar
+      responses:
+        '200':
+          description: Returns a list of inverter models.
+          headers:
+            Link:
+              $ref: '#/components/headers/link'
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InverterModel'
+              examples:
+                Example 1:
+                  value:
+                  - id: imodT4J2GW1IOPAA7FRW53R8P4UXCB
+                    url: https://api.ev.energy/inverters/imodT4J2GW1IOPAA7FRW53R8P4UXCB
+                    name: Envoy-R
+                    make: https://api.ev.energy/inverter_makes/imakK7XDPL63NNBDQ5DPB6K3TP87JA
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestList'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-inverter_models
+      description: List all the inverter models known by the ev.energy system.
+      security:
+      - oauth2:
+        - inverter:read
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/previous'
+      - $ref: '#/components/parameters/next'
+      - $ref: '#/components/parameters/page_size'
+      - $ref: '#/components/parameters/expand-on-invertermodel'
+      - $ref: '#/components/parameters/Accept-Language'
+      - $ref: '#/components/parameters/inverter_make_id_q'
+  /inverter_models/{inverter_model_id}:
+    parameters:
+    - schema:
+        type: string
+      name: inverter_model_id
+      in: path
+      required: true
+      description: The ID of the specific inverter model to retrieve.
+    get:
+      summary: Retrieve an inverter model
+      tags:
+      - Solar
+      responses:
+        '200':
+          description: Return a single inverter model.
+          headers:
+            EvEnergy-Version:
+              $ref: '#/components/headers/version-2'
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/x-ratelimit-limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/x-ratelimit-remaining'
+            RetryAfter:
+              $ref: '#/components/headers/retry-after'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InverterModel'
+              examples:
+                Example 1:
+                  value:
+                    id: imodT4J2GW1IOPAA7FRW53R8P4UXCB
+                    url: https://api.ev.energy/inverters/imodT4J2GW1IOPAA7FRW53R8P4UXCB
+                    name: Envoy-R
+                    make:
+                      id: imakK7XDPL63NNBDQ5DPB6K3TP87JA
+                      url: https://api.ev.energy/inverter_makes/imakK7XDPL63NNBDQ5DPB6K3TP87JA
+                      name: Enphase
+        '400':
+          $ref: '#/components/responses/Problem400BadRequestRetrieve'
+        '401':
+          $ref: '#/components/responses/Problem401Unauthorized'
+        '403':
+          $ref: '#/components/responses/Problem403Forbidden'
+        '404':
+          $ref: '#/components/responses/Problem404NotFound'
+        '406':
+          $ref: '#/components/responses/Problem406NotAcceptable'
+        '429':
+          $ref: '#/components/responses/Problem429TooManyRequests'
+      operationId: get-inverter_models-inverter_model_id
+      description: Retrieve details for a single, specific inverter model.
+      security:
+      - oauth2:
+        - inverter:read
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/expand-on-invertermodel'
+      - $ref: '#/components/parameters/Accept-Language'
+  /inverter_onboarding:
+    get:
+      summary: Allows a user to authenticate with their inverter account.
+      tags:
+      - Solar
+      responses:
+        '302':
+          description: Found
+        '400':
+          description: Bad Request
+        '404':
+          description: Not Found
+      operationId: get-inverter_onboarding
+      parameters:
+      - $ref: '#/components/parameters/version-2'
+      - $ref: '#/components/parameters/Accept-Language'
+      - $ref: '#/components/parameters/user_id_onboarding'
+      - schema:
+          type: string
+        in: query
+        name: make_id
+        description: The make ID for the inverter that is going to be onboarded.
+      - schema:
+          type: string
+        in: query
+        name: inverter_id
+        description: The ID for the inverter that is going to be onboarded.
+      - $ref: '#/components/parameters/client_id'
+      description: 'This endpoint will redirect to a web page that a user can use to login into their inverter account.
+
+
+        This should be visited in a web browser as it contains interactive UI elements.'
+components:
+  responses:
+    Problem404NotFound:
+      description: This resource either does not exist or the client is not authorized to access it.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 404
+              title:
+                type: string
+                example: Not found
+              detail:
+                type: string
+                example: Resource does not exist or cannot be accessed.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem400BadRequestRetrieve:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem400BadRequestCreate:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Request failed validation:
+              $ref: '#/components/examples/ProblemValidationFailedVehicle'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem429TooManyRequests:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Example 1:
+              value:
+                type: https://api.ev.energy/v2/problems/rate-limit-exceeded/
+                status: 429
+                title: Too Many Requests
+                detail: Request was rate limited. Try again in 42 seconds
+      description: The client has exceeded its rate limit.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        Retry-After:
+          $ref: '#/components/headers/retry-after'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem401Unauthorized:
+      description: You need to authorise requests to access this resource.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 401
+              title:
+                type: string
+                example: Unauthorized
+              detail:
+                type: string
+                example: Authentication credentials were not provided.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem400BadRequestList:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Invalid Pagination Parameter:
+              $ref: '#/components/examples/ProblemInvalidPaginationParameter'
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem403Forbidden:
+      description: You do not have permission to perform this action.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 403
+              title:
+                type: string
+                example: Forbidden
+              detail:
+                type: string
+                example: You do not have permission to perform this action.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem406NotAcceptable:
+      description: Could not satisfy the request Accept header.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 406
+              title:
+                type: string
+                example: Not Acceptable
+              detail:
+                type: string
+                example: Could not satisfy the request Accept header.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+  parameters:
+    user:
+      name: EvEnergy-User
+      description: If the client is authenticated using Client Credentials, setting EvEnergy-User to a valid user ID allows requests to be made as if you were directly authenticated as that user.
+      in: header
+      required: false
+      schema:
+        type: string
+        pattern: user[A-Z\d]{26}
+        example: user01HN2NJ9NMRZBXT1H6FT9N7735
+    Accept-Language:
+      name: Accept-Language
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Indicates the natural language and locale that the client prefers.
+    inverter_make_id_q:
+      name: make_id
+      in: query
+      required: false
+      schema:
+        type: string
+        example: imakWNZ5N0A5D1PR89HJ7STXEWYO58
+      description: The ID of an Inverter Make to filter by.
+    version-2:
+      name: EvEnergy-Version
+      description: Specify the version of this endpoint to use.
+      required: false
+      in: header
+      schema:
+        type: number
+        enum:
+        - 2
+    page_size:
+      name: page_size
+      description: Specify the number of results to return per page.
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 25
+        minimum: 1
+        maximum: 100
+        example: 10
+    expand-on-invertermodel:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - make
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    previous:
+      name: page_before
+      description: Return results from the page after this ID.
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[a-z]{4}[A-Z\d]{26}'
+        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
+    available_for_user_id:
+      name: available_for_user_id
+      in: query
+      schema:
+        type: string
+        pattern: user[A-Z\d]{26}
+        example: user01HN2NJ9NMRZBXT1H6FT9N7735
+      description: Filter to only return resources available in the user's region and program.
+    expand-on-inverter:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - model
+          - model.make
+          - latest_status_log
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    next:
+      name: page_after
+      description: Return results from the page before this ID.
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[a-z]{4}[A-Z\d]{26}'
+        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
+    expand-on-solararray:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - user
+          - inverter
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    user_id_onboarding:
+      name: user_id
+      in: query
+      required: true
+      schema:
+        type: string
+        pattern: user[A-Z\d]{26}
+        example: user01HN2NJ9NMRZBXT1H6FT9N7735
+      description: The ID of a user to onboard a device for.
+    client_id:
+      name: client_id
+      in: query
+      required: true
+      schema:
+        type: string
+        example: sandbox-cc-id
+        minLength: 1
+      description: Your OAuth2 application client_id, issued when your ev.energy API integration was provisioned. This is the same value used when obtaining tokens via the Authorization Code or Client Credentials flows — not a user-created value. Passing an unrecognised string will result in an error. The onboarding endpoints redirect the user's browser through an OAuth flow to connect their device; the client_id determines which registered application is initiating the flow, so the correct branding, redirect URIs, and scopes are applied.
+  schemas:
+    RFC9457ProblemDetail:
+      title: RFC 9457 Problem Detail
+      x-tags:
+      - problems
+      type: object
+      required:
+      - title
+      - detail
+      properties:
+        type:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/problems/example-problem/
+        status:
+          type: number
+          example: 400
+        title:
+          type: string
+          example: Short description
+        detail:
+          type: string
+          example: Long, more specific description.
+        instance:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
+        notification:
+          $ref: '#/components/schemas/Notification'
+      examples:
+      - type: https://api.ev.energy/v2/problems/example-problem/
+        status: 400
+        title: Short description
+        detail: Long, more specific description.
+        instance: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
+        notification:
+          id: notf01HTHKTXVB77901324BCQPF1RB
+          url: https://api.ev.energy/notifications/notf01HTHKTXVB77901324BCQPF1RB
+          message_id: ERR0123
+          category: ACTIONABLE
+          event_time: '2019-08-24T14:15:22Z'
+          short_text_title: Your car is disconnected
+          short_text_body: We need to reconnect to keep smart charging your car
+          detail_page_title: Your car is disconnected
+          detail_page_body: Your car has been disconnected. This happens when your password is reset. We need you to re-authorise ev.energy to access your account in order for us to keep managing your charging. Blah blah blah.
+          external_link: http://example.com
+          external_button_label: More info
+          read_at: '2019-08-24T14:20:22Z'
+          resolved_at: '2019-08-25T14:15:22Z'
+    Supplier:
+      title: Supplier
+      type: object
+      description: An energy company who supplies electricity tariffs.
+      required:
+      - id
+      - url
+      - name
+      - icon
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given user.
+          pattern: supl[A-Z\d]{26}
+          example: supl01HN2NJ9NMRZBXT1H6FT9N7735
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/suppliers/supl01HN2NJ9NMRZBXT1H6FT9N7735
+        name:
+          type: string
+          example: Rivendell Renewables
+        icon:
+          type:
+          - string
+          - 'null'
+          format: uri
+          example: https://cdn.example.com/rivendell_renewables.jpg
+        highlighted:
+          type: boolean
+          description: A highlighted supplier is one that is often selected by users.
+      x-tags:
+      - Tariffs
+    DailyPrices:
+      title: DailyPrices
+      description: Information about the tariff's prices for different parts of the day.
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      maxProperties: 3
+      required:
+      - peak
+      properties:
+        peak:
+          $ref: '#/components/schemas/PriceSummary'
+        mid_peak:
+          $ref: '#/components/schemas/PriceSummary'
+        off_peak:
+          $ref: '#/components/schemas/PriceSummary'
+      x-tags:
+      - Tariffs
+    Notification:
+      title: Notification
+      description: Something that the user should be informed about.
+      type: object
+      examples:
+      - id: notf67O36PLTFDB57M0E5L33JZLGM0
+        url: https://api.ev.energy/notifications/notf67O36PLTFDB57M0E5L33JZLGM0
+        message_id: ERR0123
+        category: ACTIONABLE
+        event_time: '2019-08-24T14:15:22Z'
+        short_text_title: Your car is disconnected
+        short_text_body: We need to reconnect to keep smart charging your car
+        detail_page_title: Your car is disconnected
+        detail_page_body: Your car has been disconnected. This happens when your password is reset. We need you to re-authorise ev.energy to access your account in order for us to keep managing your charging. Blah blah blah.
+        external_link: http://example.com
+        external_button_label: More info
+        read_at: '2019-08-24T14:20:22Z'
+        resolved_at: '2019-08-25T14:15:22Z'
+      required:
+      - id
+      - url
+      - message_id
+      - category
+      - event_time
+      - short_text_title
+      - short_text_body
+      - detail_page_title
+      - detail_page_body
+      - external_link
+      - external_button_label
+      properties:
+        id:
+          type: string
+          pattern: notf[A-Z\d]{26}
+          example: notf67O36PLTFDB57M0E5L33JZLGM0
+          description: Unique identifier for the Notification
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/notifications/notf67O36PLTFDB57M0E5L33JZLGM0
+        message_id:
+          type: string
+          description: Internal identifier for this notification type. E.g. 'ERR0023'
+        category:
+          description: Category of this notification type
+          enum:
+          - ACTIONABLE
+          - SERVICE
+          - RETRY
+          - MARKETING
+          - INTERNAL
+        event_time:
+          type: string
+          format: date-time
+          description: The timestamp of the event described by this notification
+        short_text_title:
+          type: string
+          description: Short title for the notification
+          maxLength: 33
+        short_text_body:
+          type: string
+          description: Short description of the event being notified
+          maxLength: 49
+        detail_page_title:
+          type: string
+          description: Title of a help page giving more information about this notification
+        detail_page_body:
+          type: string
+          description: Text of a help page giving more information about this notification
+        external_link:
+          type:
+          - string
+          - 'null'
+          description: URL of a web page giving further information about this notification
+          format: uri
+        external_button_label:
+          type: string
+          description: Text to be displayed on a button leading to the external_link location
+        read_at:
+          type: string
+          format: date-time
+          description: When the user examined the contents of this notification
+        resolved_at:
+          type: string
+          format: date-time
+          description: When the problem associated with this notification was resolved
+    Tariff:
+      title: Tariff
+      examples:
+      - id: tari01HN2NJ9NMRZBXT1H6FT9N7735
+        url: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7735
+        supplier: https://api.ev.energy/v2/suppliers/supl01HN2NJ9NMRZBXT1H6FT9N7735
+        name: Fangorn Biomass
+        currency: GBP
+        gsp_group: _C
+        valid_from: '2026-03-17'
+        valid_until: '2027-03-17'
+        daily_prices:
+          peak:
+            price: '0.30'
+            times:
+            - start: '18:00:00'
+              end: 00:00:00
+          mid_peak:
+            price: '0.20'
+            times:
+            - start: '10:00:00'
+              end: 08:00:00
+          off_peak:
+            price: '0.10'
+            times:
+            - start: 08:00:00
+              end: '18:00:00'
+        scheduler_tariff: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7835
+      description: 'Note: daily_prices and type are only available under contract. Please reach out to your account manager to find out more.'
+      x-tags:
+      - Tariffs
+      allOf:
+      - $ref: '#/components/schemas/TariffBase'
+      - type: object
+        properties:
+          scheduler_tariff:
+            oneOf:
+            - type: string
+              format: uri
+              example: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7835
+            - type: object
+              required:
+              - id
+              - url
+              - supplier
+              - name
+              - currency
+              properties:
+                id:
+                  type: string
+                  pattern: tari[A-Z\d]{26}
+                url:
+                  type: string
+                  format: uri
+                supplier:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+                currency:
+                  type: string
+              additionalProperties: true
+            - type: 'null'
+            description: The tariff used by the scheduler for charge optimisation, which may differ from the billing tariff. Returns a URL by default, or null if not set. Expandable with ?expand=scheduler_tariff to return a TariffBase object (additional fields may be present beyond those listed here).
+    EVSESite:
+      title: EVSESite
+      type: object
+      description: Represents a place with one or more EVSEs installed which can be accessed by multiple users.
+      required:
+      - id
+      - url
+      - evses
+      - cpms_connection
+      properties:
+        id:
+          type: string
+          pattern: site[A-Z\d]{26}
+          examples:
+          - site01JX2SZ0WAFTDYVYY0JRAYREY7
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/evse_sites/site01JX2SZ0WAFTDYVYY0JRAYREY7
+          readOnly: true
+        evses:
+          type: array
+          description: A list of all EVSEs that are currently associated with this site.
+          items:
+            type: string
+            format: uri
+            examples:
+            - https://api.ev.energy/v2/evses/evse01HSH04KDEWF6Z4DB2J77J74K5
+          readOnly: true
+        cpms_connection:
+          type:
+          - string
+          - 'null'
+          description: The type of ChargePoint Management System that this site is connected to, if there is one.
+          enum:
+          - null
+          - CHARGEPOINT
+          - SWTCH
+          readOnly: true
+        cpms_connection_display_name:
+          type:
+          - string
+          - 'null'
+          description: A human-readable name for the Chargepoint Management System that the site is connected to.
+          example: ChargePoint
+        user_connected:
+          type:
+          - boolean
+          - 'null'
+          description: When authenticated as a specific user (eg. via the Authorisation Code grant type) or when the EvEnergy-User header is set to a valid user ID, this field will indicate whether the user is currently connected to this EVSE Site's CPMS. If the request is not made in the context of a user, or the site does not have a CPMS connection, this field will be null.
+          readOnly: true
+    CountryCode:
+      description: ISO 3166-1 2 letter Country Codes.
+      type: string
+      enum:
+      - AD
+      - AE
+      - AF
+      - AG
+      - AI
+      - AL
+      - AM
+      - AO
+      - AQ
+      - AR
+      - AS
+      - AT
+      - AU
+      - AW
+      - AX
+      - AZ
+      - BA
+      - BB
+      - BD
+      - BE
+      - BF
+      - BG
+      - BH
+      - BI
+      - BJ
+      - BL
+      - BM
+      - BN
+      - BO
+      - BQ
+      - BR
+      - BS
+      - BT
+      - BV
+      - BW
+      - BY
+      - BZ
+      - CA
+      - CC
+      - CD
+      - CF
+      - CG
+      - CH
+      - CI
+      - CK
+      - CL
+      - CM
+      - CN
+      - CO
+      - CR
+      - CU
+      - CV
+      - CW
+      - CX
+      - CY
+      - CZ
+      - DE
+      - DJ
+      - DK
+      - DM
+      - DO
+      - DZ
+      - EC
+      - EE
+      - EG
+      - EH
+      - ER
+      - ES
+      - ET
+      - FI
+      - FJ
+      - FK
+      - FM
+      - FO
+      - FR
+      - GA
+      - GB
+      - GD
+      - GE
+      - GF
+      - GG
+      - GH
+      - GI
+      - GL
+      - GM
+      - GN
+      - GP
+      - GQ
+      - GR
+      - GS
+      - GT
+      - GU
+      - GW
+      - GY
+      - HK
+      - HM
+      - HN
+      - HR
+      - HT
+      - HU
+      - ID
+      - IE
+      - IL
+      - IM
+      - IN
+      - IO
+      - IQ
+      - IR
+      - IS
+      - IT
+      - JE
+      - JM
+      - JO
+      - JP
+      - KE
+      - KG
+      - KH
+      - KI
+      - KM
+      - KN
+      - KP
+      - KR
+      - KW
+      - KY
+      - KZ
+      - LA
+      - LB
+      - LC
+      - LI
+      - LK
+      - LR
+      - LS
+      - LT
+      - LU
+      - LV
+      - LY
+      - MA
+      - MC
+      - MD
+      - ME
+      - MF
+      - MG
+      - MH
+      - MK
+      - ML
+      - MM
+      - MN
+      - MO
+      - MP
+      - MQ
+      - MR
+      - MS
+      - MT
+      - MU
+      - MV
+      - MW
+      - MX
+      - MY
+      - MZ
+      - NA
+      - NC
+      - NE
+      - NF
+      - NG
+      - NI
+      - NL
+      - 'NO'
+      - NP
+      - NR
+      - NU
+      - NZ
+      - OM
+      - PA
+      - PE
+      - PF
+      - PG
+      - PH
+      - PK
+      - PL
+      - PM
+      - PN
+      - PR
+      - PS
+      - PT
+      - PW
+      - PY
+      - QA
+      - RE
+      - RO
+      - RS
+      - RU
+      - RW
+      - SA
+      - SB
+      - SC
+      - SD
+      - SE
+      - SG
+      - SH
+      - SI
+      - SJ
+      - SK
+      - SL
+      - SM
+      - SN
+      - SO
+      - SR
+      - SS
+      - ST
+      - SV
+      - SX
+      - SY
+      - SZ
+      - TC
+      - TD
+      - TF
+      - TG
+      - TH
+      - TJ
+      - TK
+      - TL
+      - TM
+      - TN
+      - TO
+      - TR
+      - TT
+      - TV
+      - TW
+      - TZ
+      - UA
+      - UG
+      - UM
+      - US
+      - UY
+      - UZ
+      - VA
+      - VC
+      - VE
+      - VG
+      - VI
+      - VN
+      - VU
+      - WF
+      - WS
+      - YE
+      - YT
+      - ZA
+      - ZM
+      - ZW
+    LocationDetail:
+      title: Location
+      description: Extra fields only included when a single location is requested but omitted when locations are listed.
+      allOf:
+      - type: object
+        properties:
+          current_carbon_intensity_grams_per_kilowatt_hour:
+            type:
+            - integer
+            - 'null'
+            example: 300
+            description: The current carbon intensity associated with the location in gCO2/kWh.
+      - $ref: '#/components/schemas/Location'
+    InverterMake:
+      title: InverterMake
+      type: object
+      description: A resource representing a manufacturer of inverters.
+      required:
+      - id
+      - url
+      - name
+      - icon
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given Inverter Make.
+          pattern: imak[A-Z\d]{26}
+          example: imakNN2Q3R3TKF9XJQ7851PAUR56UX
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/inverter_makes/imakNN2Q3R3TKF9XJQ7851PAUR56UX
+          readOnly: true
+        name:
+          type: string
+          example: Fronius
+          readOnly: true
+        icon:
+          type:
+          - string
+          - 'null'
+          format: uri
+          example: https://cdn.example.com/fronius.jpg
+          readOnly: true
+        onboarding_url:
+          type:
+          - string
+          - 'null'
+          example: https://api.ev.energy/v2/inverter_oboarding?user_id=user01HN2NJ9NMRZBXT1H6FT9N7735&make_id=imakWNZ5N0A5D1PR89HJ7STXEWYO58
+          description: If using Client credentials the URL will not contain a user ID. This will have to be added by the client so the inverter is created for the correct user.
+        inverter_models:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/inverter_models/?make_id=imakWNZ5N0A5D1PR89HJ7STXEWYO58
+          description: A pre-constructed link to a list of inverter models filtered for this make.
+          readOnly: true
+    PriceSummary:
+      title: PriceSummary
+      description: A single price for a certain time range.
+      type: object
+      examples:
+      - price: '0.10'
+        times:
+        - start: '18:00:00'
+          end: 00:00:00
+      x-tags:
+      - Tariffs
+      properties:
+        price:
+          type: string
+          example: '0.10'
+          description: The price is in major currency units e.g. 0.10 means £0.10.
+        times:
+          type: array
+          items:
+            $ref: '#/components/schemas/Times'
+    InverterModel:
+      title: InverterModel
+      type: object
+      description: A resource representing an inverter model.
+      required:
+      - id
+      - url
+      - name
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given Inverter Model.
+          pattern: imod[A-Z\d]{26}
+          example: imodOTQRGK9OKMPDU63SYGJ9T6FH3A
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/inverter_models/imodOTQRGK9OKMPDU63SYGJ9T6FH3A
+          readOnly: true
+        name:
+          type: string
+          example: Symo 5.0
+          readOnly: true
+        make:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/inverter_makes/imakNN2Q3R3TKF9XJQ7851PAUR56UX
+          - $ref: '#/components/schemas/InverterMake'
+        onboarding_url:
+          type:
+          - string
+          - 'null'
+          example: https://api.ev.energy/v2/inverter_oboarding?user_id=user01HN2NJ9NMRZBXT1H6FT9N7735&model_id=imodWNZ5N0A5D1PR89HJ7STXEWYO58
+          description: If using Client credentials the URL will not contain a user ID. This will have to be added by the client so the inverter is created for the correct user.
+    InverterStatusLog:
+      title: InverterStatusLog
+      type: object
+      description: Records the state of an Inverter at a particular point in time.
+      properties:
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/inverters/invtB1USP6YGD1VPIDJSHTZARUX11M
+        sampled_at:
+          type: string
+          format: date-time
+        logged_at:
+          type: string
+          format: date-time
+        inverter:
+          oneOf:
+          - $ref: '#/components/schemas/Inverter'
+          - type: string
+            format: uri
+        solar_power_watts:
+          type: integer
+          example: 1000
+          minimum: 0
+        status:
+          type: string
+          readOnly: true
+          description: Derived operating state, inferred from solar_power_watts.
+          enum:
+          - PRODUCING
+          - CONSUMING
+          - IDLE
+          - UNKNOWN
+          example: PRODUCING
+    Location:
+      title: Location
+      type: object
+      description: 'Location model for charging locations.
+
+
+        **Address validation:** Address fields are optional as a group, but each field independently triggers the requirement. If any of `address_1`, `address_2`, `city`, `state`, `postal_code`, `country_code`, or `coordinates` is provided with a non-null value, then `address_1`, `city`, `postal_code`, and `country_code` must all be provided as non-null values. Sending the keys with explicit `null` values is allowed and does not trigger the requirement (this is how addresses are cleared via `PATCH`). Partial addresses are rejected with a 400.
+
+        '
+      properties:
+        address_1:
+          type:
+          - string
+          - 'null'
+          description: First line of address.
+        address_2:
+          type:
+          - string
+          - 'null'
+          description: Second line of address.
+        postal_code:
+          type:
+          - string
+          - 'null'
+          description: Postal Code.
+        country_code:
+          anyOf:
+          - $ref: '#/components/schemas/CountryCode'
+          - type: 'null'
+          $ref: '#/components/schemas/CountryCode'
+        coordinates:
+          anyOf:
+          - $ref: '#/components/schemas/LatLong'
+          - type: 'null'
+        tariff:
+          oneOf:
+          - format: uri
+            type:
+            - string
+            - 'null'
+            example: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7735
+          - $ref: '#/components/schemas/Tariff'
+        city:
+          type:
+          - string
+          - 'null'
+        state:
+          type:
+          - string
+          - 'null'
+        evse_site:
+          oneOf:
+          - type:
+            - string
+            - 'null'
+          - $ref: '#/components/schemas/EVSESite'
+          description: If null, the user's location is not an EVSE Site. Otherwise, this field references the site they are a part of.
+      dependentSchemas:
+        address_1:
+          if:
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - city
+            - postal_code
+            - country_code
+            properties:
+              city:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+        address_2:
+          if:
+            properties:
+              address_2:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - city
+            - postal_code
+            - country_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              city:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+        city:
+          if:
+            properties:
+              city:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - postal_code
+            - country_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+        state:
+          if:
+            properties:
+              state:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - city
+            - postal_code
+            - country_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              city:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+        postal_code:
+          if:
+            properties:
+              postal_code:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - city
+            - country_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              city:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+        country_code:
+          if:
+            properties:
+              country_code:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - city
+            - postal_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              city:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+        coordinates:
+          if:
+            properties:
+              coordinates:
+                not:
+                  type: 'null'
+          then:
+            required:
+            - address_1
+            - city
+            - postal_code
+            - country_code
+            properties:
+              address_1:
+                not:
+                  type: 'null'
+              city:
+                not:
+                  type: 'null'
+              postal_code:
+                not:
+                  type: 'null'
+              country_code:
+                not:
+                  type: 'null'
+    Inverter:
+      title: Inverter
+      type: object
+      description: A resource that represents a single, physical inverter.
+      required:
+      - id
+      - url
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given Inverter.
+          pattern: invt[A-Z\d]{26}
+          example: invtB1USP6YGD1VPIDJSHTZARUX11M
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/inverters/invtB1USP6YGD1VPIDJSHTZARUX11M
+          readOnly: true
+        model:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/inverter_models/imodOTQRGK9OKMPDU63SYGJ9T6FH3A
+          - $ref: '#/components/schemas/InverterModel'
+        created_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: When this inverter was connected to the platform.
+          example: '2024-02-10T16:45:00Z'
+          readOnly: true
+        latest_status_log:
+          oneOf:
+          - $ref: '#/components/schemas/InverterStatusLog'
+          - type:
+            - string
+            - 'null'
+            example: https://api.ev.energy/v2/inverters/invtB1USP6YGD1VPIDJSHTZARUX11M/status_logs/2024-07-23T16:01:45.994584Z/
+        onboarding_url:
+          type:
+          - string
+          - 'null'
+          example: https://api.ev.energy/v2/inverter_oboarding?inverter_id=invtB1USP6YGD1VPIDJSHTZARUX11M
+    TariffBase:
+      title: TariffBase
+      type: object
+      description: 'Core tariff properties shared by Tariff and expanded scheduler_tariff. Note: daily_prices and type are only available under contract. Please reach out to your account manager to find out more.'
+      x-tags:
+      - Tariffs
+      required:
+      - id
+      - url
+      - supplier
+      - name
+      - currency
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given user.
+          pattern: tari[A-Z\d]{26}
+          example: tari01HN2NJ9NMRZBXT1H6FT9N7735
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7735
+        supplier:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/suppliers/supl01HN2NJ9NMRZBXT1H6FT9N7735
+          - $ref: '#/components/schemas/Supplier'
+          description: The energy company that supplies this tariff.
+        name:
+          type: string
+          example: Fangorn Biomass
+        currency:
+          type: string
+          example: GBP
+        highlighted:
+          type: boolean
+          description: A highlighted tariff is one that is often selected by users.
+        type:
+          enum:
+          - FLAT_RATE
+          - DUAL_RATE
+          - THREE_RATE
+          - DYNAMIC
+          - EXTERNALLY_MANAGED
+          - OTHER
+        daily_prices:
+          $ref: '#/components/schemas/DailyPrices'
+          description: 'The times returned here are localised to the timezone the tariff is in.
+
+            The timezone is returned in `timezone_name`.'
+        timezone_name:
+          type: string
+          example: Europe/London
+        price_chart_url:
+          type:
+          - string
+          - 'null'
+          description: The url of a website which can display a chart of prices for the tariff. This website is an external resource and is not affiliated with ev.energy.
+          example: https://www.example.com/
+        gsp_group:
+          type:
+          - string
+          - 'null'
+          description: The GB Grid Supply Point (DNO region) the tariff applies to. Suppliers publish region-specific rates, so the same named tariff can appear once per region with differing prices; this field distinguishes them. `null` for tariffs that are not region-specific.
+          example: _C
+        valid_from:
+          type: string
+          format: date
+          description: The date from which this tariff became available to new customers.
+          example: '2026-03-17'
+        valid_until:
+          type:
+          - string
+          - 'null'
+          format: date
+          description: The date after which this tariff is no longer available to new customers (it has been superseded). `null` if the tariff is still open to new sign-ups. Use the `valid` query parameter to filter the list to only currently-available tariffs.
+          example: '2027-03-17'
+    Times:
+      title: Times
+      description: Defines a period of time.
+      type: object
+      x-tags:
+      - Tariffs
+      properties:
+        start:
+          type: string
+          example: '18:00:00'
+          pattern: \d\d:\d\d:\d\d
+        end:
+          type: string
+          example: 00:00:00
+          pattern: \d\d:\d\d:\d\d
+    User:
+      title: User
+      description: A resource that represents an individual user in the ev.energy system.
+      type: object
+      x-tags:
+      - Users
+      required:
+      - id
+      - url
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given user.
+          pattern: user[A-Z\d]{26}
+          example: user01HN2NJ9NMRZBXT1H6FT9N7735
+          readOnly: true
+        url:
+          type: string
+          example: https://api.ev.energy/v2/users/user01HN2NJ9NMRZBXT1H6FT9N7735
+          format: uri
+          readOnly: true
+        email:
+          type: string
+          format: email
+        full_name:
+          type: string
+          readOnly: true
+          description: The user's full name.
+          example: Frodo Baggins
+        joined_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: The date and time when the user joined the platform.
+          example: '2023-06-15T10:00:00Z'
+        terms_consent_datetime:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+          description: When the user gave their terms and conditions consent, or null if they have not.
+          example: '2023-06-15T10:00:00Z'
+        default_location:
+          anyOf:
+          - $ref: '#/components/schemas/Location'
+          - $ref: '#/components/schemas/LocationDetail'
+          description: LocationDetail is served when a single user is requested, otherwise Location is served for user lists.
+        vehicles:
+          type: array
+          items:
+            type: string
+            format: uri
+            example: https://api.ev.energy/v2/vehicles/vhcl01HRFF3SEVSCRAV9B3CHVDFN0H
+            readOnly: true
+          readOnly: true
+        evses:
+          type: array
+          items:
+            type: string
+            format: uri
+            example: https://api.ev.energy/v2/evses/evse01HSH04XHZCT92RN018F0236ZM
+            readOnly: true
+          readOnly: true
+    SolarArray:
+      title: SolarArray
+      type: object
+      description: A resource that represents a single solar array.
+      examples:
+      - id: solr01JASZTD3T7N39DTZPBJVXNPKP
+        url: https://api.ev.energy/solar_arrays/solr01JASZTD3T7N39DTZPBJVXNPKP
+        capacity_watts: 7000
+        inverter: https://api.ev.energy/inverters/invtFB08NVS8KADFY6GAQ9C6RMFGUY
+        forecast:
+          solar_watt_hours_until_midnight: 19
+          percent_vehicle_battery_charge_until_midnight: 30
+          last_updated_at: '2024-10-16T11:26:16'
+        user: https://api.ev.energy/v2/users/user01HN2NJ9NMRZBXT1H6FT9N7735
+      required:
+      - id
+      - url
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given Solar Array.
+          pattern: solr[A-Z\d]{26}
+          example: solr01JASZTD3T7N39DTZPBJVXNPKP
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/solar_arrays/solr01JASZTD3T7N39DTZPBJVXNPKP
+          readOnly: true
+        capacity_watts:
+          type: integer
+          description: Capacity of the solar array in watts.
+        inverter:
+          oneOf:
+          - type:
+            - string
+            - 'null'
+            format: uri
+            example: https://api.ev.energy/v2/inverters/invtB1USP6YGD1VPIDJSHTZARUX11M
+          - type: object
+            $ref: '#/components/schemas/Inverter'
+          description: Reference of the connected inverter.
+        forecast:
+          type:
+          - object
+          - 'null'
+          description: 'Forecast data if available to the user.
+
+
+            Only available to `internal` users.'
+          properties:
+            solar_watt_hours_until_midnight:
+              type:
+              - integer
+              - 'null'
+              description: The forecasted charge in watt hours by midnight for the user from solar charging alone (approximate value).
+              readOnly: true
+            percent_vehicle_battery_charge_until_midnight:
+              type:
+              - integer
+              - 'null'
+              description: 'The forecasted percentage point increase in the provided car''s battery level by midnight from solar charging alone.
+
+
+                Only available when `vehicle_id` is provided.'
+              readOnly: true
+            last_updated_at:
+              type: string
+              format: date-time
+              description: The timestamp of when the forecast results were last calculated.
+              readOnly: true
+        user:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/user/user01HN2NJ9NMRZBXT1H6FT9N7735
+          - type: object
+            $ref: '#/components/schemas/User'
+    LatLong:
+      title: LatLong
+      type: object
+      description: Coordinates model used for locations.
+      required:
+      - latitude
+      - longitude
+      properties:
+        latitude:
+          type: number
+          format: float
+          example: 51.52576576674041
+        longitude:
+          type: number
+          format: float
+          example: -0.08366433371722264
+  examples:
+    ProblemInvalidPaginationParameter:
+      value:
+        type: https://api.ev.energy/v2/problems/pagination-parameters/
+        status: 400
+        title: Invalid pagination parameter
+        detail: 'Invalid value for pagination parameter: page_size'
+    ProblemUnsupportedVersion:
+      value:
+        type: https://api.ev.energy/v2/problems/pagination-parameters/
+        status: 400
+        title: Unsupported version
+        detail: 'Unsupported version requested: 3.0'
+    ProblemValidationFailedVehicle:
+      value:
+        type: https://api.ev.energy/v2/problems/validation-failed-create-vehicle/
+        status: 400
+        title: Request failed validation.
+        detail: 'Error on fields: user, trim'
+        field_errors:
+          user:
+          - This field is required.
+          trim:
+          - Invalid hyperlink - Object does not exist.
+  headers:
+    link:
+      description: Provides links to the previous and next pages of data, if they exist.
+      example: <https://api.ev.energy/v2/vehicles?page_size=25&page_before=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="previous", <https://api.ev.energy/v2/vehicles?page_size=25&page_after=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="next"
+      schema:
+        type: string
+    x-ratelimit-remaining:
+      description: The number of requests remaining until this client's rate limit is reached.
+      schema:
+        type: number
+        default: 999
+    version-2:
+      description: Indicates the version of the API that generated this response. If EvEnergy-Version was not specified in the request, this will be your OAuth application's default version.
+      schema:
+        type: number
+        enum:
+        - 2
+    retry-after:
+      description: The number of seconds until this client's requests will not be rate limited.
+      schema:
+        type: number
+        default: 3600
+    x-ratelimit-limit:
+      description: The maximum number of requests that can be made to this endpoint per hour. Defaults to 1000 but may vary per client.
+      schema:
+        type: number
+        default: 1000
+  securitySchemes:
+    oauth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.ev.energy/o/token/
+          refreshUrl: https://api.ev.energy/o/token/
+          scopes:
+            carbon:read: ''
+            grid:read: ''
+            evse:read: ''
+            evse:write: ''
+            vehicle:read: ''
+            user:read: ''
+            charging_session:read: ''
+            tariff:read: ''
+            tariff:prices:read: ''
+            user:write: ''
+            inverter:read: ''
+            inverter:write: ''
+            home_battery:read: ''
+            home_energy:read: ''
+            boundary_meter:read: ''
+            vehicle:write: ''
+            vehicle_catalogue:write: Update shared vehicle-catalogue reference data (e.g. a model's default connector type)
+            charging_session:write: ''
+            solar:write: ''
+            solar:read: ''
+            subscription:read: ''
+            debug:read: ''
+            dispatch_coordinator:read: ''
+            dispatch_event:write: ''
+            solar_forecast:read: ''
+            payout_method:read: Read a user's preferred payout method
+            payout_method:write: Set, update, or clear a user's preferred payout method
+            notification_preferences:read: Read a user's notification group opt-in state
+            notification_preferences:write: Update a user's notification group opt-in state
+            route_planner_preferences:read: Read a user's EV Route Planner preferences
+            route_planner_preferences:write: Update a user's EV Route Planner preferences
+            saved_routes:read: Read a user's saved route-planner routes
+            saved_routes:write: Create, update, or delete a user's saved routes
+            region:read: Read region and region group boundary data
+            region:write: Create regions and region groups
+        authorizationCode:
+          authorizationUrl: https://api.ev.energy/o/authorize/
+          tokenUrl: https://api.ev.energy/o/token/
+          refreshUrl: https://api.ev.energy/o/token/
+          scopes: {}
+x-redocly:
+  openapi:
+    hideSchemaTitles: true
+x-internal: false
