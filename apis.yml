@@ -55,6 +55,8 @@ apis:
   humanURL: https://developers.ev.energy/ev.energy-api-v2
   baseURL: https://api.ev.energy/v2
   tags:
+  - Authentication
+  tags_raw:
   - Auth
   properties:
   - type: OpenAPI
@@ -382,6 +384,8 @@ apis:
   humanURL: https://developers.ev.energy/ev.energy-api-v2
   baseURL: https://api.ev.energy/v2
   tags:
+  - Notification
+  tags_raw:
   - Notifications
   properties:
   - type: OpenAPI
@@ -706,6 +710,8 @@ apis:
   humanURL: https://developers.ev.energy/ev.energy-api-v2
   baseURL: https://api.ev.energy/v2
   tags:
+  - Subscription
+  tags_raw:
   - Subscriptions
   properties:
   - type: OpenAPI
@@ -814,6 +820,8 @@ apis:
   humanURL: https://developers.ev.energy/ev.energy-api-v2
   baseURL: https://api.ev.energy/v2
   tags:
+  - User
+  tags_raw:
   - Users
   properties:
   - type: OpenAPI
@@ -922,6 +930,8 @@ apis:
   humanURL: https://developers.ev.energy/ev.energy-api-v2
   baseURL: https://api.ev.energy/v2
   tags:
+  - Webhook
+  tags_raw:
   - Webhooks
   properties:
   - type: OpenAPI
