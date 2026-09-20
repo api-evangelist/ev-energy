@@ -1,0 +1,133 @@
+slug: ev-energy
+provider: ev.energy
+generated_by: planning/capability-mapping/scripts/classify_capabilities.py
+model: claude-opus-5
+frame:
+- Oil & Gas
+min_confidence: 0.7
+capability_model:
+  source: https://github.com/vincentmakes/turbo-ea-capabilities
+  license: CC-BY-4.0
+  attribution: Turbo EA Capabilities by Vincent Verdet — Turbo EA, https://github.com/vincentmakes/turbo-ea-capabilities,
+    CC BY 4.0
+  notice: NOTICE
+edge_count: 10
+edges:
+- tag: VPP
+  spec_file: ev-energy-vpp-api-openapi.yml
+  capability_id: BC-3840.20
+  capability_id_l1: BC-3840
+  capability_name: Virtual Power Plant Operations
+  confidence: 0.92
+  evidence: GET /dispatch_coordinators 'List dispatch coordinators'; POST .../dispatch_events 'Create
+    a dispatch event'; 'Cancel a dispatch event'; 'Get VPP modes for an EVSE'; schemas DispatchEvent,
+    DispatchCoordinator, VPPModes
+  reason: 'Explicit virtual-power-plant surface: dispatch coordinators issue and cancel dispatch events
+    against aggregated EVSEs and vehicles, matching aggregation and dispatch of distributed resources
+    as a single operating entity.'
+  recovered_from: vertical-power-water-utilities-edges.json
+- tag: EVSEs
+  spec_file: ev-energy-evses-api-openapi.yml
+  capability_id: BC-3480.20
+  capability_id_l1: BC-3480
+  capability_name: Charge Point Operations
+  confidence: 0.9
+  evidence: '"List EVSEs", "Decommission an EVSE", "List status logs for an EVSE", "List command logs
+    for an EVSE", schemas EVSEFirmwareVersion, EVSEOCPPLog'
+  reason: Charge point lifecycle, status monitoring, command and OCPP/firmware logs — the definition of
+    charge point operations.
+  recovered_from: vertical-automotive-mobility-edges.json
+- tag: Charging Sessions
+  spec_file: ev-energy-charging-sessions-api-openapi.yml
+  capability_id: BC-3480.20
+  capability_id_l1: BC-3480
+  capability_name: Charge Point Operations
+  confidence: 0.85
+  evidence: '"List charging sessions", "Start boost charging", "End boost charging", "Retrieve periodic
+    energy usage intervals for a charging sub-session", "Retrieve schedule plans for a charging sub-session"'
+  reason: Charge session lifecycle, energy usage and charging schedules — squarely charge point operations
+    (session lifecycle) for an EV charging platform.
+  recovered_from: vertical-automotive-mobility-edges.json
+- tag: Solar Forecasts
+  spec_file: ev-energy-solar-forecasts-api-openapi.yml
+  capability_id: BC-3840.60
+  capability_id_l1: BC-3840
+  capability_name: DER Forecasting
+  confidence: 0.82
+  evidence: GET /solar_forecasts 'List solar forecasts'; GET /solar_forecasts/{id}/forecast_logs 'List
+    forecast logs for a solar forecast'; schemas SolarForecast, SolarForecastLog
+  reason: Short-term production forecasts for distributed rooftop solar assets, which is DER forecasting.
+  recovered_from: vertical-power-water-utilities-edges.json
+- tag: Support Tickets
+  spec_file: ev-energy-support-tickets-api-openapi.yml
+  capability_id: BC-430.10
+  capability_id_l1: BC-430
+  capability_name: Customer Inquiry Management
+  confidence: 0.75
+  evidence: GET /support_tickets List support tickets; List messages for a support ticket; Get support
+    ticket resolution metrics
+  reason: Ticket capture, messaging, categorisation and resolution/volume analytics for end-customer support
+    — customer service inquiry handling. Some ambiguity between inquiry vs complaints sub-capability.
+- tag: Solar
+  spec_file: ev-energy-solar-api-openapi.yml
+  capability_id: BC-3840.10
+  capability_id_l1: BC-3840
+  capability_name: DER Registration & Onboarding
+  confidence: 0.72
+  evidence: POST /solar_arrays 'Create a solar array'; POST /inverters 'Create an Inverter'; GET /inverter_onboarding
+    'Allows a user to authenticate with their inverter account.'
+  reason: Registration and onboarding of customer rooftop solar arrays and inverters (including credential-based
+    inverter account linking) into the platform — DER registration and onboarding. Sub-capability choice
+    is reasonably clear but the surface is largely CRUD, hence 0.72.
+  recovered_from: vertical-power-water-utilities-edges.json
+- tag: Home Batteries
+  spec_file: ev-energy-home-batteries-api-openapi.yml
+  capability_id: BC-3840.50
+  capability_id_l1: BC-3840
+  capability_name: Behind-the-Meter Storage Coordination
+  confidence: 0.7
+  evidence: GET /home_batteries 'List home batteries'; GET /home_batteries/{id}/status_logs 'List status
+    logs for a home battery'; schemas HomeBattery, HomeBatteryStatusLog
+  reason: Operations expose registration data and operational status of customer-premises (behind-the-meter)
+    battery assets within a platform that aggregates them as grid flexibility, which is behind-the-meter
+    storage coordination under distributed energy resource management. Read-only nature keeps confidence
+    moderate.
+  recovered_from: vertical-power-water-utilities-edges.json
+- tag: Programs
+  spec_file: ev-energy-programs-api-openapi.yml
+  capability_id: BC-3840.30
+  capability_id_l1: BC-3840
+  capability_name: Demand Response Operations
+  confidence: 0.7
+  evidence: POST /programs/{program_id}/join 'Join program'; GET /incentive_schemes 'List incentive schemes';
+    GET /programs/{program_id}/tiers; ParticipationAgreementVersion, IncentiveScheme schemas
+  reason: Enrolment, eligibility verification, tiers and participation agreements for utility flexibility/incentive
+    programmes that EV drivers join — i.e. recruitment into demand-side response programmes. Some ambiguity
+    between DR operations and EV grid integration keeps this at 0.7.
+  recovered_from: vertical-power-water-utilities-edges.json
+- tag: Tariffs
+  spec_file: ev-energy-tariffs-api-openapi.yml
+  capability_id: BC-3480.30
+  capability_id_l1: BC-3480
+  capability_name: Charging Energy and Tariff Management
+  confidence: 0.7
+  evidence: GET /tariffs 'List tariffs'; GET /tariffs/{tariff_id}/prices 'List prices for a tariff'; schemas
+    'Supplier', 'DailyPrices', 'PriceSummary'
+  reason: Energy supplier and tariff/price data used to time and price charging — matches 'Management
+    of energy procurement coordination, charging tariffs, and time-of-use optimisation'. Read-only nature
+    leaves some ambiguity versus generic price list management.
+  recovered_from: vertical-automotive-mobility-edges.json
+- tag: Vehicles
+  spec_file: ev-energy-vehicles-api-openapi.yml
+  capability_id: BC-3840.40
+  capability_id_l1: BC-3840
+  capability_name: EV Grid Integration Management
+  confidence: 0.7
+  evidence: GET /vehicles/{vehicle_id}/state_of_charge 'Retrieve a vehicle's current state of charge';
+    'Retrieve a vehicle's charging connectors'; schemas Vehicle, VehicleStateOfCharge, VehicleConnectorsUpdate,
+    VehicleCompatibilityCheckResult
+  reason: Registration and telemetry of electric vehicles (state of charge, connectors, trims, command/status
+    logs) on a smart-charging platform — the vehicle-side of managed charging and EV/grid interaction.
+    Some chance the intended mapping is DER registration/onboarding (BC-3840.10), so confidence is held
+    below 0.8.
+  recovered_from: vertical-power-water-utilities-edges.json
