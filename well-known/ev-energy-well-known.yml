@@ -9,84 +9,68 @@ hosts_probed:
 - api.ev.energy
 - api-staging.ev.energy
 hit_count: 2
-documents:
-- host: app.ev.energy
-  path: /.well-known/security.txt
-  status: 200
-  content_type: text/plain
-  file: ev-energy-security.txt
-  spec: RFC 9116
-  note: Real RFC 9116 document. Contact security@ev.energy, Expires 2030-01-01, Policy https://ev.energy/vulnerability-disclosure-policy/.
-- host: developers.ev.energy
-  path: /.well-known/oauth-authorization-server
-  status: 200
-  content_type: application/json
-  file: ev-energy-oauth-authorization-server.json
-  spec: RFC 8414
-  note: Belongs to the Redocly Realm docs portal / MCP server (issuer https://auth.cloud.redocly.com),
-    NOT to the ev.energy v2 API. The v2 API OAuth endpoints are https://api.ev.energy/o/authorize/ and
-    /o/token/ and publish no RFC 8414 metadata document.
-- host: www.ev.energy
-  path: /.well-known/security.txt
-  status: 404
-  note: Returns an HTML page reading "Invalid .well-known request".
-- host: www.ev.energy
-  path: /.well-known/openid-configuration
-  status: 404
-- host: www.ev.energy
-  path: /.well-known/oauth-authorization-server
-  status: 404
-- host: www.ev.energy
-  path: /.well-known/api-catalog
-  status: 404
-- host: www.ev.energy
-  path: /.well-known/ai-plugin.json
-  status: 404
-- host: www.ev.energy
-  path: /.well-known/agent-card.json
-  status: 404
-- host: www.ev.energy
-  path: /.well-known/agent.json
-  status: 404
-- host: developers.ev.energy
-  path: /.well-known/security.txt
-  status: 404
-- host: developers.ev.energy
-  path: /.well-known/agent-card.json
-  status: 404
-- host: developers.ev.energy
-  path: /.well-known/agent.json
-  status: 404
-- host: developers.ev.energy
-  path: /.well-known/api-catalog
-  status: 404
-- host: api.ev.energy
-  path: /.well-known/security.txt
-  status: 403
-  note: api.ev.energy returns 403 text/plain for every unauthenticated path including / and every /.well-known/*
-    path.
-- host: api.ev.energy
-  path: /.well-known/openid-configuration
-  status: 403
-- host: api.ev.energy
-  path: /.well-known/oauth-authorization-server
-  status: 403
-- host: api.ev.energy
-  path: /.well-known/api-catalog
-  status: 403
-- host: api.ev.energy
-  path: /.well-known/agent-card.json
-  status: 403
-- host: api.ev.energy
-  path: /.well-known/agent.json
-  status: 403
-- host: api-staging.ev.energy
-  path: /.well-known/security.txt
-  status: 403
-- host: api-staging.ev.energy
-  path: /.well-known/agent-card.json
-  status: 403
 agent_card:
   found: false
   note: No A2A agent card at either the canonical /.well-known/agent-card.json or the legacy /.well-known/agent.json
     on any ev.energy host. No a2a/ artifact written and no AgentCard pointer emitted.
+hosts:
+- host: ''
+  documents:
+  - path: /.well-known/security.txt
+    status: 200
+    file: ev-energy-security.txt
+    content_type: text/plain
+    note: Real RFC 9116 document. Contact security@ev.energy, Expires 2030-01-01, Policy https://ev.energy/vulnerability-disclosure-policy/.
+  - path: /.well-known/oauth-authorization-server
+    status: 200
+    file: ev-energy-oauth-authorization-server.json
+    content_type: application/json
+    note: Belongs to the Redocly Realm docs portal / MCP server (issuer https://auth.cloud.redocly.com),
+      NOT to the ev.energy v2 API. The v2 API OAuth endpoints are https://api.ev.energy/o/authorize/ and
+      /o/token/ and publish no RFC 8414 metadata document.
+  - path: /.well-known/security.txt
+    status: 404
+    note: Returns an HTML page reading "Invalid .well-known request".
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/security.txt
+    status: 403
+    note: api.ev.energy returns 403 text/plain for every unauthenticated path including / and every /.well-known/*
+      path.
+  - path: /.well-known/openid-configuration
+    status: 403
+  - path: /.well-known/oauth-authorization-server
+    status: 403
+  - path: /.well-known/api-catalog
+    status: 403
+  - path: /.well-known/agent-card.json
+    status: 403
+  - path: /.well-known/agent.json
+    status: 403
+  - path: /.well-known/security.txt
+    status: 403
+  - path: /.well-known/agent-card.json
+    status: 403
+x-shape-fix:
+  converted: '2026-08-20'
+  from: documents
+  note: Rewritten into hosts[] -> documents[], the only shape well_known_docs() in score.rb reads. A served
+    .well-known surface recorded in any other shape scores as absent.

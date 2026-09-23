@@ -467,7 +467,7 @@ paths:
       parameters:
       - $ref: '#/components/parameters/version-2'
       - $ref: '#/components/parameters/user'
-      description: 'Once all evidence data and files have been uploaded, this endpoint is called to submit the rebate application for review by updating the Form status to "complete" and the application status to "pending_review". '
+      description: Once all evidence data and files have been uploaded, this endpoint is called to submit the rebate application for review by updating the Form status to "complete" and the application status to "pending_review".
   /rebate_evidence_files:start_upload:
     parameters:
     - schema:
@@ -578,7 +578,7 @@ paths:
         '429':
           $ref: '#/components/responses/Problem429TooManyRequests'
       operationId: post-rebate-evidence_files-evidence_file_id-:finish_upload
-      description: 'After the file is successfully uploaded to S3 via the presigned URL, this endpoint is called to set the upload_finished_at timestamp on the evidence_file record. '
+      description: After the file is successfully uploaded to S3 via the presigned URL, this endpoint is called to set the upload_finished_at timestamp on the evidence_file record.
       parameters:
       - $ref: '#/components/parameters/version-2'
       - $ref: '#/components/parameters/user'
@@ -655,197 +655,7 @@ paths:
       - $ref: '#/components/parameters/expand-on-rebateevidencefile'
       - $ref: '#/components/parameters/user'
 components:
-  parameters:
-    expand-on-userrebate:
-      name: expand
-      in: query
-      schema:
-        type: array
-        items:
-          type: string
-          enum:
-          - rebate_type
-          - rebate_type.required_evidence
-      explode: true
-      description: Specify a url field to expand into a nested resource.
-    user:
-      name: EvEnergy-User
-      description: If the client is authenticated using Client Credentials, setting EvEnergy-User to a valid user ID allows requests to be made as if you were directly authenticated as that user.
-      in: header
-      required: false
-      schema:
-        type: string
-        pattern: user[A-Z\d]{26}
-        example: user01HN2NJ9NMRZBXT1H6FT9N7735
-    Accept-Language:
-      name: Accept-Language
-      in: header
-      required: false
-      schema:
-        type: string
-      description: Indicates the natural language and locale that the client prefers.
-    expand-on-rebatetype:
-      name: expand
-      in: query
-      schema:
-        type: array
-        items:
-          type: string
-          enum:
-          - required_evidence
-      explode: true
-      description: Specify a url field to expand into a nested resource.
-    version-2:
-      name: EvEnergy-Version
-      description: Specify the version of this endpoint to use.
-      required: false
-      in: header
-      schema:
-        type: number
-        enum:
-        - 2
-    expand-on-rebateevidencefile:
-      name: expand
-      in: query
-      schema:
-        type: array
-        items:
-          type: string
-          enum:
-          - rebate_evidence_type
-      explode: true
-      description: Specify a url field to expand into a nested resource.
-    rebate_evidence_file_id:
-      description: Unique identifier for a Rebate evidence file
-      name: rebate_evidence_file_id
-      in: path
-      required: true
-      schema:
-        type: string
-        pattern: rbef[A-Z\d]{26}
-        example: rbefB1USP6YGD1VPIDJSHTZARUX11M
-    user_rebate_id:
-      description: Unique identifier for a User's rebate application
-      name: user_rebate_id
-      in: path
-      required: true
-      schema:
-        type: string
-        pattern: rbtu[A-Z\d]{26}
-        example: rbtuB1USP6YGD1VPIDJSHTZARUX11M
   responses:
-    Problem404NotFound:
-      description: This resource either does not exist or the client is not authorized to access it.
-      content:
-        application/problem+json:
-          schema:
-            type: object
-            required:
-            - title
-            - detail
-            properties:
-              status:
-                type: number
-                example: 404
-              title:
-                type: string
-                example: Not found
-              detail:
-                type: string
-                example: Resource does not exist or cannot be accessed.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-        RetryAfter:
-          $ref: '#/components/headers/retry-after'
-    Problem400BadRequestRetrieve:
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/RFC9457ProblemDetail'
-          examples:
-            Unsupported Version:
-              $ref: '#/components/examples/ProblemUnsupportedVersion'
-      description: A problem with the request's parameters prevented it being fulfilled.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-    Problem400BadRequestCreate:
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/RFC9457ProblemDetail'
-          examples:
-            Request failed validation:
-              $ref: '#/components/examples/ProblemValidationFailedVehicle'
-      description: A problem with the request's parameters prevented it being fulfilled.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-        RetryAfter:
-          $ref: '#/components/headers/retry-after'
-    Problem429TooManyRequests:
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/RFC9457ProblemDetail'
-          examples:
-            Example 1:
-              value:
-                type: https://api.ev.energy/v2/problems/rate-limit-exceeded/
-                status: 429
-                title: Too Many Requests
-                detail: Request was rate limited. Try again in 42 seconds
-      description: The client has exceeded its rate limit.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        Retry-After:
-          $ref: '#/components/headers/retry-after'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-    Problem401Unauthorized:
-      description: You need to authorise requests to access this resource.
-      content:
-        application/problem+json:
-          schema:
-            type: object
-            required:
-            - title
-            - detail
-            properties:
-              status:
-                type: number
-                example: 401
-              title:
-                type: string
-                example: Unauthorized
-              detail:
-                type: string
-                example: Authentication credentials were not provided.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-        RetryAfter:
-          $ref: '#/components/headers/retry-after'
     Problem400BadRequestList:
       content:
         application/problem+json:
@@ -894,6 +704,52 @@ components:
           $ref: '#/components/headers/x-ratelimit-remaining'
         RetryAfter:
           $ref: '#/components/headers/retry-after'
+    Problem401Unauthorized:
+      description: You need to authorise requests to access this resource.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 401
+              title:
+                type: string
+                example: Unauthorized
+              detail:
+                type: string
+                example: Authentication credentials were not provided.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem400BadRequestCreate:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Request failed validation:
+              $ref: '#/components/examples/ProblemValidationFailedVehicle'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
     Problem406NotAcceptable:
       description: Could not satisfy the request Accept header.
       content:
@@ -922,138 +778,119 @@ components:
           $ref: '#/components/headers/x-ratelimit-remaining'
         RetryAfter:
           $ref: '#/components/headers/retry-after'
+    Problem404NotFound:
+      description: This resource either does not exist or the client is not authorized to access it.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 404
+              title:
+                type: string
+                example: Not found
+              detail:
+                type: string
+                example: Resource does not exist or cannot be accessed.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem429TooManyRequests:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Example 1:
+              value:
+                type: https://api.ev.energy/v2/problems/rate-limit-exceeded/
+                status: 429
+                title: Too Many Requests
+                detail: Request was rate limited. Try again in 42 seconds
+      description: The client has exceeded its rate limit.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        Retry-After:
+          $ref: '#/components/headers/retry-after'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem400BadRequestRetrieve:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
   schemas:
-    RFC9457ProblemDetail:
-      title: RFC 9457 Problem Detail
-      x-tags:
-      - problems
+    RebateEvidenceType:
       type: object
-      required:
-      - title
-      - detail
-      properties:
-        type:
-          type: string
-          format: uri
-          example: https://api.ev.energy/v2/problems/example-problem/
-        status:
-          type: number
-          example: 400
-        title:
-          type: string
-          example: Short description
-        detail:
-          type: string
-          example: Long, more specific description.
-        instance:
-          type: string
-          format: uri
-          example: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
-        notification:
-          $ref: '#/components/schemas/Notification'
-      examples:
-      - type: https://api.ev.energy/v2/problems/example-problem/
-        status: 400
-        title: Short description
-        detail: Long, more specific description.
-        instance: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
-        notification:
-          id: notf01HTHKTXVB77901324BCQPF1RB
-          url: https://api.ev.energy/notifications/notf01HTHKTXVB77901324BCQPF1RB
-          message_id: ERR0123
-          category: ACTIONABLE
-          event_time: '2019-08-24T14:15:22Z'
-          short_text_title: Your car is disconnected
-          short_text_body: We need to reconnect to keep smart charging your car
-          detail_page_title: Your car is disconnected
-          detail_page_body: Your car has been disconnected. This happens when your password is reset. We need you to re-authorise ev.energy to access your account in order for us to keep managing your charging. Blah blah blah.
-          external_link: http://example.com
-          external_button_label: More info
-          read_at: '2019-08-24T14:20:22Z'
-          resolved_at: '2019-08-25T14:15:22Z'
-    RebateEvidenceSupportingData:
-      type: object
-      x-examples:
-        Example 1:
-          data_type: currency
-          title: Total project cost
-          description: Enter the total amount spent on the project
-          required: true
-          value: '1000'
+      description: Resource representing a type of evidence required for a rebate application.
       x-internal: true
-      description: Resource representing data required as evidence for a rebate application.
-      title: RebateEvidenceSupportingData
-      examples:
-      - data_type: currency
-        title: string
-        description: string
-        required: true
-        value: string
       required:
-      - data_type
       - title
       - description
-      - required
+      - upload_required
+      - evidence_data
       properties:
-        data_type:
-          enum:
-          - currency
-          - string
+        id:
+          type: string
+          example: rbetB1USP6YGD1VPIDJSHTZARUX11M
+          pattern: rbet[A-Z\d]{26}
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/rebate_evidence_types/rbetB1USP6YGD1VPIDJSHTZARUX11M
+          readOnly: true
         title:
           type: string
-          example: Invoice
         description:
-          type: string
-          example: An invoice for solar panel installation
-        required:
-          type: boolean
-          description: Whether this data is required.
-        value:
           type:
           - string
           - 'null'
-          description: Value entered in the user's application.
-    RebateEvidenceFile:
-      title: RebateEvidenceFile
-      type: object
-      description: Resource representing a rebate evidence file
-      examples:
-      - id: rbefB1USP6YGD1VPIDJSHTZARUX11M
-        url: https://api.ev.energy/v2/user_rebates/rbtuB1USP6YGD1VPIDJSHTZARUX11M/evidence_files/rbefB1USP6YGD1VPIDJSHTZARUX11M
-        file_name: test_file.pdf
-        rebate_evidence_type: https://api.ev.energy/v2/rebate_evidence_type/rbetB1USP6YGD1VPIDJSHTZARUX11M
-      properties:
-        id:
-          type: string
-        url:
-          type: string
-        file_name:
-          type: string
-        rebate_evidence_type:
-          oneOf:
-          - type: string
-            format: uri
-            example: https://api.ev.energy/v2/rebate_evidence_type/rbetB1USP6YGD1VPIDJSHTZARUX11M
-          - $ref: '#/components/schemas/RebateEvidenceType'
-    UserRebateCreated:
-      title: UserRebateCreated
-      x-tags:
-      - Rebates
-      type: object
-      properties:
-        id:
-          type: string
-          description: UID of the new UserRebate object.
-          readOnly: true
-        url:
-          type: string
-          format: uri
-          readOnly: true
-      examples:
-      - id: rbtuB1USP6YGD1VPIDJSHTZARUX11M
-        url: https://api.ev.energy/v2/user_rebates/rbtuB1USP6YGD1VPIDJSHTZARUX11M
-      x-internal: true
-      description: Resource representing a newly created UserRebate object.
+        upload_required:
+          type: boolean
+          description: Whether we require the user to upload a file.
+        file:
+          type:
+          - object
+          - 'null'
+          description: File uploaded by user as evidence.
+          properties:
+            name:
+              type: string
+              description: File name.
+            url:
+              type: string
+              format: uri
+              description: Pre-signed AWS URL for viewing the file.
+        evidence_data:
+          type: array
+          items:
+            $ref: '#/components/schemas/RebateEvidenceSupportingData'
     Notification:
       title: Notification
       description: Something that the user should be informed about.
@@ -1140,109 +977,95 @@ components:
           type: string
           format: date-time
           description: When the problem associated with this notification was resolved
-    RebateEvidenceType:
+    RFC9457ProblemDetail:
+      title: RFC 9457 Problem Detail
+      x-tags:
+      - problems
       type: object
-      description: Resource representing a type of evidence required for a rebate application.
-      x-internal: true
       required:
       - title
-      - description
-      - upload_required
-      - evidence_data
+      - detail
       properties:
-        id:
-          type: string
-          example: rbetB1USP6YGD1VPIDJSHTZARUX11M
-          pattern: rbet[A-Z\d]{26}
-          readOnly: true
-        url:
+        type:
           type: string
           format: uri
-          example: https://api.ev.energy/v2/rebate_evidence_types/rbetB1USP6YGD1VPIDJSHTZARUX11M
-          readOnly: true
+          example: https://api.ev.energy/v2/problems/example-problem/
+        status:
+          type: number
+          example: 400
         title:
           type: string
-        description:
-          type:
-          - string
-          - 'null'
-        upload_required:
-          type: boolean
-          description: Whether we require the user to upload a file.
-        file:
-          type:
-          - object
-          - 'null'
-          description: File uploaded by user as evidence.
-          properties:
-            name:
-              type: string
-              description: File name.
-            url:
-              type: string
-              format: uri
-              description: Pre-signed AWS URL for viewing the file.
-        evidence_data:
-          type: array
-          items:
-            $ref: '#/components/schemas/RebateEvidenceSupportingData'
-    UserRebate:
-      type: object
-      x-examples:
-        Example 1:
-          id: rbtuB1USP6YGD1VPIDJSHTZARUX11M
-          url: https://api.ev.energy/v2/user_rebates/rbtuB1USP6YGD1VPIDJSHTZARUX11M
-      description: Resource representing a user's rebate application.
-      x-internal: true
-      title: UserRebate
+          example: Short description
+        detail:
+          type: string
+          example: Long, more specific description.
+        instance:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
+        notification:
+          $ref: '#/components/schemas/Notification'
       examples:
-      - id: string
-        url: https://example.com
-        status: PENDING_IN_PROGRESS
-        rebate_type:
-          id: string
-          url: https://example.com
-          title: string
-          value_description: earn up to $1000
-          icon: https://example.com
-          description_long: string
-          description_short: Must be purchased after 11/01/2024
-          requirements: <html><ul><li>Must be eligible for program</li> <li>Purchased after 11/01/2024</li><li>Must be connected to ev.energy</li></ul></html>
-          required_evidence:
-          - title: string
-            description: string
-            upload_required: true
-            file:
-              name: string
-              url: string
-            evidence_data:
-            - data_type: currency
-              title: string
-              description: string
-              required: true
-              value: string
+      - type: https://api.ev.energy/v2/problems/example-problem/
+        status: 400
+        title: Short description
+        detail: Long, more specific description.
+        instance: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
+        notification:
+          id: notf01HTHKTXVB77901324BCQPF1RB
+          url: https://api.ev.energy/notifications/notf01HTHKTXVB77901324BCQPF1RB
+          message_id: ERR0123
+          category: ACTIONABLE
+          event_time: '2019-08-24T14:15:22Z'
+          short_text_title: Your car is disconnected
+          short_text_body: We need to reconnect to keep smart charging your car
+          detail_page_title: Your car is disconnected
+          detail_page_body: Your car has been disconnected. This happens when your password is reset. We need you to re-authorise ev.energy to access your account in order for us to keep managing your charging. Blah blah blah.
+          external_link: http://example.com
+          external_button_label: More info
+          read_at: '2019-08-24T14:20:22Z'
+          resolved_at: '2019-08-25T14:15:22Z'
+    RebateEvidenceFile:
+      title: RebateEvidenceFile
+      type: object
+      description: Resource representing a rebate evidence file
+      examples:
+      - id: rbefB1USP6YGD1VPIDJSHTZARUX11M
+        url: https://api.ev.energy/v2/user_rebates/rbtuB1USP6YGD1VPIDJSHTZARUX11M/evidence_files/rbefB1USP6YGD1VPIDJSHTZARUX11M
+        file_name: test_file.pdf
+        rebate_evidence_type: https://api.ev.energy/v2/rebate_evidence_type/rbetB1USP6YGD1VPIDJSHTZARUX11M
       properties:
         id:
           type: string
-          readOnly: true
         url:
           type: string
-          format: uri
-          readOnly: true
-        status:
-          enum:
-          - NOT_STARTED
-          - PENDING_TYPE_SELECTED
-          - PENDING_IN_PROGRESS
-          - COMPLETE
-          description: Status of the user's rebate application form. This does not indicate if the rebate has been reviewed or approved.
-          readOnly: true
-        rebate_type:
+        file_name:
+          type: string
+        rebate_evidence_type:
           oneOf:
           - type: string
             format: uri
-            example: https://api.ev.energy/v2/rebate_types/rbttB1USP6YGD1VPIDJSHTZARUX11M
-          - $ref: '#/components/schemas/RebateType'
+            example: https://api.ev.energy/v2/rebate_evidence_type/rbetB1USP6YGD1VPIDJSHTZARUX11M
+          - $ref: '#/components/schemas/RebateEvidenceType'
+    UserRebateCreated:
+      title: UserRebateCreated
+      x-tags:
+      - Rebates
+      type: object
+      properties:
+        id:
+          type: string
+          description: UID of the new UserRebate object.
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          readOnly: true
+      examples:
+      - id: rbtuB1USP6YGD1VPIDJSHTZARUX11M
+        url: https://api.ev.energy/v2/user_rebates/rbtuB1USP6YGD1VPIDJSHTZARUX11M
+      x-internal: true
+      description: Resource representing a newly created UserRebate object.
     RebateType:
       x-internal: true
       description: A resource representing a rebate a user can apply for.
@@ -1322,7 +1145,112 @@ components:
             - type: string
               format: uri
               example: https://api.ev.energy/v2/rebate_evidence_types/rbetB1USP6YGD1VPIDJSHTZARUX11M
+    RebateEvidenceSupportingData:
+      type: object
+      x-examples:
+        Example 1:
+          data_type: currency
+          title: Total project cost
+          description: Enter the total amount spent on the project
+          required: true
+          value: '1000'
+      x-internal: true
+      description: Resource representing data required as evidence for a rebate application.
+      title: RebateEvidenceSupportingData
+      examples:
+      - data_type: currency
+        title: string
+        description: string
+        required: true
+        value: string
+      required:
+      - data_type
+      - title
+      - description
+      - required
+      properties:
+        data_type:
+          enum:
+          - currency
+          - string
+        title:
+          type: string
+          example: Invoice
+        description:
+          type: string
+          example: An invoice for solar panel installation
+        required:
+          type: boolean
+          description: Whether this data is required.
+        value:
+          type:
+          - string
+          - 'null'
+          description: Value entered in the user's application.
+    UserRebate:
+      type: object
+      x-examples:
+        Example 1:
+          id: rbtuB1USP6YGD1VPIDJSHTZARUX11M
+          url: https://api.ev.energy/v2/user_rebates/rbtuB1USP6YGD1VPIDJSHTZARUX11M
+      description: Resource representing a user's rebate application.
+      x-internal: true
+      title: UserRebate
+      examples:
+      - id: string
+        url: https://example.com
+        status: PENDING_IN_PROGRESS
+        rebate_type:
+          id: string
+          url: https://example.com
+          title: string
+          value_description: earn up to $1000
+          icon: https://example.com
+          description_long: string
+          description_short: Must be purchased after 11/01/2024
+          requirements: <html><ul><li>Must be eligible for program</li> <li>Purchased after 11/01/2024</li><li>Must be connected to ev.energy</li></ul></html>
+          required_evidence:
+          - title: string
+            description: string
+            upload_required: true
+            file:
+              name: string
+              url: string
+            evidence_data:
+            - data_type: currency
+              title: string
+              description: string
+              required: true
+              value: string
+      properties:
+        id:
+          type: string
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        status:
+          enum:
+          - NOT_STARTED
+          - PENDING_TYPE_SELECTED
+          - PENDING_IN_PROGRESS
+          - COMPLETE
+          description: Status of the user's rebate application form. This does not indicate if the rebate has been reviewed or approved.
+          readOnly: true
+        rebate_type:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/rebate_types/rbttB1USP6YGD1VPIDJSHTZARUX11M
+          - $ref: '#/components/schemas/RebateType'
   examples:
+    ProblemUnsupportedVersion:
+      value:
+        type: https://api.ev.energy/v2/problems/pagination-parameters/
+        status: 400
+        title: Unsupported version
+        detail: 'Unsupported version requested: 3.0'
     ProblemInvalidPaginationParameter:
       value:
         type: https://api.ev.energy/v2/problems/pagination-parameters/
@@ -1352,17 +1280,6 @@ components:
             description: string
             required: true
             value: string
-    RebateEvidenceFile:
-      value:
-        id: rbefB1USP6YGD1VPIDJSHTZARUX11M
-        url: https://api.ev.energy/v2/rebate_evidence_files/rbefB1USP6YGD1VPIDJSHTZARUX11M
-        file_name: test_file.pdf
-        rebate_evidence_type: https://api.ev.energy/v2/rebate_evidence_types/rbetB1USP6YGD1VPIDJSHTZARUX11M
-    RebateEvidenceUploadStart:
-      value:
-        id: rbefB1USP6YGD1VPIDJSHTZARUX11M
-        url: https://api.ev.energy/v2/rebate_evidence_files/rbefB1USP6YGD1VPIDJSHTZARUX11M
-        presigned_url: https://cdn.app.ev.energy/evenergy-development-rebates-evidence-files/user_rebates/rbtuB1USP6YGD1VPIDJSHTZARUX11M/test_file-57e02f14d0c64900bfa5c64972799c51.pdf?AWSAccessKeyId=DummyKeyID&Signature=bmLFDDk%2FuEjCB8yqYI%2FojRTZEMc%3D&Expires=1732224896
     UserRebate:
       value:
         id: string
@@ -1389,12 +1306,17 @@ components:
               description: string
               required: true
               value: string
-    ProblemUnsupportedVersion:
+    RebateEvidenceFile:
       value:
-        type: https://api.ev.energy/v2/problems/pagination-parameters/
-        status: 400
-        title: Unsupported version
-        detail: 'Unsupported version requested: 3.0'
+        id: rbefB1USP6YGD1VPIDJSHTZARUX11M
+        url: https://api.ev.energy/v2/rebate_evidence_files/rbefB1USP6YGD1VPIDJSHTZARUX11M
+        file_name: test_file.pdf
+        rebate_evidence_type: https://api.ev.energy/v2/rebate_evidence_types/rbetB1USP6YGD1VPIDJSHTZARUX11M
+    RebateEvidenceUploadStart:
+      value:
+        id: rbefB1USP6YGD1VPIDJSHTZARUX11M
+        url: https://api.ev.energy/v2/rebate_evidence_files/rbefB1USP6YGD1VPIDJSHTZARUX11M
+        presigned_url: https://cdn.app.ev.energy/evenergy-development-rebates-evidence-files/user_rebates/rbtuB1USP6YGD1VPIDJSHTZARUX11M/test_file-57e02f14d0c64900bfa5c64972799c51.pdf?AWSAccessKeyId=DummyKeyID&Signature=bmLFDDk%2FuEjCB8yqYI%2FojRTZEMc%3D&Expires=1732224896
     ProblemValidationFailedVehicle:
       value:
         type: https://api.ev.energy/v2/problems/validation-failed-create-vehicle/
@@ -1406,28 +1328,106 @@ components:
           - This field is required.
           trim:
           - Invalid hyperlink - Object does not exist.
-  headers:
-    x-ratelimit-remaining:
-      description: The number of requests remaining until this client's rate limit is reached.
+  parameters:
+    version-2:
+      name: EvEnergy-Version
+      description: Specify the version of this endpoint to use.
+      required: false
+      in: header
       schema:
         type: number
-        default: 999
+        enum:
+        - 2
+    expand-on-userrebate:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - rebate_type
+          - rebate_type.required_evidence
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    Accept-Language:
+      name: Accept-Language
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Indicates the natural language and locale that the client prefers.
+    expand-on-rebatetype:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - required_evidence
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    rebate_evidence_file_id:
+      description: Unique identifier for a Rebate evidence file
+      name: rebate_evidence_file_id
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: rbef[A-Z\d]{26}
+        example: rbefB1USP6YGD1VPIDJSHTZARUX11M
+    user:
+      name: EvEnergy-User
+      description: If the client is authenticated using Client Credentials, setting EvEnergy-User to a valid user ID allows requests to be made as if you were directly authenticated as that user.
+      in: header
+      required: false
+      schema:
+        type: string
+        pattern: user[A-Z\d]{26}
+        example: user01HN2NJ9NMRZBXT1H6FT9N7735
+    expand-on-rebateevidencefile:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - rebate_evidence_type
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    user_rebate_id:
+      description: Unique identifier for a User's rebate application
+      name: user_rebate_id
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: rbtu[A-Z\d]{26}
+        example: rbtuB1USP6YGD1VPIDJSHTZARUX11M
+  headers:
     version-2:
       description: Indicates the version of the API that generated this response. If EvEnergy-Version was not specified in the request, this will be your OAuth application's default version.
       schema:
         type: number
         enum:
         - 2
-    retry-after:
-      description: The number of seconds until this client's requests will not be rate limited.
-      schema:
-        type: number
-        default: 3600
     x-ratelimit-limit:
       description: The maximum number of requests that can be made to this endpoint per hour. Defaults to 1000 but may vary per client.
       schema:
         type: number
         default: 1000
+    x-ratelimit-remaining:
+      description: The number of requests remaining until this client's rate limit is reached.
+      schema:
+        type: number
+        default: 999
+    retry-after:
+      description: The number of seconds until this client's requests will not be rate limited.
+      schema:
+        type: number
+        default: 3600
   securitySchemes:
     oauth2:
       type: oauth2

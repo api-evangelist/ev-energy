@@ -421,57 +421,6 @@ paths:
         - boundary_meter:read
 components:
   parameters:
-    user:
-      name: EvEnergy-User
-      description: If the client is authenticated using Client Credentials, setting EvEnergy-User to a valid user ID allows requests to be made as if you were directly authenticated as that user.
-      in: header
-      required: false
-      schema:
-        type: string
-        pattern: user[A-Z\d]{26}
-        example: user01HN2NJ9NMRZBXT1H6FT9N7735
-    expand-on-boundarymeter:
-      name: expand
-      in: query
-      schema:
-        type: array
-        items:
-          type: string
-          enum:
-          - model
-          - model.make
-          - latest_status_log
-      explode: true
-      description: Specify a url field to expand into a nested resource.
-    expand-on-boundarymeterstatuslog:
-      name: expand
-      in: query
-      schema:
-        type: array
-        items:
-          type: string
-          enum:
-          - boundary_meter
-          - boundary_meter.model
-          - boundary_meter.model.make
-      explode: true
-      description: Specify a url field to expand into a nested resource.
-    sampled_at__lte:
-      name: sampled_at__lte
-      in: query
-      schema:
-        type: string
-        format: date-time
-        example: '2024-04-17T09:39:45.984584Z'
-      description: Filters for logs sampled at or before this datetime.
-    sampled_at__gte:
-      name: sampled_at__gte
-      in: query
-      schema:
-        type: string
-        format: date-time
-        example: '2024-04-17T09:39:45.984584Z'
-      description: Filters for logs sampled at or after this datetime.
     version-2:
       name: EvEnergy-Version
       description: Specify the version of this endpoint to use.
@@ -492,32 +441,27 @@ components:
         minimum: 1
         maximum: 100
         example: 10
-    boundary_meter_make_id_q:
-      name: make_id
+    expand-on-boundarymeter:
+      name: expand
       in: query
-      required: false
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - model
+          - model.make
+          - latest_status_log
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    sampled_at__gte:
+      name: sampled_at__gte
+      in: query
       schema:
         type: string
-        example: bmma01J5DCXX8DMJDJYGVR1DW4M001
-      description: The ID of a Boundary Meter Make to filter by.
-    previous:
-      name: page_before
-      description: Return results from the page after this ID.
-      in: query
-      required: false
-      schema:
-        type: string
-        pattern: '[a-z]{4}[A-Z\d]{26}'
-        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
-    next:
-      name: page_after
-      description: Return results from the page before this ID.
-      in: query
-      required: false
-      schema:
-        type: string
-        pattern: '[a-z]{4}[A-Z\d]{26}'
-        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
+        format: date-time
+        example: '2024-04-17T09:39:45.984584Z'
+      description: Filters for logs sampled at or after this datetime.
     expand-on-boundarymetermodel:
       name: expand
       in: query
@@ -529,101 +473,63 @@ components:
           - make
       explode: true
       description: Specify a url field to expand into a nested resource.
+    previous:
+      name: page_before
+      description: Return results from the page after this ID.
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[a-z]{4}[A-Z\d]{26}'
+        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
+    expand-on-boundarymeterstatuslog:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - boundary_meter
+          - boundary_meter.model
+          - boundary_meter.model.make
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    boundary_meter_make_id_q:
+      name: make_id
+      in: query
+      required: false
+      schema:
+        type: string
+        example: bmma01J5DCXX8DMJDJYGVR1DW4M001
+      description: The ID of a Boundary Meter Make to filter by.
+    user:
+      name: EvEnergy-User
+      description: If the client is authenticated using Client Credentials, setting EvEnergy-User to a valid user ID allows requests to be made as if you were directly authenticated as that user.
+      in: header
+      required: false
+      schema:
+        type: string
+        pattern: user[A-Z\d]{26}
+        example: user01HN2NJ9NMRZBXT1H6FT9N7735
+    next:
+      name: page_after
+      description: Return results from the page before this ID.
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[a-z]{4}[A-Z\d]{26}'
+        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
+    sampled_at__lte:
+      name: sampled_at__lte
+      in: query
+      schema:
+        type: string
+        format: date-time
+        example: '2024-04-17T09:39:45.984584Z'
+      description: Filters for logs sampled at or before this datetime.
   responses:
-    Problem404NotFound:
-      description: This resource either does not exist or the client is not authorized to access it.
-      content:
-        application/problem+json:
-          schema:
-            type: object
-            required:
-            - title
-            - detail
-            properties:
-              status:
-                type: number
-                example: 404
-              title:
-                type: string
-                example: Not found
-              detail:
-                type: string
-                example: Resource does not exist or cannot be accessed.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-        RetryAfter:
-          $ref: '#/components/headers/retry-after'
-    Problem400BadRequestRetrieve:
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/RFC9457ProblemDetail'
-          examples:
-            Unsupported Version:
-              $ref: '#/components/examples/ProblemUnsupportedVersion'
-      description: A problem with the request's parameters prevented it being fulfilled.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-    Problem401Unauthorized:
-      description: You need to authorise requests to access this resource.
-      content:
-        application/problem+json:
-          schema:
-            type: object
-            required:
-            - title
-            - detail
-            properties:
-              status:
-                type: number
-                example: 401
-              title:
-                type: string
-                example: Unauthorized
-              detail:
-                type: string
-                example: Authentication credentials were not provided.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-        RetryAfter:
-          $ref: '#/components/headers/retry-after'
-    Problem429TooManyRequests:
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/RFC9457ProblemDetail'
-          examples:
-            Example 1:
-              value:
-                type: https://api.ev.energy/v2/problems/rate-limit-exceeded/
-                status: 429
-                title: Too Many Requests
-                detail: Request was rate limited. Try again in 42 seconds
-      description: The client has exceeded its rate limit.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        Retry-After:
-          $ref: '#/components/headers/retry-after'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
     Problem400BadRequestList:
       content:
         application/problem+json:
@@ -672,6 +578,34 @@ components:
           $ref: '#/components/headers/x-ratelimit-remaining'
         RetryAfter:
           $ref: '#/components/headers/retry-after'
+    Problem401Unauthorized:
+      description: You need to authorise requests to access this resource.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 401
+              title:
+                type: string
+                example: Unauthorized
+              detail:
+                type: string
+                example: Authentication credentials were not provided.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
     Problem406NotAcceptable:
       description: Could not satisfy the request Accept header.
       content:
@@ -700,87 +634,73 @@ components:
           $ref: '#/components/headers/x-ratelimit-remaining'
         RetryAfter:
           $ref: '#/components/headers/retry-after'
+    Problem404NotFound:
+      description: This resource either does not exist or the client is not authorized to access it.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 404
+              title:
+                type: string
+                example: Not found
+              detail:
+                type: string
+                example: Resource does not exist or cannot be accessed.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem429TooManyRequests:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Example 1:
+              value:
+                type: https://api.ev.energy/v2/problems/rate-limit-exceeded/
+                status: 429
+                title: Too Many Requests
+                detail: Request was rate limited. Try again in 42 seconds
+      description: The client has exceeded its rate limit.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        Retry-After:
+          $ref: '#/components/headers/retry-after'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem400BadRequestRetrieve:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
   schemas:
-    BoundaryMeterModel:
-      title: BoundaryMeterModel
-      type: object
-      description: A resource representing a boundary meter model.
-      x-tags:
-      - Boundary Meters
-      required:
-      - id
-      - url
-      - name
-      properties:
-        id:
-          type: string
-          description: Unique identifier for the given Boundary Meter Model.
-          pattern: bmmo[A-Z\d]{26}
-          example: bmmo01J5DCXX8DMJDJYGVR1DW4D001
-          readOnly: true
-        url:
-          type: string
-          format: uri
-          example: https://api.ev.energy/v2/boundary_meter_models/bmmo01J5DCXX8DMJDJYGVR1DW4D001
-          readOnly: true
-        name:
-          type: string
-          example: Anduril
-          readOnly: true
-        make:
-          oneOf:
-          - type: string
-            format: uri
-            example: https://api.ev.energy/v2/boundary_meter_makes/bmma01J5DCXX8DMJDJYGVR1DW4M001
-          - $ref: '#/components/schemas/BoundaryMeterMake'
-    RFC9457ProblemDetail:
-      title: RFC 9457 Problem Detail
-      x-tags:
-      - problems
-      type: object
-      required:
-      - title
-      - detail
-      properties:
-        type:
-          type: string
-          format: uri
-          example: https://api.ev.energy/v2/problems/example-problem/
-        status:
-          type: number
-          example: 400
-        title:
-          type: string
-          example: Short description
-        detail:
-          type: string
-          example: Long, more specific description.
-        instance:
-          type: string
-          format: uri
-          example: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
-        notification:
-          $ref: '#/components/schemas/Notification'
-      examples:
-      - type: https://api.ev.energy/v2/problems/example-problem/
-        status: 400
-        title: Short description
-        detail: Long, more specific description.
-        instance: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
-        notification:
-          id: notf01HTHKTXVB77901324BCQPF1RB
-          url: https://api.ev.energy/notifications/notf01HTHKTXVB77901324BCQPF1RB
-          message_id: ERR0123
-          category: ACTIONABLE
-          event_time: '2019-08-24T14:15:22Z'
-          short_text_title: Your car is disconnected
-          short_text_body: We need to reconnect to keep smart charging your car
-          detail_page_title: Your car is disconnected
-          detail_page_body: Your car has been disconnected. This happens when your password is reset. We need you to re-authorise ev.energy to access your account in order for us to keep managing your charging. Blah blah blah.
-          external_link: http://example.com
-          external_button_label: More info
-          read_at: '2019-08-24T14:20:22Z'
-          resolved_at: '2019-08-25T14:15:22Z'
     Notification:
       title: Notification
       description: Something that the user should be informed about.
@@ -867,6 +787,112 @@ components:
           type: string
           format: date-time
           description: When the problem associated with this notification was resolved
+    RFC9457ProblemDetail:
+      title: RFC 9457 Problem Detail
+      x-tags:
+      - problems
+      type: object
+      required:
+      - title
+      - detail
+      properties:
+        type:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/problems/example-problem/
+        status:
+          type: number
+          example: 400
+        title:
+          type: string
+          example: Short description
+        detail:
+          type: string
+          example: Long, more specific description.
+        instance:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
+        notification:
+          $ref: '#/components/schemas/Notification'
+      examples:
+      - type: https://api.ev.energy/v2/problems/example-problem/
+        status: 400
+        title: Short description
+        detail: Long, more specific description.
+        instance: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
+        notification:
+          id: notf01HTHKTXVB77901324BCQPF1RB
+          url: https://api.ev.energy/notifications/notf01HTHKTXVB77901324BCQPF1RB
+          message_id: ERR0123
+          category: ACTIONABLE
+          event_time: '2019-08-24T14:15:22Z'
+          short_text_title: Your car is disconnected
+          short_text_body: We need to reconnect to keep smart charging your car
+          detail_page_title: Your car is disconnected
+          detail_page_body: Your car has been disconnected. This happens when your password is reset. We need you to re-authorise ev.energy to access your account in order for us to keep managing your charging. Blah blah blah.
+          external_link: http://example.com
+          external_button_label: More info
+          read_at: '2019-08-24T14:20:22Z'
+          resolved_at: '2019-08-25T14:15:22Z'
+    BoundaryMeterModel:
+      title: BoundaryMeterModel
+      type: object
+      description: A resource representing a boundary meter model.
+      x-tags:
+      - Boundary Meters
+      required:
+      - id
+      - url
+      - name
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given Boundary Meter Model.
+          pattern: bmmo[A-Z\d]{26}
+          example: bmmo01J5DCXX8DMJDJYGVR1DW4D001
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/boundary_meter_models/bmmo01J5DCXX8DMJDJYGVR1DW4D001
+          readOnly: true
+        name:
+          type: string
+          example: Anduril
+          readOnly: true
+        make:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/boundary_meter_makes/bmma01J5DCXX8DMJDJYGVR1DW4M001
+          - $ref: '#/components/schemas/BoundaryMeterMake'
+    BoundaryMeterMake:
+      title: BoundaryMeterMake
+      type: object
+      description: A resource representing a manufacturer of boundary meters.
+      x-tags:
+      - Boundary Meters
+      required:
+      - id
+      - url
+      - name
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given Boundary Meter Make.
+          pattern: bmma[A-Z\d]{26}
+          example: bmma01J5DCXX8DMJDJYGVR1DW4M001
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/boundary_meter_makes/bmma01J5DCXX8DMJDJYGVR1DW4M001
+          readOnly: true
+        name:
+          type: string
+          example: Gondor
+          readOnly: true
     BoundaryMeterStatusLog:
       title: BoundaryMeterStatusLog
       type: object
@@ -903,32 +929,6 @@ components:
           - IDLE
           - UNKNOWN
           example: IMPORTING
-    BoundaryMeterMake:
-      title: BoundaryMeterMake
-      type: object
-      description: A resource representing a manufacturer of boundary meters.
-      x-tags:
-      - Boundary Meters
-      required:
-      - id
-      - url
-      - name
-      properties:
-        id:
-          type: string
-          description: Unique identifier for the given Boundary Meter Make.
-          pattern: bmma[A-Z\d]{26}
-          example: bmma01J5DCXX8DMJDJYGVR1DW4M001
-          readOnly: true
-        url:
-          type: string
-          format: uri
-          example: https://api.ev.energy/v2/boundary_meter_makes/bmma01J5DCXX8DMJDJYGVR1DW4M001
-          readOnly: true
-        name:
-          type: string
-          example: Gondor
-          readOnly: true
     BoundaryMeter:
       title: BoundaryMeter
       type: object
@@ -970,28 +970,26 @@ components:
             - 'null'
             example: https://api.ev.energy/v2/boundary_meters/bmet01J5DCXX8DMJDJYGVR1DW4T001/status_logs/2024-04-17T09:39:45.984584Z/
           description: Link by default, expanded data when ?expand=latest_status_log is used.
+  examples:
+    ProblemUnsupportedVersion:
+      value:
+        type: https://api.ev.energy/v2/problems/pagination-parameters/
+        status: 400
+        title: Unsupported version
+        detail: 'Unsupported version requested: 3.0'
+    ProblemInvalidPaginationParameter:
+      value:
+        type: https://api.ev.energy/v2/problems/pagination-parameters/
+        status: 400
+        title: Invalid pagination parameter
+        detail: 'Invalid value for pagination parameter: page_size'
   headers:
-    link:
-      description: Provides links to the previous and next pages of data, if they exist.
-      example: <https://api.ev.energy/v2/vehicles?page_size=25&page_before=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="previous", <https://api.ev.energy/v2/vehicles?page_size=25&page_after=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="next"
-      schema:
-        type: string
-    x-ratelimit-remaining:
-      description: The number of requests remaining until this client's rate limit is reached.
-      schema:
-        type: number
-        default: 999
     version-2:
       description: Indicates the version of the API that generated this response. If EvEnergy-Version was not specified in the request, this will be your OAuth application's default version.
       schema:
         type: number
         enum:
         - 2
-    retry-after:
-      description: The number of seconds until this client's requests will not be rate limited.
-      schema:
-        type: number
-        default: 3600
     x-ratelimit-limit:
       description: The maximum number of requests that can be made to this endpoint per hour. Defaults to 1000 but may vary per client.
       schema:
@@ -1002,19 +1000,21 @@ components:
       example: <https://api.ev.energy/v2/vehicles?page_size=25&page_before=2024-04-18T08:53:52.225655Z>; rel="previous", <https://api.ev.energy/v2/vehicles?page_size=25&page_after=2024-04-18T08:53:52.225655Z>; rel="next"
       schema:
         type: string
-  examples:
-    ProblemInvalidPaginationParameter:
-      value:
-        type: https://api.ev.energy/v2/problems/pagination-parameters/
-        status: 400
-        title: Invalid pagination parameter
-        detail: 'Invalid value for pagination parameter: page_size'
-    ProblemUnsupportedVersion:
-      value:
-        type: https://api.ev.energy/v2/problems/pagination-parameters/
-        status: 400
-        title: Unsupported version
-        detail: 'Unsupported version requested: 3.0'
+    x-ratelimit-remaining:
+      description: The number of requests remaining until this client's rate limit is reached.
+      schema:
+        type: number
+        default: 999
+    retry-after:
+      description: The number of seconds until this client's requests will not be rate limited.
+      schema:
+        type: number
+        default: 3600
+    link:
+      description: Provides links to the previous and next pages of data, if they exist.
+      example: <https://api.ev.energy/v2/vehicles?page_size=25&page_before=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="previous", <https://api.ev.energy/v2/vehicles?page_size=25&page_after=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="next"
+      schema:
+        type: string
   securitySchemes:
     oauth2:
       type: oauth2

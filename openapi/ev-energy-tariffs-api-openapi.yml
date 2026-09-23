@@ -26,7 +26,7 @@ tags:
 paths:
   /suppliers:
     get:
-      summary: List suppliers, sorted alphabetically by name.
+      summary: List suppliers, sorted alphabetically by name
       tags:
       - Tariffs
       responses:
@@ -118,7 +118,7 @@ paths:
         - tariff:read
   /tariffs:
     get:
-      summary: List tariffs, sorted alphabetically by name.
+      summary: List tariffs, sorted alphabetically by name
       tags:
       - Tariffs
       responses:
@@ -286,67 +286,6 @@ paths:
         - tariff:prices:read
 components:
   parameters:
-    user:
-      name: EvEnergy-User
-      description: If the client is authenticated using Client Credentials, setting EvEnergy-User to a valid user ID allows requests to be made as if you were directly authenticated as that user.
-      in: header
-      required: false
-      schema:
-        type: string
-        pattern: user[A-Z\d]{26}
-        example: user01HN2NJ9NMRZBXT1H6FT9N7735
-    tariff_id:
-      name: tariff_id
-      in: path
-      schema:
-        type: string
-        pattern: tari[A-Z\d]{26}
-        example: tari01HN2NJ9NMRZBXT1H6FT9N7735
-      required: true
-      description: The ID of the specific tariff to retrieve.
-    page:
-      name: page
-      description: The page number to return results for.
-      in: query
-      required: false
-      schema:
-        type: number
-        example: 2
-    expand-on-tariff:
-      name: expand
-      in: query
-      schema:
-        type: array
-        items:
-          type: string
-          enum:
-          - supplier
-          - scheduler_tariff
-          - prices
-      explode: true
-      description: Specify a url field to expand into a nested resource. The prices expansion requires tariff:prices:read scope.
-    tariff_valid_query:
-      name: valid
-      in: query
-      required: false
-      schema:
-        type: boolean
-      description: Filter by whether the tariff is currently open to new sign-ups (valid_from on or before today, and valid_until on or after today or unset). `true` returns only currently-available tariffs; `false` returns only superseded or not-yet-available ones. Omit to return all tariffs.
-    supplier_id_query:
-      name: supplier_id
-      in: query
-      required: false
-      schema:
-        type: string
-      description: The ID of the supplier to filter by.
-    tariff_gsp_group_query:
-      name: gsp_group
-      in: query
-      required: false
-      schema:
-        type: string
-        example: _C
-      description: Filter by GB Grid Supply Point (DNO region) code, e.g. `_C` for London.
     version-2:
       name: EvEnergy-Version
       description: Specify the version of this endpoint to use.
@@ -356,6 +295,15 @@ components:
         type: number
         enum:
         - 2
+    supplier_id:
+      name: supplier_id
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: supl[A-Z\d]{26}
+        example: supl01HN2NJ9NMRZBXT1H6FT9N7735
+      description: The ID of the specific supplier to retrieve.
     page_size:
       name: page_size
       description: Specify the number of results to return per page.
@@ -375,15 +323,6 @@ components:
         pattern: user[A-Z\d]{26}
         example: user01HN2NJ9NMRZBXT1H6FT9N7735
       description: Filter to only return resources available in the user's region and program.
-    supplier_id:
-      name: supplier_id
-      in: path
-      required: true
-      schema:
-        type: string
-        pattern: supl[A-Z\d]{26}
-        example: supl01HN2NJ9NMRZBXT1H6FT9N7735
-      description: The ID of the specific supplier to retrieve.
     include_optional_tariff:
       name: include_optional
       in: query
@@ -395,41 +334,76 @@ components:
       allowReserved: false
       allowEmptyValue: false
       description: Include optional tariffs.
+    tariff_gsp_group_query:
+      name: gsp_group
+      in: query
+      required: false
+      schema:
+        type: string
+        example: _C
+      description: Filter by GB Grid Supply Point (DNO region) code, e.g. `_C` for London.
+    tariff_valid_query:
+      name: valid
+      in: query
+      required: false
+      schema:
+        type: boolean
+      description: Filter by whether the tariff is currently open to new sign-ups (valid_from on or before today, and valid_until on or after today or unset). `true` returns only currently-available tariffs; `false` returns only superseded or not-yet-available ones. Omit to return all tariffs.
+    page:
+      name: page
+      description: The page number to return results for.
+      in: query
+      required: false
+      schema:
+        type: number
+        example: 2
+    supplier_id_query:
+      name: supplier_id
+      in: query
+      required: false
+      schema:
+        type: string
+      description: The ID of the supplier to filter by.
+    user:
+      name: EvEnergy-User
+      description: If the client is authenticated using Client Credentials, setting EvEnergy-User to a valid user ID allows requests to be made as if you were directly authenticated as that user.
+      in: header
+      required: false
+      schema:
+        type: string
+        pattern: user[A-Z\d]{26}
+        example: user01HN2NJ9NMRZBXT1H6FT9N7735
+    tariff_id:
+      name: tariff_id
+      in: path
+      schema:
+        type: string
+        pattern: tari[A-Z\d]{26}
+        example: tari01HN2NJ9NMRZBXT1H6FT9N7735
+      required: true
+      description: The ID of the specific tariff to retrieve.
+    expand-on-tariff:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - supplier
+          - scheduler_tariff
+          - prices
+      explode: true
+      description: Specify a url field to expand into a nested resource. The prices expansion requires tariff:prices:read scope.
   responses:
-    Problem404NotFound:
-      description: This resource either does not exist or the client is not authorized to access it.
-      content:
-        application/problem+json:
-          schema:
-            type: object
-            required:
-            - title
-            - detail
-            properties:
-              status:
-                type: number
-                example: 404
-              title:
-                type: string
-                example: Not found
-              detail:
-                type: string
-                example: Resource does not exist or cannot be accessed.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-        RetryAfter:
-          $ref: '#/components/headers/retry-after'
-    Problem400BadRequestRetrieve:
+    Problem400BadRequestList:
       content:
         application/problem+json:
           schema:
             $ref: '#/components/schemas/RFC9457ProblemDetail'
           examples:
+            Invalid Pagination Parameter:
+              $ref: '#/components/examples/ProblemInvalidPaginationParameter'
             Unsupported Version:
               $ref: '#/components/examples/ProblemUnsupportedVersion'
       description: A problem with the request's parameters prevented it being fulfilled.
@@ -440,28 +414,8 @@ components:
           $ref: '#/components/headers/x-ratelimit-limit'
         X-RateLimit-Remaining:
           $ref: '#/components/headers/x-ratelimit-remaining'
-    Problem429TooManyRequests:
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/RFC9457ProblemDetail'
-          examples:
-            Example 1:
-              value:
-                type: https://api.ev.energy/v2/problems/rate-limit-exceeded/
-                status: 429
-                title: Too Many Requests
-                detail: Request was rate limited. Try again in 42 seconds
-      description: The client has exceeded its rate limit.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        Retry-After:
+        RetryAfter:
           $ref: '#/components/headers/retry-after'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
     Problem401Unauthorized:
       description: You need to authorise requests to access this resource.
       content:
@@ -481,26 +435,6 @@ components:
               detail:
                 type: string
                 example: Authentication credentials were not provided.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-        RetryAfter:
-          $ref: '#/components/headers/retry-after'
-    Problem400BadRequestList:
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/RFC9457ProblemDetail'
-          examples:
-            Invalid Pagination Parameter:
-              $ref: '#/components/examples/ProblemInvalidPaginationParameter'
-            Unsupported Version:
-              $ref: '#/components/examples/ProblemUnsupportedVersion'
-      description: A problem with the request's parameters prevented it being fulfilled.
       headers:
         EvEnergy-Version:
           $ref: '#/components/headers/version-2'
@@ -566,158 +500,73 @@ components:
           $ref: '#/components/headers/x-ratelimit-remaining'
         RetryAfter:
           $ref: '#/components/headers/retry-after'
+    Problem404NotFound:
+      description: This resource either does not exist or the client is not authorized to access it.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 404
+              title:
+                type: string
+                example: Not found
+              detail:
+                type: string
+                example: Resource does not exist or cannot be accessed.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem429TooManyRequests:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Example 1:
+              value:
+                type: https://api.ev.energy/v2/problems/rate-limit-exceeded/
+                status: 429
+                title: Too Many Requests
+                detail: Request was rate limited. Try again in 42 seconds
+      description: The client has exceeded its rate limit.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        Retry-After:
+          $ref: '#/components/headers/retry-after'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem400BadRequestRetrieve:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
   schemas:
-    RFC9457ProblemDetail:
-      title: RFC 9457 Problem Detail
-      x-tags:
-      - problems
-      type: object
-      required:
-      - title
-      - detail
-      properties:
-        type:
-          type: string
-          format: uri
-          example: https://api.ev.energy/v2/problems/example-problem/
-        status:
-          type: number
-          example: 400
-        title:
-          type: string
-          example: Short description
-        detail:
-          type: string
-          example: Long, more specific description.
-        instance:
-          type: string
-          format: uri
-          example: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
-        notification:
-          $ref: '#/components/schemas/Notification'
-      examples:
-      - type: https://api.ev.energy/v2/problems/example-problem/
-        status: 400
-        title: Short description
-        detail: Long, more specific description.
-        instance: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
-        notification:
-          id: notf01HTHKTXVB77901324BCQPF1RB
-          url: https://api.ev.energy/notifications/notf01HTHKTXVB77901324BCQPF1RB
-          message_id: ERR0123
-          category: ACTIONABLE
-          event_time: '2019-08-24T14:15:22Z'
-          short_text_title: Your car is disconnected
-          short_text_body: We need to reconnect to keep smart charging your car
-          detail_page_title: Your car is disconnected
-          detail_page_body: Your car has been disconnected. This happens when your password is reset. We need you to re-authorise ev.energy to access your account in order for us to keep managing your charging. Blah blah blah.
-          external_link: http://example.com
-          external_button_label: More info
-          read_at: '2019-08-24T14:20:22Z'
-          resolved_at: '2019-08-25T14:15:22Z'
-    TariffDetail:
-      title: TariffDetail
-      examples:
-      - id: tari01HN2NJ9NMRZBXT1H6FT9N7735
-        url: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7735
-        supplier: https://api.ev.energy/v2/suppliers/supl01HN2NJ9NMRZBXT1H6FT9N7735
-        name: Fangorn Biomass
-        currency: GBP
-        daily_prices:
-          peak:
-            price: '0.30'
-            times:
-            - start: '18:00:00'
-              end: 00:00:00
-          mid_peak:
-            price: '0.20'
-            times:
-            - start: '10:00:00'
-              end: 08:00:00
-          off_peak:
-            price: '0.10'
-            times:
-            - start: 08:00:00
-              end: '18:00:00'
-        scheduler_tariff: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7835
-        current_price: 10
-        prices: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7735/prices
-      description: 'Extra fields only included when a single tariff is requested. Note: prices field requires tariff:prices:read scope and can be expanded with ?expand=prices.'
-      x-tags:
-      - Tariffs
-      allOf:
-      - type: object
-        properties:
-          current_price:
-            type:
-            - integer
-            - 'null'
-            description: The price of the tariff at the current time, given in the smallest unit of the currency of the tariff. For example, 10 means 10 pence.
-            example: 10
-          prices:
-            oneOf:
-            - type: string
-              format: uri
-              example: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7735/prices
-            - type: array
-              items:
-                $ref: '#/components/schemas/Price'
-            - type: 'null'
-            description: Link to prices endpoint by default. When expanded with ?expand=prices, returns the past 24 hours of prices. Requires tariff:prices:read scope.
-            readOnly: true
-      - $ref: '#/components/schemas/Tariff'
-    Supplier:
-      title: Supplier
-      type: object
-      description: An energy company who supplies electricity tariffs.
-      required:
-      - id
-      - url
-      - name
-      - icon
-      properties:
-        id:
-          type: string
-          description: Unique identifier for the given user.
-          pattern: supl[A-Z\d]{26}
-          example: supl01HN2NJ9NMRZBXT1H6FT9N7735
-          readOnly: true
-        url:
-          type: string
-          format: uri
-          example: https://api.ev.energy/v2/suppliers/supl01HN2NJ9NMRZBXT1H6FT9N7735
-        name:
-          type: string
-          example: Rivendell Renewables
-        icon:
-          type:
-          - string
-          - 'null'
-          format: uri
-          example: https://cdn.example.com/rivendell_renewables.jpg
-        highlighted:
-          type: boolean
-          description: A highlighted supplier is one that is often selected by users.
-      x-tags:
-      - Tariffs
-    DailyPrices:
-      title: DailyPrices
-      description: Information about the tariff's prices for different parts of the day.
-      type: object
-      additionalProperties: false
-      minProperties: 1
-      maxProperties: 3
-      required:
-      - peak
-      properties:
-        peak:
-          $ref: '#/components/schemas/PriceSummary'
-        mid_peak:
-          $ref: '#/components/schemas/PriceSummary'
-        off_peak:
-          $ref: '#/components/schemas/PriceSummary'
-      x-tags:
-      - Tariffs
     Notification:
       title: Notification
       description: Something that the user should be informed about.
@@ -804,117 +653,69 @@ components:
           type: string
           format: date-time
           description: When the problem associated with this notification was resolved
-    Tariff:
-      title: Tariff
-      examples:
-      - id: tari01HN2NJ9NMRZBXT1H6FT9N7735
-        url: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7735
-        supplier: https://api.ev.energy/v2/suppliers/supl01HN2NJ9NMRZBXT1H6FT9N7735
-        name: Fangorn Biomass
-        currency: GBP
-        gsp_group: _C
-        valid_from: '2026-03-17'
-        valid_until: '2027-03-17'
-        daily_prices:
-          peak:
-            price: '0.30'
-            times:
-            - start: '18:00:00'
-              end: 00:00:00
-          mid_peak:
-            price: '0.20'
-            times:
-            - start: '10:00:00'
-              end: 08:00:00
-          off_peak:
-            price: '0.10'
-            times:
-            - start: 08:00:00
-              end: '18:00:00'
-        scheduler_tariff: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7835
-      description: 'Note: daily_prices and type are only available under contract. Please reach out to your account manager to find out more.'
-      x-tags:
-      - Tariffs
-      allOf:
-      - $ref: '#/components/schemas/TariffBase'
-      - type: object
-        properties:
-          scheduler_tariff:
-            oneOf:
-            - type: string
-              format: uri
-              example: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7835
-            - type: object
-              required:
-              - id
-              - url
-              - supplier
-              - name
-              - currency
-              properties:
-                id:
-                  type: string
-                  pattern: tari[A-Z\d]{26}
-                url:
-                  type: string
-                  format: uri
-                supplier:
-                  type: string
-                  format: uri
-                name:
-                  type: string
-                currency:
-                  type: string
-              additionalProperties: true
-            - type: 'null'
-            description: The tariff used by the scheduler for charge optimisation, which may differ from the billing tariff. Returns a URL by default, or null if not set. Expandable with ?expand=scheduler_tariff to return a TariffBase object (additional fields may be present beyond those listed here).
-    Price:
-      title: Price
+    Times:
+      title: Times
+      description: Defines a period of time.
       type: object
-      description: A price for a specific time interval.
       x-tags:
       - Tariffs
+      properties:
+        start:
+          type: string
+          example: '18:00:00'
+          pattern: \d\d:\d\d:\d\d
+        end:
+          type: string
+          example: 00:00:00
+          pattern: \d\d:\d\d:\d\d
+    RFC9457ProblemDetail:
+      title: RFC 9457 Problem Detail
+      x-tags:
+      - problems
+      type: object
       required:
-      - started_at
-      - interval_seconds
-      - price_minor_units
+      - title
+      - detail
       properties:
-        started_at:
+        type:
           type: string
-          format: date-time
-          description: When this price interval began (ISO 8601 datetime).
-          example: '2024-01-15T10:00:00Z'
-          readOnly: true
-        interval_seconds:
-          type: integer
-          description: The duration of this price interval in seconds.
-          example: 1800
-          readOnly: true
-        price_minor_units:
-          type: integer
-          description: The price in minor currency units (e.g., pence for GBP).
-          example: 10
-          readOnly: true
-    PriceSummary:
-      title: PriceSummary
-      description: A single price for a certain time range.
-      type: object
+          format: uri
+          example: https://api.ev.energy/v2/problems/example-problem/
+        status:
+          type: number
+          example: 400
+        title:
+          type: string
+          example: Short description
+        detail:
+          type: string
+          example: Long, more specific description.
+        instance:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
+        notification:
+          $ref: '#/components/schemas/Notification'
       examples:
-      - price: '0.10'
-        times:
-        - start: '18:00:00'
-          end: 00:00:00
-      x-tags:
-      - Tariffs
-      properties:
-        price:
-          type: string
-          example: '0.10'
-          description: The price is in major currency units e.g. 0.10 means £0.10.
-        times:
-          type: array
-          items:
-            $ref: '#/components/schemas/Times'
+      - type: https://api.ev.energy/v2/problems/example-problem/
+        status: 400
+        title: Short description
+        detail: Long, more specific description.
+        instance: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
+        notification:
+          id: notf01HTHKTXVB77901324BCQPF1RB
+          url: https://api.ev.energy/notifications/notf01HTHKTXVB77901324BCQPF1RB
+          message_id: ERR0123
+          category: ACTIONABLE
+          event_time: '2019-08-24T14:15:22Z'
+          short_text_title: Your car is disconnected
+          short_text_body: We need to reconnect to keep smart charging your car
+          detail_page_title: Your car is disconnected
+          detail_page_body: Your car has been disconnected. This happens when your password is reset. We need you to re-authorise ev.energy to access your account in order for us to keep managing your charging. Blah blah blah.
+          external_link: http://example.com
+          external_button_label: More info
+          read_at: '2019-08-24T14:20:22Z'
+          resolved_at: '2019-08-25T14:15:22Z'
     TariffBase:
       title: TariffBase
       type: object
@@ -994,61 +795,260 @@ components:
           format: date
           description: The date after which this tariff is no longer available to new customers (it has been superseded). `null` if the tariff is still open to new sign-ups. Use the `valid` query parameter to filter the list to only currently-available tariffs.
           example: '2027-03-17'
-    Times:
-      title: Times
-      description: Defines a period of time.
+    PriceSummary:
+      title: PriceSummary
+      description: A single price for a certain time range.
       type: object
+      examples:
+      - price: '0.10'
+        times:
+        - start: '18:00:00'
+          end: 00:00:00
       x-tags:
       - Tariffs
       properties:
-        start:
+        price:
           type: string
-          example: '18:00:00'
-          pattern: \d\d:\d\d:\d\d
-        end:
+          example: '0.10'
+          description: The price is in major currency units e.g. 0.10 means £0.10.
+        times:
+          type: array
+          items:
+            $ref: '#/components/schemas/Times'
+    TariffDetail:
+      title: TariffDetail
+      examples:
+      - id: tari01HN2NJ9NMRZBXT1H6FT9N7735
+        url: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7735
+        supplier: https://api.ev.energy/v2/suppliers/supl01HN2NJ9NMRZBXT1H6FT9N7735
+        name: Fangorn Biomass
+        currency: GBP
+        daily_prices:
+          peak:
+            price: '0.30'
+            times:
+            - start: '18:00:00'
+              end: 00:00:00
+          mid_peak:
+            price: '0.20'
+            times:
+            - start: '10:00:00'
+              end: 08:00:00
+          off_peak:
+            price: '0.10'
+            times:
+            - start: 08:00:00
+              end: '18:00:00'
+        scheduler_tariff: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7835
+        current_price: 10
+        prices: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7735/prices
+      description: 'Extra fields only included when a single tariff is requested. Note: prices field requires tariff:prices:read scope and can be expanded with ?expand=prices.'
+      x-tags:
+      - Tariffs
+      allOf:
+      - type: object
+        properties:
+          current_price:
+            type:
+            - integer
+            - 'null'
+            description: The price of the tariff at the current time, given in the smallest unit of the currency of the tariff. For example, 10 means 10 pence.
+            example: 10
+          prices:
+            oneOf:
+            - type: string
+              format: uri
+              example: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7735/prices
+            - type: array
+              items:
+                $ref: '#/components/schemas/Price'
+            - type: 'null'
+            description: Link to prices endpoint by default. When expanded with ?expand=prices, returns the past 24 hours of prices. Requires tariff:prices:read scope.
+            readOnly: true
+      - $ref: '#/components/schemas/Tariff'
+    Price:
+      title: Price
+      type: object
+      description: A price for a specific time interval.
+      x-tags:
+      - Tariffs
+      required:
+      - started_at
+      - interval_seconds
+      - price_minor_units
+      properties:
+        started_at:
           type: string
-          example: 00:00:00
-          pattern: \d\d:\d\d:\d\d
+          format: date-time
+          description: When this price interval began (ISO 8601 datetime).
+          example: '2024-01-15T10:00:00Z'
+          readOnly: true
+        interval_seconds:
+          type: integer
+          description: The duration of this price interval in seconds.
+          example: 1800
+          readOnly: true
+        price_minor_units:
+          type: integer
+          description: The price in minor currency units (e.g., pence for GBP).
+          example: 10
+          readOnly: true
+    DailyPrices:
+      title: DailyPrices
+      description: Information about the tariff's prices for different parts of the day.
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      maxProperties: 3
+      required:
+      - peak
+      properties:
+        peak:
+          $ref: '#/components/schemas/PriceSummary'
+        mid_peak:
+          $ref: '#/components/schemas/PriceSummary'
+        off_peak:
+          $ref: '#/components/schemas/PriceSummary'
+      x-tags:
+      - Tariffs
+    Supplier:
+      title: Supplier
+      type: object
+      description: An energy company who supplies electricity tariffs.
+      required:
+      - id
+      - url
+      - name
+      - icon
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given user.
+          pattern: supl[A-Z\d]{26}
+          example: supl01HN2NJ9NMRZBXT1H6FT9N7735
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/suppliers/supl01HN2NJ9NMRZBXT1H6FT9N7735
+        name:
+          type: string
+          example: Rivendell Renewables
+        icon:
+          type:
+          - string
+          - 'null'
+          format: uri
+          example: https://cdn.example.com/rivendell_renewables.jpg
+        highlighted:
+          type: boolean
+          description: A highlighted supplier is one that is often selected by users.
+      x-tags:
+      - Tariffs
+    Tariff:
+      title: Tariff
+      examples:
+      - id: tari01HN2NJ9NMRZBXT1H6FT9N7735
+        url: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7735
+        supplier: https://api.ev.energy/v2/suppliers/supl01HN2NJ9NMRZBXT1H6FT9N7735
+        name: Fangorn Biomass
+        currency: GBP
+        gsp_group: _C
+        valid_from: '2026-03-17'
+        valid_until: '2027-03-17'
+        daily_prices:
+          peak:
+            price: '0.30'
+            times:
+            - start: '18:00:00'
+              end: 00:00:00
+          mid_peak:
+            price: '0.20'
+            times:
+            - start: '10:00:00'
+              end: 08:00:00
+          off_peak:
+            price: '0.10'
+            times:
+            - start: 08:00:00
+              end: '18:00:00'
+        scheduler_tariff: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7835
+      description: 'Note: daily_prices and type are only available under contract. Please reach out to your account manager to find out more.'
+      x-tags:
+      - Tariffs
+      allOf:
+      - $ref: '#/components/schemas/TariffBase'
+      - type: object
+        properties:
+          scheduler_tariff:
+            oneOf:
+            - type: string
+              format: uri
+              example: https://api.ev.energy/v2/tariffs/tari01HN2NJ9NMRZBXT1H6FT9N7835
+            - type: object
+              required:
+              - id
+              - url
+              - supplier
+              - name
+              - currency
+              properties:
+                id:
+                  type: string
+                  pattern: tari[A-Z\d]{26}
+                url:
+                  type: string
+                  format: uri
+                supplier:
+                  type: string
+                  format: uri
+                name:
+                  type: string
+                currency:
+                  type: string
+              additionalProperties: true
+            - type: 'null'
+            description: The tariff used by the scheduler for charge optimisation, which may differ from the billing tariff. Returns a URL by default, or null if not set. Expandable with ?expand=scheduler_tariff to return a TariffBase object (additional fields may be present beyond those listed here).
   examples:
-    ProblemInvalidPaginationParameter:
-      value:
-        type: https://api.ev.energy/v2/problems/pagination-parameters/
-        status: 400
-        title: Invalid pagination parameter
-        detail: 'Invalid value for pagination parameter: page_size'
     ProblemUnsupportedVersion:
       value:
         type: https://api.ev.energy/v2/problems/pagination-parameters/
         status: 400
         title: Unsupported version
         detail: 'Unsupported version requested: 3.0'
+    ProblemInvalidPaginationParameter:
+      value:
+        type: https://api.ev.energy/v2/problems/pagination-parameters/
+        status: 400
+        title: Invalid pagination parameter
+        detail: 'Invalid value for pagination parameter: page_size'
   headers:
-    x-ratelimit-remaining:
-      description: The number of requests remaining until this client's rate limit is reached.
+    link-pages:
+      description: Provides links to the previous and next pages of data, if they exist.
+      example: <about:blank>; rel="previous", <https://api.ev.energy/v2/examples/?page=2&page_size=25>; rel="next"
       schema:
-        type: number
-        default: 999
+        type: string
     version-2:
       description: Indicates the version of the API that generated this response. If EvEnergy-Version was not specified in the request, this will be your OAuth application's default version.
       schema:
         type: number
         enum:
         - 2
-    retry-after:
-      description: The number of seconds until this client's requests will not be rate limited.
-      schema:
-        type: number
-        default: 3600
     x-ratelimit-limit:
       description: The maximum number of requests that can be made to this endpoint per hour. Defaults to 1000 but may vary per client.
       schema:
         type: number
         default: 1000
-    link-pages:
-      description: Provides links to the previous and next pages of data, if they exist.
-      example: <about:blank>; rel="previous", <https://api.ev.energy/v2/examples/?page=2&page_size=25>; rel="next"
+    x-ratelimit-remaining:
+      description: The number of requests remaining until this client's rate limit is reached.
       schema:
-        type: string
+        type: number
+        default: 999
+    retry-after:
+      description: The number of seconds until this client's requests will not be rate limited.
+      schema:
+        type: number
+        default: 3600
   securitySchemes:
     oauth2:
       type: oauth2

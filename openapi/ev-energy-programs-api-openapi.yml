@@ -131,9 +131,7 @@ paths:
       description: 'By default, this endpoint returns all programs in our system and does not require authentication. The `coordinates`, `postal_code` and `country_code` query parameters can be used to narrow the list down to just programs eligible for particular locations. Coordinates and postal code searching are mutually exclusive and mixing the query parameters will result in a 400 error response.
 
 
-        If the client is authenticated as a specific user (either via Authorisation Code grant type or the `EvEnergy-User` header) it will return only programs that user is possibly eligible for, based on the location information we have for them.
-
-        '
+        If the client is authenticated as a specific user (either via Authorisation Code grant type or the `EvEnergy-User` header) it will return only programs that user is possibly eligible for, based on the location information we have for them.'
       security: []
   /programs/{program_id}:
     parameters:
@@ -345,9 +343,7 @@ paths:
 
         each tier''s `eligible` field is populated with the user''s eligibility result.
 
-        Anonymous or pure client-credentials requests receive `eligible: null`.
-
-        '
+        Anonymous or pure client-credentials requests receive `eligible: null`.'
       responses:
         '200':
           description: Returns 0 or more Program Tiers.
@@ -396,9 +392,7 @@ paths:
       - Programs
       description: 'Retrieve a single tier nested under a Program. Public read-only. The
 
-        `eligible` field is per-user (see the list endpoint description).
-
-        '
+        `eligible` field is per-user (see the list endpoint description).'
       responses:
         '200':
           description: Returns a single Program Tier.
@@ -439,9 +433,7 @@ paths:
 
         Public read-only — no authentication required. Fetch the single currently
 
-        active version from the `current` sub-resource.
-
-        '
+        active version from the `current` sub-resource.'
       parameters:
       - $ref: '#/components/parameters/version-2'
       - $ref: '#/components/parameters/previous'
@@ -487,9 +479,7 @@ paths:
       - Programs
       description: 'Retrieve a single Participation Agreement Version nested under a Program.
 
-        Public read-only.
-
-        '
+        Public read-only.'
       responses:
         '200':
           description: Returns a single Participation Agreement Version.
@@ -532,9 +522,7 @@ paths:
         is a magic value used in place of a version UID.
 
 
-        Public read-only. Returns `404` if the Program has no published version.
-
-        '
+        Public read-only. Returns `404` if the Program has no published version.'
       responses:
         '200':
           description: Returns the currently active Participation Agreement Version.
@@ -593,9 +581,7 @@ paths:
 
         endpoint is not exposed to Client Credentials clients because acceptance
 
-        is intrinsically a per-user action.
-
-        '
+        is intrinsically a per-user action.'
       requestBody:
         required: true
         content:
@@ -689,337 +675,155 @@ paths:
                   account_number: 12345678-A
         description: The body must be a JSON object containing data required for post-enrollment verification. The exact data requirements differ by program and will be validated against a dynamic JSON schema, so no specific type is defined here.
 components:
-  parameters:
-    user:
-      name: EvEnergy-User
-      description: If the client is authenticated using Client Credentials, setting EvEnergy-User to a valid user ID allows requests to be made as if you were directly authenticated as that user.
-      in: header
-      required: false
-      schema:
-        type: string
-        pattern: user[A-Z\d]{26}
-        example: user01HN2NJ9NMRZBXT1H6FT9N7735
-    evenergy-user-required:
-      name: EvEnergy-User
-      in: header
-      required: false
-      description: This endpoints requires a user ID to be specified via this header when using Client Credentials authentication.
-      schema:
-        type: string
-        pattern: user[A-Z\d]{26}
-        example: user01HN2NJ9NMRZBXT1H6FT9N7735
-    tier_id:
-      name: tier_id
-      in: path
-      required: true
-      schema:
-        type: string
-        example: tier01JCK1HPNAANB8WN253G27SFPC
-        pattern: tier[A-Z\d]{26}
-      description: The ID of the specific Program Tier to retrieve.
-    expand-on-programvehiclecompatibility:
-      name: expand
-      in: query
-      schema:
-        type: array
-        items:
-          type: string
-          enum:
-          - model
-      explode: true
-      description: Specify a url field to expand into a nested resource.
-    version-2:
-      name: EvEnergy-Version
-      description: Specify the version of this endpoint to use.
-      required: false
-      in: header
-      schema:
-        type: number
-        enum:
-        - 2
-    page_size:
-      name: page_size
-      description: Specify the number of results to return per page.
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 25
-        minimum: 1
-        maximum: 100
-        example: 10
-    previous:
-      name: page_before
-      description: Return results from the page after this ID.
-      in: query
-      required: false
-      schema:
-        type: string
-        pattern: '[a-z]{4}[A-Z\d]{26}'
-        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
-    next:
-      name: page_after
-      description: Return results from the page before this ID.
-      in: query
-      required: false
-      schema:
-        type: string
-        pattern: '[a-z]{4}[A-Z\d]{26}'
-        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
-    program_id:
-      name: program_id
-      in: path
-      required: true
-      schema:
-        type: string
-      description: The ID of the specific Program to retrieve.
-    participation_agreement_version_id:
-      name: participation_agreement_version_id
-      in: path
-      required: true
-      schema:
-        type: string
-        example: pagv01JCDYP6Z8MX9XWVAV0A7G3KPN
-        pattern: pagv[A-Z\d]{26}
-      description: The ID of the specific Participation Agreement Version.
-  responses:
-    Problem404NotFound:
-      description: This resource either does not exist or the client is not authorized to access it.
-      content:
-        application/problem+json:
-          schema:
-            type: object
-            required:
-            - title
-            - detail
-            properties:
-              status:
-                type: number
-                example: 404
-              title:
-                type: string
-                example: Not found
-              detail:
-                type: string
-                example: Resource does not exist or cannot be accessed.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-        RetryAfter:
-          $ref: '#/components/headers/retry-after'
-    Problem400BadRequestRetrieve:
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/RFC9457ProblemDetail'
-          examples:
-            Unsupported Version:
-              $ref: '#/components/examples/ProblemUnsupportedVersion'
-      description: A problem with the request's parameters prevented it being fulfilled.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-    Problem400BadRequestCreate:
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/RFC9457ProblemDetail'
-          examples:
-            Request failed validation:
-              $ref: '#/components/examples/ProblemValidationFailedVehicle'
-      description: A problem with the request's parameters prevented it being fulfilled.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-        RetryAfter:
-          $ref: '#/components/headers/retry-after'
-    Problem406NotAcceptable:
-      description: Could not satisfy the request Accept header.
-      content:
-        application/problem+json:
-          schema:
-            type: object
-            required:
-            - title
-            - detail
-            properties:
-              status:
-                type: number
-                example: 406
-              title:
-                type: string
-                example: Not Acceptable
-              detail:
-                type: string
-                example: Could not satisfy the request Accept header.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-        RetryAfter:
-          $ref: '#/components/headers/retry-after'
-    Problem401Unauthorized:
-      description: You need to authorise requests to access this resource.
-      content:
-        application/problem+json:
-          schema:
-            type: object
-            required:
-            - title
-            - detail
-            properties:
-              status:
-                type: number
-                example: 401
-              title:
-                type: string
-                example: Unauthorized
-              detail:
-                type: string
-                example: Authentication credentials were not provided.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-        RetryAfter:
-          $ref: '#/components/headers/retry-after'
-    Problem429TooManyRequests:
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/RFC9457ProblemDetail'
-          examples:
-            Example 1:
-              value:
-                type: https://api.ev.energy/v2/problems/rate-limit-exceeded/
-                status: 429
-                title: Too Many Requests
-                detail: Request was rate limited. Try again in 42 seconds
-      description: The client has exceeded its rate limit.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        Retry-After:
-          $ref: '#/components/headers/retry-after'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-    Problem400BadRequestList:
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/RFC9457ProblemDetail'
-          examples:
-            Invalid Pagination Parameter:
-              $ref: '#/components/examples/ProblemInvalidPaginationParameter'
-            Unsupported Version:
-              $ref: '#/components/examples/ProblemUnsupportedVersion'
-      description: A problem with the request's parameters prevented it being fulfilled.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-        RetryAfter:
-          $ref: '#/components/headers/retry-after'
-    Problem403Forbidden:
-      description: You do not have permission to perform this action.
-      content:
-        application/problem+json:
-          schema:
-            type: object
-            required:
-            - title
-            - detail
-            properties:
-              status:
-                type: number
-                example: 403
-              title:
-                type: string
-                example: Forbidden
-              detail:
-                type: string
-                example: You do not have permission to perform this action.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-        RetryAfter:
-          $ref: '#/components/headers/retry-after'
   schemas:
-    RFC9457ProblemDetail:
-      title: RFC 9457 Problem Detail
-      x-tags:
-      - problems
+    IncentiveScheme:
+      title: IncentiveScheme
       type: object
-      required:
-      - title
-      - detail
-      properties:
-        type:
-          type: string
-          format: uri
-          example: https://api.ev.energy/v2/problems/example-problem/
-        status:
-          type: number
-          example: 400
-        title:
-          type: string
-          example: Short description
-        detail:
-          type: string
-          example: Long, more specific description.
-        instance:
-          type: string
-          format: uri
-          example: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
-        notification:
-          $ref: '#/components/schemas/Notification'
+      description: Incentive Schemes define a set of rules for how an elgible User can earn monetary Incentives.
       examples:
-      - type: https://api.ev.energy/v2/problems/example-problem/
-        status: 400
-        title: Short description
-        detail: Long, more specific description.
-        instance: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
-        notification:
-          id: notf01HTHKTXVB77901324BCQPF1RB
-          url: https://api.ev.energy/notifications/notf01HTHKTXVB77901324BCQPF1RB
-          message_id: ERR0123
-          category: ACTIONABLE
-          event_time: '2019-08-24T14:15:22Z'
-          short_text_title: Your car is disconnected
-          short_text_body: We need to reconnect to keep smart charging your car
-          detail_page_title: Your car is disconnected
-          detail_page_body: Your car has been disconnected. This happens when your password is reset. We need you to re-authorise ev.energy to access your account in order for us to keep managing your charging. Blah blah blah.
-          external_link: http://example.com
-          external_button_label: More info
-          read_at: '2019-08-24T14:20:22Z'
-          resolved_at: '2019-08-25T14:15:22Z'
+      - id: incs01JE3ZY9Z2C0E087C942B9WKBC
+        name: Off-Peak Charging Incentives
+        description: Earn $0.10 per kWh when charging off-peak
+        visible: false
+        available: true
+      properties:
+        id:
+          type: string
+          description: 'Prefix: "incs"'
+        name:
+          type: string
+          description: Name to be displayed to the User.
+        description:
+          type: string
+          description: Describes the rules of how the User earns this Incentive.
+        visible:
+          type: boolean
+          default: false
+          description: Should this Incentive Scheme be visible to the User in the App.
+        available:
+          type: boolean
+          default: true
+          description: 'Is this Incentive available for the User to earn.
+
+            Some Incentive Schemes can only be earned a limitted number of times per User or Device.
+
+            E.g. A Sign Up Incentive that can only be earned once per Device.
+
+            This will also be False if it is outside the active period of the Incentive Scheme.'
+    ParticipationAgreementVersion:
+      title: ParticipationAgreementVersion
+      type: object
+      description: 'A version of a Program''s Participation Agreement. Programs have a single
+
+        Participation Agreement with versioned content; users accept a version
+
+        via `POST .../{id}/accept`. The currently active version is the
+
+        highest-numbered published one — fetch it from the `current`
+
+        sub-resource.
+
+        '
+      properties:
+        id:
+          type: string
+          example: pagv01JCDYP6Z8MX9XWVAV0A7G3KPN
+          pattern: pagv[A-Z\d]{26}
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/programs/prog01JCK1HPNAANB8WN253G27SFPC/participation_agreement_versions/pagv01JCDYP6Z8MX9XWVAV0A7G3KPN
+          readOnly: true
+        version_number:
+          type: integer
+          example: 1
+          description: Monotonically increasing version number scoped to the parent agreement.
+          readOnly: true
+        published:
+          type: boolean
+          description: 'Whether this version is the currently active one shown to users.
+
+            Only one version per agreement should be published at a time.
+
+            '
+          readOnly: true
+        content:
+          type: string
+          description: HTML content of the agreement, translated for the requesting user's language.
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          description: When this version was created.
+          readOnly: true
+    VehicleMake:
+      title: VehicleMake
+      description: A resource representing a vehicle manufacturer.
+      type: object
+      x-tags:
+      - Vehicles
+      required:
+      - id
+      - url
+      - name
+      - icon
+      - onboarding_url
+      - models
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given Vehicle Make.
+          pattern: vmak[A-Z\d]{26}
+          example: vmak01HRFHBCM7VBSWRPVYFBQMH2BR
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/vehicle_makes/vmak01HRFHBCM7VBSWRPVYFBQMH2BR
+          readOnly: true
+        name:
+          type: string
+          example: Volvo
+          readOnly: true
+        icon:
+          type:
+          - string
+          - 'null'
+          format: uri
+          example: https://cdn.example.com/volvo.png
+          description: A url for an image of the make's logo.
+          readOnly: true
+        onboarding_url:
+          type:
+          - string
+          - 'null'
+          example: https://api.ev.energy/v2/vehicle_onboarding/?make_id=vmak01HN2P75GBNFRJPCZJXEFVXH5E&user_id=user01HN2NJ9NMRZBXT1H6FT9N7735&client_id=your_client_id
+          description: 'A pre-constructed link to initiate onboarding for a vehicle of this make. If it is null, then it cannot be onboarded with make alone. You should filter the list of [vehicle models](ev.energy-API-v2.yaml/paths/~1vehicle_models/get) by this make and then have the user select their model.
+
+
+            Your `client_id` and the user''s `user_id` are automatically included based on your authentication token. If you are using client credentials authentication, the user ID will not be automatically included unless you set the EvEnergy-User header on your request.'
+          readOnly: true
+        models:
+          type: string
+          format: uri
+          example: https://api.ev.energy/vehicle_models?make_id=vmak01HN2P75GBNFRJPCZJXEFVXH5E
+          description: A pre-constructed link to a list of vehicle models filtered for this make.
+          readOnly: true
+        subscription_name:
+          type:
+          - string
+          - 'null'
+          description: Full OEM telematics subscription name required for vehicle connectivity (e.g. 'Volkswagen We Connect ID'). Null if no subscription is required.
+          example: Volkswagen We Connect ID
+          readOnly: true
+        subscription_package:
+          type:
+          - string
+          - 'null'
+          description: Specific OEM subscription package required (e.g. 'We Connect ID'). Null if no subscription is required.
+          example: We Connect ID
+          readOnly: true
     Notification:
       title: Notification
       description: Something that the user should be informed about.
@@ -1106,53 +910,6 @@ components:
           type: string
           format: date-time
           description: When the problem associated with this notification was resolved
-    ParticipationAgreementVersion:
-      title: ParticipationAgreementVersion
-      type: object
-      description: 'A version of a Program''s Participation Agreement. Programs have a single
-
-        Participation Agreement with versioned content; users accept a version
-
-        via `POST .../{id}/accept`. The currently active version is the
-
-        highest-numbered published one — fetch it from the `current`
-
-        sub-resource.
-
-        '
-      properties:
-        id:
-          type: string
-          example: pagv01JCDYP6Z8MX9XWVAV0A7G3KPN
-          pattern: pagv[A-Z\d]{26}
-          readOnly: true
-        url:
-          type: string
-          format: uri
-          example: https://api.ev.energy/v2/programs/prog01JCK1HPNAANB8WN253G27SFPC/participation_agreement_versions/pagv01JCDYP6Z8MX9XWVAV0A7G3KPN
-          readOnly: true
-        version_number:
-          type: integer
-          example: 1
-          description: Monotonically increasing version number scoped to the parent agreement.
-          readOnly: true
-        published:
-          type: boolean
-          description: 'Whether this version is the currently active one shown to users.
-
-            Only one version per agreement should be published at a time.
-
-            '
-          readOnly: true
-        content:
-          type: string
-          description: HTML content of the agreement, translated for the requesting user's language.
-          readOnly: true
-        created_at:
-          type: string
-          format: date-time
-          description: When this version was created.
-          readOnly: true
     ProgramTier:
       title: ProgramTier
       type: object
@@ -1235,6 +992,221 @@ components:
             pure client-credentials requests.
 
             '
+          readOnly: true
+    RFC9457ProblemDetail:
+      title: RFC 9457 Problem Detail
+      x-tags:
+      - problems
+      type: object
+      required:
+      - title
+      - detail
+      properties:
+        type:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/problems/example-problem/
+        status:
+          type: number
+          example: 400
+        title:
+          type: string
+          example: Short description
+        detail:
+          type: string
+          example: Long, more specific description.
+        instance:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
+        notification:
+          $ref: '#/components/schemas/Notification'
+      examples:
+      - type: https://api.ev.energy/v2/problems/example-problem/
+        status: 400
+        title: Short description
+        detail: Long, more specific description.
+        instance: https://api.ev.energy/v2/users/user01HN2P75GBNFRJPCZJXEFVXH5E
+        notification:
+          id: notf01HTHKTXVB77901324BCQPF1RB
+          url: https://api.ev.energy/notifications/notf01HTHKTXVB77901324BCQPF1RB
+          message_id: ERR0123
+          category: ACTIONABLE
+          event_time: '2019-08-24T14:15:22Z'
+          short_text_title: Your car is disconnected
+          short_text_body: We need to reconnect to keep smart charging your car
+          detail_page_title: Your car is disconnected
+          detail_page_body: Your car has been disconnected. This happens when your password is reset. We need you to re-authorise ev.energy to access your account in order for us to keep managing your charging. Blah blah blah.
+          external_link: http://example.com
+          external_button_label: More info
+          read_at: '2019-08-24T14:20:22Z'
+          resolved_at: '2019-08-25T14:15:22Z'
+    ProgramVehicleCompatibility:
+      title: ProgramVehicleCompatibility
+      description: A vehicle compatibility record indicating whether a particular vehicle model is supported for smart charging.
+      type: object
+      x-tags:
+      - Vehicles
+      properties:
+        can_control_charge:
+          type: boolean
+          description: Whether ev.energy can control charging for this vehicle model.
+          example: true
+          readOnly: true
+        model:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/vehicle_models/vmod01HSBR8Z36GD7A46K7M4R12VG0
+          - $ref: '#/components/schemas/VehicleModel'
+          description: Link to the vehicle model by default. Expanded to full object when ?expand=model is used.
+          readOnly: true
+        type:
+          type:
+          - string
+          - 'null'
+          description: 'The vehicle type: BEV (Battery Electric Vehicle) or PHEV (Plug-in Hybrid Electric Vehicle).'
+          example: BEV
+          enum:
+          - BEV
+          - PHEV
+          - null
+          readOnly: true
+        supported_countries:
+          type: array
+          items:
+            type: string
+            minLength: 2
+            maxLength: 2
+          description: List of ISO 3166-1 alpha-2 country codes this vehicle is compatible in.
+          example:
+          - US
+          - CA
+          readOnly: true
+        start_year:
+          type: integer
+          description: The first model year this compatibility applies to.
+          example: 2020
+          readOnly: true
+        end_year:
+          type:
+          - integer
+          - 'null'
+          description: The last model year this compatibility applies to. Null if still in production.
+          example: 2026
+          readOnly: true
+    VehicleModel:
+      title: VehicleModel
+      description: A resource representing a model of vehicle.
+      type: object
+      x-tags:
+      - Vehicles
+      required:
+      - id
+      - url
+      - name
+      - default_battery_size_watt_hours
+      - default_connector_type
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given Vehicle Model.
+          pattern: vmod[A-Z\d]{26}
+          example: vmod01HSBR8Z36GD7A46K7M4R12VG0
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/vehicle_models/vmod01HSBR8Z36GD7A46K7M4R12VG0
+          readOnly: true
+        name:
+          type: string
+          example: C40
+          readOnly: true
+        make:
+          oneOf:
+          - type: string
+            format: uri
+            example: https://api.ev.energy/v2/vehicle_makes/vmak01HRFHBCM7VBSWRPVYFBQMH2BR
+          - $ref: '#/components/schemas/VehicleMake'
+        onboarding_url:
+          type:
+          - string
+          - 'null'
+          format: uri
+          example: https://api.ev.energy/v2/vehicle_onboarding?model_id=vmod01HN2P436099PEQ20B7TKPGTEJ&user_id=user01HN2NJ9NMRZBXT1H6FT9N7735&client_id=your_client_id
+          description: 'A pre-constructed link to initiate onboarding for a vehicle of this model. If it is null, then it cannot be onboarded with model alone. You should filter the list of [vehicle trims](ev.energy-API-v2.yaml/paths/~1vehicle_trims/get) by this model and then have the user select their trim.
+
+
+            Your `client_id` and the user''s `user_id` are automatically included based on your authentication token. If you are using client credentials authentication, the user ID will not be automatically included unless you set the EvEnergy-User header on your request.'
+        vehicle_trims:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/vehicle_trims?model_id=vmod01HN2P436099PEQ20B7TKPGTEJ
+          description: 'A pre-constructed link to a list of vehicle trims filtered for this model.
+
+            '
+          readOnly: true
+        default_battery_size_watt_hours:
+          type: integer
+          description: Default battery size in watt-hours for this model, derived from the most common battery size across trims. Falls back to 45000 Wh if no trim data exists.
+          example: 79000
+          readOnly: true
+        default_connector_type:
+          type:
+          - string
+          - 'null'
+          enum:
+          - CCS
+          - NACS
+          - CHADEMO
+          - null
+          description: 'Default charging connector type for this model, used to pre-fill
+
+            connector selection during vehicle onboarding. Null when not yet
+
+            known. Editable via PATCH with the `vehicle_catalogue:write` scope.'
+    Program:
+      title: Program
+      type: object
+      properties:
+        id:
+          type: string
+          example: prog01JCK1HPNAANB8WN253G27SFPC
+          pattern: prog[A-Z\d]{26}
+          readOnly: true
+        url:
+          type: string
+          example: https://api.ev.energy/v2/programs/prog01JCK1HPNAANB8WN253G27SFPC
+          format: uri
+          readOnly: true
+        name:
+          type: string
+          example: CoolCharge
+          description: A human-friendly name for the Program.
+          readOnly: true
+        description:
+          type: string
+          example: A program which incentivises charging when it's coolest to charge your EV
+          description: A plain text description of the program's incentives and requirements.
+          readOnly: true
+        logo:
+          type:
+          - string
+          - 'null'
+          format: uri
+          description: URL to download a logo image for the Program.
+          readOnly: true
+        sponsor_name:
+          type: string
+          example: Cool Power
+          description: The name of the organisation which sponsors the program. Often, but not always, a utility company.
+          readOnly: true
+        external_url:
+          type: string
+          format: uri
+          example: https://www.example.com/coolcharge
+          description: A publicly accessible URL where individuals can enroll in the program.
           readOnly: true
     CountryCode:
       description: ISO 3166-1 2 letter Country Codes.
@@ -1489,314 +1461,112 @@ components:
       - ZA
       - ZM
       - ZW
-    ProgramVehicleCompatibility:
-      title: ProgramVehicleCompatibility
-      description: A vehicle compatibility record indicating whether a particular vehicle model is supported for smart charging.
-      type: object
-      x-tags:
-      - Vehicles
-      properties:
-        can_control_charge:
-          type: boolean
-          description: Whether ev.energy can control charging for this vehicle model.
-          example: true
-          readOnly: true
-        model:
-          oneOf:
-          - type: string
-            format: uri
-            example: https://api.ev.energy/v2/vehicle_models/vmod01HSBR8Z36GD7A46K7M4R12VG0
-          - $ref: '#/components/schemas/VehicleModel'
-          description: Link to the vehicle model by default. Expanded to full object when ?expand=model is used.
-          readOnly: true
-        type:
-          type:
-          - string
-          - 'null'
-          description: 'The vehicle type: BEV (Battery Electric Vehicle) or PHEV (Plug-in Hybrid Electric Vehicle).'
-          example: BEV
-          enum:
-          - BEV
-          - PHEV
-          - null
-          readOnly: true
-        supported_countries:
-          type: array
-          items:
-            type: string
-            minLength: 2
-            maxLength: 2
-          description: List of ISO 3166-1 alpha-2 country codes this vehicle is compatible in.
-          example:
-          - US
-          - CA
-          readOnly: true
-        start_year:
-          type: integer
-          description: The first model year this compatibility applies to.
-          example: 2020
-          readOnly: true
-        end_year:
-          type:
-          - integer
-          - 'null'
-          description: The last model year this compatibility applies to. Null if still in production.
-          example: 2026
-          readOnly: true
-    VehicleMake:
-      title: VehicleMake
-      description: A resource representing a vehicle manufacturer.
-      type: object
-      x-tags:
-      - Vehicles
-      required:
-      - id
-      - url
-      - name
-      - icon
-      - onboarding_url
-      - models
-      properties:
-        id:
-          type: string
-          description: Unique identifier for the given Vehicle Make.
-          pattern: vmak[A-Z\d]{26}
-          example: vmak01HRFHBCM7VBSWRPVYFBQMH2BR
-          readOnly: true
-        url:
-          type: string
-          format: uri
-          example: https://api.ev.energy/v2/vehicle_makes/vmak01HRFHBCM7VBSWRPVYFBQMH2BR
-          readOnly: true
-        name:
-          type: string
-          example: Volvo
-          readOnly: true
-        icon:
-          type:
-          - string
-          - 'null'
-          format: uri
-          example: https://cdn.example.com/volvo.png
-          description: A url for an image of the make's logo.
-          readOnly: true
-        onboarding_url:
-          type:
-          - string
-          - 'null'
-          example: https://api.ev.energy/v2/vehicle_onboarding/?make_id=vmak01HN2P75GBNFRJPCZJXEFVXH5E&user_id=user01HN2NJ9NMRZBXT1H6FT9N7735&client_id=your_client_id
-          description: 'A pre-constructed link to initiate onboarding for a vehicle of this make. If it is null, then it cannot be onboarded with make alone. You should filter the list of [vehicle models](ev.energy-API-v2.yaml/paths/~1vehicle_models/get) by this make and then have the user select their model.
-
-
-            Your `client_id` and the user''s `user_id` are automatically included based on your authentication token. If you are using client credentials authentication, the user ID will not be automatically included unless you set the EvEnergy-User header on your request.'
-          readOnly: true
-        models:
-          type: string
-          format: uri
-          example: https://api.ev.energy/vehicle_models?make_id=vmak01HN2P75GBNFRJPCZJXEFVXH5E
-          description: A pre-constructed link to a list of vehicle models filtered for this make.
-          readOnly: true
-        subscription_name:
-          type:
-          - string
-          - 'null'
-          description: Full OEM telematics subscription name required for vehicle connectivity (e.g. 'Volkswagen We Connect ID'). Null if no subscription is required.
-          example: Volkswagen We Connect ID
-          readOnly: true
-        subscription_package:
-          type:
-          - string
-          - 'null'
-          description: Specific OEM subscription package required (e.g. 'We Connect ID'). Null if no subscription is required.
-          example: We Connect ID
-          readOnly: true
-    VehicleModel:
-      title: VehicleModel
-      description: A resource representing a model of vehicle.
-      type: object
-      x-tags:
-      - Vehicles
-      required:
-      - id
-      - url
-      - name
-      - default_battery_size_watt_hours
-      - default_connector_type
-      properties:
-        id:
-          type: string
-          description: Unique identifier for the given Vehicle Model.
-          pattern: vmod[A-Z\d]{26}
-          example: vmod01HSBR8Z36GD7A46K7M4R12VG0
-          readOnly: true
-        url:
-          type: string
-          format: uri
-          example: https://api.ev.energy/vehicle_models/vmod01HSBR8Z36GD7A46K7M4R12VG0
-          readOnly: true
-        name:
-          type: string
-          example: C40
-          readOnly: true
-        make:
-          oneOf:
-          - type: string
-            format: uri
-            example: https://api.ev.energy/v2/vehicle_makes/vmak01HRFHBCM7VBSWRPVYFBQMH2BR
-          - $ref: '#/components/schemas/VehicleMake'
-        onboarding_url:
-          type:
-          - string
-          - 'null'
-          format: uri
-          example: https://api.ev.energy/v2/vehicle_onboarding?model_id=vmod01HN2P436099PEQ20B7TKPGTEJ&user_id=user01HN2NJ9NMRZBXT1H6FT9N7735&client_id=your_client_id
-          description: 'A pre-constructed link to initiate onboarding for a vehicle of this model. If it is null, then it cannot be onboarded with model alone. You should filter the list of [vehicle trims](ev.energy-API-v2.yaml/paths/~1vehicle_trims/get) by this model and then have the user select their trim.
-
-
-            Your `client_id` and the user''s `user_id` are automatically included based on your authentication token. If you are using client credentials authentication, the user ID will not be automatically included unless you set the EvEnergy-User header on your request.'
-        vehicle_trims:
-          type: string
-          format: uri
-          example: https://api.ev.energy/v2/vehicle_trims?model_id=vmod01HN2P436099PEQ20B7TKPGTEJ
-          description: 'A pre-constructed link to a list of vehicle trims filtered for this model.
-
-            '
-          readOnly: true
-        default_battery_size_watt_hours:
-          type: integer
-          description: Default battery size in watt-hours for this model, derived from the most common battery size across trims. Falls back to 45000 Wh if no trim data exists.
-          example: 79000
-          readOnly: true
-        default_connector_type:
-          type:
-          - string
-          - 'null'
-          enum:
-          - CCS
-          - NACS
-          - CHADEMO
-          - null
-          description: 'Default charging connector type for this model, used to pre-fill
-
-            connector selection during vehicle onboarding. Null when not yet
-
-            known. Editable via PATCH with the `vehicle_catalogue:write` scope.'
-    IncentiveScheme:
-      title: IncentiveScheme
-      type: object
-      description: Incentive Schemes define a set of rules for how an elgible User can earn monetary Incentives.
-      examples:
-      - id: incs01JE3ZY9Z2C0E087C942B9WKBC
-        name: Off-Peak Charging Incentives
-        description: Earn $0.10 per kWh when charging off-peak
-        visible: false
-        available: true
-      properties:
-        id:
-          type: string
-          description: 'Prefix: "incs"'
-        name:
-          type: string
-          description: Name to be displayed to the User.
-        description:
-          type: string
-          description: Describes the rules of how the User earns this Incentive.
-        visible:
-          type: boolean
-          default: false
-          description: Should this Incentive Scheme be visible to the User in the App.
-        available:
-          type: boolean
-          default: true
-          description: 'Is this Incentive available for the User to earn.
-
-            Some Incentive Schemes can only be earned a limitted number of times per User or Device.
-
-            E.g. A Sign Up Incentive that can only be earned once per Device.
-
-            This will also be False if it is outside the active period of the Incentive Scheme.'
-    Program:
-      title: Program
-      type: object
-      properties:
-        id:
-          type: string
-          example: prog01JCK1HPNAANB8WN253G27SFPC
-          pattern: prog[A-Z\d]{26}
-          readOnly: true
-        url:
-          type: string
-          example: https://api.ev.energy/v2/programs/prog01JCK1HPNAANB8WN253G27SFPC
-          format: uri
-          readOnly: true
-        name:
-          type: string
-          example: CoolCharge
-          description: A human-friendly name for the Program.
-          readOnly: true
-        description:
-          type: string
-          example: A program which incentivises charging when it's coolest to charge your EV
-          description: A plain text description of the program's incentives and requirements.
-          readOnly: true
-        logo:
-          type:
-          - string
-          - 'null'
-          format: uri
-          description: URL to download a logo image for the Program.
-          readOnly: true
-        sponsor_name:
-          type: string
-          example: Cool Power
-          description: The name of the organisation which sponsors the program. Often, but not always, a utility company.
-          readOnly: true
-        external_url:
-          type: string
-          format: uri
-          example: https://www.example.com/coolcharge
-          description: A publicly accessible URL where individuals can enroll in the program.
-          readOnly: true
-  headers:
-    link:
-      description: Provides links to the previous and next pages of data, if they exist.
-      example: <https://api.ev.energy/v2/vehicles?page_size=25&page_before=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="previous", <https://api.ev.energy/v2/vehicles?page_size=25&page_after=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="next"
-      schema:
-        type: string
-    x-ratelimit-remaining:
-      description: The number of requests remaining until this client's rate limit is reached.
-      schema:
-        type: number
-        default: 999
+  parameters:
     version-2:
-      description: Indicates the version of the API that generated this response. If EvEnergy-Version was not specified in the request, this will be your OAuth application's default version.
+      name: EvEnergy-Version
+      description: Specify the version of this endpoint to use.
+      required: false
+      in: header
       schema:
         type: number
         enum:
         - 2
-    retry-after:
-      description: The number of seconds until this client's requests will not be rate limited.
+    page_size:
+      name: page_size
+      description: Specify the number of results to return per page.
+      in: query
+      required: false
       schema:
-        type: number
-        default: 3600
-    x-ratelimit-limit:
-      description: The maximum number of requests that can be made to this endpoint per hour. Defaults to 1000 but may vary per client.
+        type: integer
+        default: 25
+        minimum: 1
+        maximum: 100
+        example: 10
+    participation_agreement_version_id:
+      name: participation_agreement_version_id
+      in: path
+      required: true
       schema:
-        type: number
-        default: 1000
+        type: string
+        example: pagv01JCDYP6Z8MX9XWVAV0A7G3KPN
+        pattern: pagv[A-Z\d]{26}
+      description: The ID of the specific Participation Agreement Version.
+    program_id:
+      name: program_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The ID of the specific Program to retrieve.
+    tier_id:
+      name: tier_id
+      in: path
+      required: true
+      schema:
+        type: string
+        example: tier01JCK1HPNAANB8WN253G27SFPC
+        pattern: tier[A-Z\d]{26}
+      description: The ID of the specific Program Tier to retrieve.
+    evenergy-user-required:
+      name: EvEnergy-User
+      in: header
+      required: false
+      description: This endpoints requires a user ID to be specified via this header when using Client Credentials authentication.
+      schema:
+        type: string
+        pattern: user[A-Z\d]{26}
+        example: user01HN2NJ9NMRZBXT1H6FT9N7735
+    previous:
+      name: page_before
+      description: Return results from the page after this ID.
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[a-z]{4}[A-Z\d]{26}'
+        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
+    expand-on-programvehiclecompatibility:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - model
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    user:
+      name: EvEnergy-User
+      description: If the client is authenticated using Client Credentials, setting EvEnergy-User to a valid user ID allows requests to be made as if you were directly authenticated as that user.
+      in: header
+      required: false
+      schema:
+        type: string
+        pattern: user[A-Z\d]{26}
+        example: user01HN2NJ9NMRZBXT1H6FT9N7735
+    next:
+      name: page_after
+      description: Return results from the page before this ID.
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[a-z]{4}[A-Z\d]{26}'
+        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
   examples:
-    ProblemInvalidPaginationParameter:
-      value:
-        type: https://api.ev.energy/v2/problems/pagination-parameters/
-        status: 400
-        title: Invalid pagination parameter
-        detail: 'Invalid value for pagination parameter: page_size'
     ProblemUnsupportedVersion:
       value:
         type: https://api.ev.energy/v2/problems/pagination-parameters/
         status: 400
         title: Unsupported version
         detail: 'Unsupported version requested: 3.0'
+    ProblemInvalidPaginationParameter:
+      value:
+        type: https://api.ev.energy/v2/problems/pagination-parameters/
+        status: 400
+        title: Invalid pagination parameter
+        detail: 'Invalid value for pagination parameter: page_size'
     ProblemValidationFailedVehicle:
       value:
         type: https://api.ev.energy/v2/problems/validation-failed-create-vehicle/
@@ -1808,6 +1578,222 @@ components:
           - This field is required.
           trim:
           - Invalid hyperlink - Object does not exist.
+  responses:
+    Problem403Forbidden:
+      description: You do not have permission to perform this action.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 403
+              title:
+                type: string
+                example: Forbidden
+              detail:
+                type: string
+                example: You do not have permission to perform this action.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem401Unauthorized:
+      description: You need to authorise requests to access this resource.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 401
+              title:
+                type: string
+                example: Unauthorized
+              detail:
+                type: string
+                example: Authentication credentials were not provided.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem400BadRequestList:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Invalid Pagination Parameter:
+              $ref: '#/components/examples/ProblemInvalidPaginationParameter'
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem400BadRequestCreate:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Request failed validation:
+              $ref: '#/components/examples/ProblemValidationFailedVehicle'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem406NotAcceptable:
+      description: Could not satisfy the request Accept header.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 406
+              title:
+                type: string
+                example: Not Acceptable
+              detail:
+                type: string
+                example: Could not satisfy the request Accept header.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem404NotFound:
+      description: This resource either does not exist or the client is not authorized to access it.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 404
+              title:
+                type: string
+                example: Not found
+              detail:
+                type: string
+                example: Resource does not exist or cannot be accessed.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem429TooManyRequests:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Example 1:
+              value:
+                type: https://api.ev.energy/v2/problems/rate-limit-exceeded/
+                status: 429
+                title: Too Many Requests
+                detail: Request was rate limited. Try again in 42 seconds
+      description: The client has exceeded its rate limit.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        Retry-After:
+          $ref: '#/components/headers/retry-after'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem400BadRequestRetrieve:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+  headers:
+    version-2:
+      description: Indicates the version of the API that generated this response. If EvEnergy-Version was not specified in the request, this will be your OAuth application's default version.
+      schema:
+        type: number
+        enum:
+        - 2
+    x-ratelimit-limit:
+      description: The maximum number of requests that can be made to this endpoint per hour. Defaults to 1000 but may vary per client.
+      schema:
+        type: number
+        default: 1000
+    x-ratelimit-remaining:
+      description: The number of requests remaining until this client's rate limit is reached.
+      schema:
+        type: number
+        default: 999
+    retry-after:
+      description: The number of seconds until this client's requests will not be rate limited.
+      schema:
+        type: number
+        default: 3600
+    link:
+      description: Provides links to the previous and next pages of data, if they exist.
+      example: <https://api.ev.energy/v2/vehicles?page_size=25&page_before=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="previous", <https://api.ev.energy/v2/vehicles?page_size=25&page_after=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="next"
+      schema:
+        type: string
   securitySchemes:
     oauth2:
       type: oauth2
