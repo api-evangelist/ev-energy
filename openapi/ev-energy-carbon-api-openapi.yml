@@ -180,8 +180,8 @@ paths:
         - carbon:read
 components:
   responses:
-    Problem404NotFound:
-      description: This resource either does not exist or the client is not authorized to access it.
+    Problem406NotAcceptable:
+      description: Could not satisfy the request Accept header.
       content:
         application/problem+json:
           schema:
@@ -192,13 +192,13 @@ components:
             properties:
               status:
                 type: number
-                example: 404
+                example: 406
               title:
                 type: string
-                example: Not found
+                example: Not Acceptable
               detail:
                 type: string
-                example: Resource does not exist or cannot be accessed.
+                example: Could not satisfy the request Accept header.
       headers:
         EvEnergy-Version:
           $ref: '#/components/headers/version-2'
@@ -208,22 +208,6 @@ components:
           $ref: '#/components/headers/x-ratelimit-remaining'
         RetryAfter:
           $ref: '#/components/headers/retry-after'
-    Problem400BadRequestRetrieve:
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/RFC9457ProblemDetail'
-          examples:
-            Unsupported Version:
-              $ref: '#/components/examples/ProblemUnsupportedVersion'
-      description: A problem with the request's parameters prevented it being fulfilled.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
     Problem403Forbidden:
       description: You do not have permission to perform this action.
       content:
@@ -243,26 +227,6 @@ components:
               detail:
                 type: string
                 example: You do not have permission to perform this action.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-        RetryAfter:
-          $ref: '#/components/headers/retry-after'
-    Problem400BadRequestList:
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/RFC9457ProblemDetail'
-          examples:
-            Invalid Pagination Parameter:
-              $ref: '#/components/examples/ProblemInvalidPaginationParameter'
-            Unsupported Version:
-              $ref: '#/components/examples/ProblemUnsupportedVersion'
-      description: A problem with the request's parameters prevented it being fulfilled.
       headers:
         EvEnergy-Version:
           $ref: '#/components/headers/version-2'
@@ -294,8 +258,8 @@ components:
           $ref: '#/components/headers/x-ratelimit-limit'
         X-RateLimit-Remaining:
           $ref: '#/components/headers/x-ratelimit-remaining'
-    Problem406NotAcceptable:
-      description: Could not satisfy the request Accept header.
+    Problem404NotFound:
+      description: This resource either does not exist or the client is not authorized to access it.
       content:
         application/problem+json:
           schema:
@@ -306,13 +270,13 @@ components:
             properties:
               status:
                 type: number
-                example: 406
+                example: 404
               title:
                 type: string
-                example: Not Acceptable
+                example: Not found
               detail:
                 type: string
-                example: Could not satisfy the request Accept header.
+                example: Resource does not exist or cannot be accessed.
       headers:
         EvEnergy-Version:
           $ref: '#/components/headers/version-2'
@@ -350,92 +314,76 @@ components:
           $ref: '#/components/headers/x-ratelimit-remaining'
         RetryAfter:
           $ref: '#/components/headers/retry-after'
-  parameters:
-    carbon_feed_id:
-      name: carbon_feed_id
-      description: Uniquely identify a specific carbon feed.
-      in: path
-      schema:
-        type: string
-        pattern: cabf[A-Z\d]{26}
-        example: cabf01HN2NJ9NMRZBXT1H6FT9N7735
-      required: true
-    version-2:
-      name: EvEnergy-Version
-      description: Specify the version of this endpoint to use.
-      required: false
-      in: header
-      schema:
-        type: number
-        enum:
-        - 2
-    expand-on-carbonintensity:
-      name: expand
-      in: query
-      schema:
-        type: array
-        items:
-          type: string
-          enum:
-          - carbon_feed
-      explode: true
-      description: Specify a url field to expand into a nested resource.
-    previous:
-      name: page_before
-      description: Return results from the page after this ID.
-      in: query
-      required: false
-      schema:
-        type: string
-        pattern: '[a-z]{4}[A-Z\d]{26}'
-        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
-    page_size:
-      name: page_size
-      description: Specify the number of results to return per page.
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 25
-        minimum: 1
-        maximum: 100
-        example: 10
-    next:
-      name: page_after
-      description: Return results from the page before this ID.
-      in: query
-      required: false
-      schema:
-        type: string
-        pattern: '[a-z]{4}[A-Z\d]{26}'
-        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
+    Problem400BadRequestRetrieve:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem400BadRequestList:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Invalid Pagination Parameter:
+              $ref: '#/components/examples/ProblemInvalidPaginationParameter'
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+  examples:
+    ProblemUnsupportedVersion:
+      value:
+        type: https://api.ev.energy/v2/problems/pagination-parameters/
+        status: 400
+        title: Unsupported version
+        detail: 'Unsupported version requested: 3.0'
+    ProblemInvalidPaginationParameter:
+      value:
+        type: https://api.ev.energy/v2/problems/pagination-parameters/
+        status: 400
+        title: Invalid pagination parameter
+        detail: 'Invalid value for pagination parameter: page_size'
   schemas:
-    CarbonFeed:
-      title: CarbonFeed
+    CarbonIntensities:
+      title: CarbonIntensities
       type: object
-      description: A carbon feed representing a source of carbon intensity data for a specific region or grid.
-      x-tags:
-      - Carbon
-      required:
-      - id
-      - url
-      - name
+      description: A collection of carbon intensity data points for a specific carbon feed.
       properties:
-        id:
-          type: string
-          description: Unique identifier for the carbon feed.
-          pattern: cabf[A-Z\d]{26}
-          example: cabf01HN2NJ9NMRZBXT1H6FT9N7735
-          readOnly: true
         url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/carbon_feeds/cabf01HN2NJ9NMRZBXT1H6FT9N7735/carbon_intensities
+          readOnly: true
+        carbon_feed:
           type: string
           format: uri
           example: https://api.ev.energy/v2/carbon_feeds/cabf01HN2NJ9NMRZBXT1H6FT9N7735
           readOnly: true
-        name:
-          type: string
-          description: Human-readable name for the carbon feed.
-          example: UK National Grid
+        carbon_intensities:
+          type: array
+          description: A list of carbon intensity data points.
+          items:
+            $ref: '#/components/schemas/CarbonIntensity'
           readOnly: true
     CarbonIntensity:
       title: CarbonIntensity
@@ -605,67 +553,119 @@ components:
           type: string
           format: date-time
           description: When the problem associated with this notification was resolved
-    CarbonIntensities:
-      title: CarbonIntensities
+    CarbonFeed:
+      title: CarbonFeed
       type: object
-      description: A collection of carbon intensity data points for a specific carbon feed.
+      description: A carbon feed representing a source of carbon intensity data for a specific region or grid.
+      x-tags:
+      - Carbon
+      required:
+      - id
+      - url
+      - name
       properties:
-        url:
+        id:
           type: string
-          format: uri
-          example: https://api.ev.energy/v2/carbon_feeds/cabf01HN2NJ9NMRZBXT1H6FT9N7735/carbon_intensities
+          description: Unique identifier for the carbon feed.
+          pattern: cabf[A-Z\d]{26}
+          example: cabf01HN2NJ9NMRZBXT1H6FT9N7735
           readOnly: true
-        carbon_feed:
+        url:
           type: string
           format: uri
           example: https://api.ev.energy/v2/carbon_feeds/cabf01HN2NJ9NMRZBXT1H6FT9N7735
           readOnly: true
-        carbon_intensities:
-          type: array
-          description: A list of carbon intensity data points.
-          items:
-            $ref: '#/components/schemas/CarbonIntensity'
+        name:
+          type: string
+          description: Human-readable name for the carbon feed.
+          example: UK National Grid
           readOnly: true
-  examples:
-    ProblemUnsupportedVersion:
-      value:
-        type: https://api.ev.energy/v2/problems/pagination-parameters/
-        status: 400
-        title: Unsupported version
-        detail: 'Unsupported version requested: 3.0'
-    ProblemInvalidPaginationParameter:
-      value:
-        type: https://api.ev.energy/v2/problems/pagination-parameters/
-        status: 400
-        title: Invalid pagination parameter
-        detail: 'Invalid value for pagination parameter: page_size'
   headers:
-    link:
-      description: Provides links to the previous and next pages of data, if they exist.
-      example: <https://api.ev.energy/v2/vehicles?page_size=25&page_before=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="previous", <https://api.ev.energy/v2/vehicles?page_size=25&page_after=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="next"
-      schema:
-        type: string
-    x-ratelimit-remaining:
-      description: The number of requests remaining until this client's rate limit is reached.
-      schema:
-        type: number
-        default: 999
-    retry-after:
-      description: The number of seconds until this client's requests will not be rate limited.
-      schema:
-        type: number
-        default: 3600
     version-2:
       description: Indicates the version of the API that generated this response. If EvEnergy-Version was not specified in the request, this will be your OAuth application's default version.
       schema:
         type: number
         enum:
         - 2
+    link:
+      description: Provides links to the previous and next pages of data, if they exist.
+      example: <https://api.ev.energy/v2/vehicles?page_size=25&page_before=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="previous", <https://api.ev.energy/v2/vehicles?page_size=25&page_after=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="next"
+      schema:
+        type: string
+    retry-after:
+      description: The number of seconds until this client's requests will not be rate limited.
+      schema:
+        type: number
+        default: 3600
+    x-ratelimit-remaining:
+      description: The number of requests remaining until this client's rate limit is reached.
+      schema:
+        type: number
+        default: 999
     x-ratelimit-limit:
       description: The maximum number of requests that can be made to this endpoint per hour. Defaults to 1000 but may vary per client.
       schema:
         type: number
         default: 1000
+  parameters:
+    next:
+      name: page_after
+      description: Return results from the page before this ID.
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[a-z]{4}[A-Z\d]{26}'
+        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
+    page_size:
+      name: page_size
+      description: Specify the number of results to return per page.
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 25
+        minimum: 1
+        maximum: 100
+        example: 10
+    carbon_feed_id:
+      name: carbon_feed_id
+      description: Uniquely identify a specific carbon feed.
+      in: path
+      schema:
+        type: string
+        pattern: cabf[A-Z\d]{26}
+        example: cabf01HN2NJ9NMRZBXT1H6FT9N7735
+      required: true
+    version-2:
+      name: EvEnergy-Version
+      description: Specify the version of this endpoint to use.
+      required: false
+      in: header
+      schema:
+        type: number
+        enum:
+        - 2
+    expand-on-carbonintensity:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+          - carbon_feed
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    previous:
+      name: page_before
+      description: Return results from the page after this ID.
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[a-z]{4}[A-Z\d]{26}'
+        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
   securitySchemes:
     oauth2:
       type: oauth2

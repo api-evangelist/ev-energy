@@ -205,8 +205,8 @@ paths:
       - oauth2: []
 components:
   responses:
-    Problem404NotFound:
-      description: This resource either does not exist or the client is not authorized to access it.
+    Problem406NotAcceptable:
+      description: Could not satisfy the request Accept header.
       content:
         application/problem+json:
           schema:
@@ -217,13 +217,13 @@ components:
             properties:
               status:
                 type: number
-                example: 404
+                example: 406
               title:
                 type: string
-                example: Not found
+                example: Not Acceptable
               detail:
                 type: string
-                example: Resource does not exist or cannot be accessed.
+                example: Could not satisfy the request Accept header.
       headers:
         EvEnergy-Version:
           $ref: '#/components/headers/version-2'
@@ -233,22 +233,6 @@ components:
           $ref: '#/components/headers/x-ratelimit-remaining'
         RetryAfter:
           $ref: '#/components/headers/retry-after'
-    Problem400BadRequestRetrieve:
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/RFC9457ProblemDetail'
-          examples:
-            Unsupported Version:
-              $ref: '#/components/examples/ProblemUnsupportedVersion'
-      description: A problem with the request's parameters prevented it being fulfilled.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
     Problem403Forbidden:
       description: You do not have permission to perform this action.
       content:
@@ -268,26 +252,6 @@ components:
               detail:
                 type: string
                 example: You do not have permission to perform this action.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-        RetryAfter:
-          $ref: '#/components/headers/retry-after'
-    Problem400BadRequestList:
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/RFC9457ProblemDetail'
-          examples:
-            Invalid Pagination Parameter:
-              $ref: '#/components/examples/ProblemInvalidPaginationParameter'
-            Unsupported Version:
-              $ref: '#/components/examples/ProblemUnsupportedVersion'
-      description: A problem with the request's parameters prevented it being fulfilled.
       headers:
         EvEnergy-Version:
           $ref: '#/components/headers/version-2'
@@ -319,26 +283,8 @@ components:
           $ref: '#/components/headers/x-ratelimit-limit'
         X-RateLimit-Remaining:
           $ref: '#/components/headers/x-ratelimit-remaining'
-    Problem400BadRequestCreate:
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/RFC9457ProblemDetail'
-          examples:
-            Request failed validation:
-              $ref: '#/components/examples/ProblemValidationFailedVehicle'
-      description: A problem with the request's parameters prevented it being fulfilled.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-        RetryAfter:
-          $ref: '#/components/headers/retry-after'
-    Problem406NotAcceptable:
-      description: Could not satisfy the request Accept header.
+    Problem404NotFound:
+      description: This resource either does not exist or the client is not authorized to access it.
       content:
         application/problem+json:
           schema:
@@ -349,13 +295,13 @@ components:
             properties:
               status:
                 type: number
-                example: 406
+                example: 404
               title:
                 type: string
-                example: Not Acceptable
+                example: Not found
               detail:
                 type: string
-                example: Could not satisfy the request Accept header.
+                example: Resource does not exist or cannot be accessed.
       headers:
         EvEnergy-Version:
           $ref: '#/components/headers/version-2'
@@ -393,70 +339,60 @@ components:
           $ref: '#/components/headers/x-ratelimit-remaining'
         RetryAfter:
           $ref: '#/components/headers/retry-after'
-  parameters:
-    version-2:
-      name: EvEnergy-Version
-      description: Specify the version of this endpoint to use.
-      required: false
-      in: header
-      schema:
-        type: number
-        enum:
-        - 2
-    user:
-      name: EvEnergy-User
-      description: If the client is authenticated using Client Credentials, setting EvEnergy-User to a valid user ID allows requests to be made as if you were directly authenticated as that user.
-      in: header
-      required: false
-      schema:
-        type: string
-        pattern: user[A-Z\d]{26}
-        example: user01HN2NJ9NMRZBXT1H6FT9N7735
-    Accept-Language:
-      name: Accept-Language
-      in: header
-      required: false
-      schema:
-        type: string
-      description: Indicates the natural language and locale that the client prefers.
-    previous:
-      name: page_before
-      description: Return results from the page after this ID.
-      in: query
-      required: false
-      schema:
-        type: string
-        pattern: '[a-z]{4}[A-Z\d]{26}'
-        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
-    page_size:
-      name: page_size
-      description: Specify the number of results to return per page.
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 25
-        minimum: 1
-        maximum: 100
-        example: 10
-    next:
-      name: page_after
-      description: Return results from the page before this ID.
-      in: query
-      required: false
-      schema:
-        type: string
-        pattern: '[a-z]{4}[A-Z\d]{26}'
-        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
-    notification_id:
-      name: notification_id
-      description: The ID of the specific notification to retrieve.
-      in: path
-      required: true
-      schema:
-        type: string
-        pattern: notf[A-Z\d]{26}
-        example: notf67O36PLTFDB57M0E5L33JZLGM0
+    Problem400BadRequestRetrieve:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem400BadRequestList:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Invalid Pagination Parameter:
+              $ref: '#/components/examples/ProblemInvalidPaginationParameter'
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem400BadRequestCreate:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Request failed validation:
+              $ref: '#/components/examples/ProblemValidationFailedVehicle'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
   examples:
     ProblemUnsupportedVersion:
       value:
@@ -481,33 +417,97 @@ components:
           - This field is required.
           trim:
           - Invalid hyperlink - Object does not exist.
-  headers:
-    x-ratelimit-limit:
-      description: The maximum number of requests that can be made to this endpoint per hour. Defaults to 1000 but may vary per client.
-      schema:
-        type: number
-        default: 1000
-    x-ratelimit-remaining:
-      description: The number of requests remaining until this client's rate limit is reached.
-      schema:
-        type: number
-        default: 999
-    retry-after:
-      description: The number of seconds until this client's requests will not be rate limited.
-      schema:
-        type: number
-        default: 3600
-    link-pages:
-      description: Provides links to the previous and next pages of data, if they exist.
-      example: <about:blank>; rel="previous", <https://api.ev.energy/v2/examples/?page=2&page_size=25>; rel="next"
+  parameters:
+    user:
+      name: EvEnergy-User
+      description: If the client is authenticated using Client Credentials, setting EvEnergy-User to a valid user ID allows requests to be made as if you were directly authenticated as that user.
+      in: header
+      required: false
       schema:
         type: string
+        pattern: user[A-Z\d]{26}
+        example: user01HN2NJ9NMRZBXT1H6FT9N7735
+    next:
+      name: page_after
+      description: Return results from the page before this ID.
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[a-z]{4}[A-Z\d]{26}'
+        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
+    page_size:
+      name: page_size
+      description: Specify the number of results to return per page.
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 25
+        minimum: 1
+        maximum: 100
+        example: 10
+    notification_id:
+      name: notification_id
+      description: The ID of the specific notification to retrieve.
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: notf[A-Z\d]{26}
+        example: notf67O36PLTFDB57M0E5L33JZLGM0
+    version-2:
+      name: EvEnergy-Version
+      description: Specify the version of this endpoint to use.
+      required: false
+      in: header
+      schema:
+        type: number
+        enum:
+        - 2
+    previous:
+      name: page_before
+      description: Return results from the page after this ID.
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[a-z]{4}[A-Z\d]{26}'
+        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
+    Accept-Language:
+      name: Accept-Language
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Indicates the natural language and locale that the client prefers.
+  headers:
     version-2:
       description: Indicates the version of the API that generated this response. If EvEnergy-Version was not specified in the request, this will be your OAuth application's default version.
       schema:
         type: number
         enum:
         - 2
+    retry-after:
+      description: The number of seconds until this client's requests will not be rate limited.
+      schema:
+        type: number
+        default: 3600
+    x-ratelimit-remaining:
+      description: The number of requests remaining until this client's rate limit is reached.
+      schema:
+        type: number
+        default: 999
+    x-ratelimit-limit:
+      description: The maximum number of requests that can be made to this endpoint per hour. Defaults to 1000 but may vary per client.
+      schema:
+        type: number
+        default: 1000
+    link-pages:
+      description: Provides links to the previous and next pages of data, if they exist.
+      example: <about:blank>; rel="previous", <https://api.ev.energy/v2/examples/?page=2&page_size=25>; rel="next"
+      schema:
+        type: string
   schemas:
     RFC9457ProblemDetail:
       title: RFC 9457 Problem Detail

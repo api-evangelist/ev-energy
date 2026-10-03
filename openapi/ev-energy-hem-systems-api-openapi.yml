@@ -242,8 +242,8 @@ paths:
         - home_energy:read
 components:
   responses:
-    Problem404NotFound:
-      description: This resource either does not exist or the client is not authorized to access it.
+    Problem406NotAcceptable:
+      description: Could not satisfy the request Accept header.
       content:
         application/problem+json:
           schema:
@@ -254,13 +254,13 @@ components:
             properties:
               status:
                 type: number
-                example: 404
+                example: 406
               title:
                 type: string
-                example: Not found
+                example: Not Acceptable
               detail:
                 type: string
-                example: Resource does not exist or cannot be accessed.
+                example: Could not satisfy the request Accept header.
       headers:
         EvEnergy-Version:
           $ref: '#/components/headers/version-2'
@@ -270,22 +270,6 @@ components:
           $ref: '#/components/headers/x-ratelimit-remaining'
         RetryAfter:
           $ref: '#/components/headers/retry-after'
-    Problem400BadRequestRetrieve:
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/RFC9457ProblemDetail'
-          examples:
-            Unsupported Version:
-              $ref: '#/components/examples/ProblemUnsupportedVersion'
-      description: A problem with the request's parameters prevented it being fulfilled.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
     Problem403Forbidden:
       description: You do not have permission to perform this action.
       content:
@@ -305,26 +289,6 @@ components:
               detail:
                 type: string
                 example: You do not have permission to perform this action.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-        RetryAfter:
-          $ref: '#/components/headers/retry-after'
-    Problem400BadRequestList:
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/RFC9457ProblemDetail'
-          examples:
-            Invalid Pagination Parameter:
-              $ref: '#/components/examples/ProblemInvalidPaginationParameter'
-            Unsupported Version:
-              $ref: '#/components/examples/ProblemUnsupportedVersion'
-      description: A problem with the request's parameters prevented it being fulfilled.
       headers:
         EvEnergy-Version:
           $ref: '#/components/headers/version-2'
@@ -356,8 +320,8 @@ components:
           $ref: '#/components/headers/x-ratelimit-limit'
         X-RateLimit-Remaining:
           $ref: '#/components/headers/x-ratelimit-remaining'
-    Problem406NotAcceptable:
-      description: Could not satisfy the request Accept header.
+    Problem404NotFound:
+      description: This resource either does not exist or the client is not authorized to access it.
       content:
         application/problem+json:
           schema:
@@ -368,13 +332,13 @@ components:
             properties:
               status:
                 type: number
-                example: 406
+                example: 404
               title:
                 type: string
-                example: Not Acceptable
+                example: Not found
               detail:
                 type: string
-                example: Could not satisfy the request Accept header.
+                example: Resource does not exist or cannot be accessed.
       headers:
         EvEnergy-Version:
           $ref: '#/components/headers/version-2'
@@ -412,7 +376,143 @@ components:
           $ref: '#/components/headers/x-ratelimit-remaining'
         RetryAfter:
           $ref: '#/components/headers/retry-after'
+    Problem400BadRequestRetrieve:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem400BadRequestList:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Invalid Pagination Parameter:
+              $ref: '#/components/examples/ProblemInvalidPaginationParameter'
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+  examples:
+    ProblemUnsupportedVersion:
+      value:
+        type: https://api.ev.energy/v2/problems/pagination-parameters/
+        status: 400
+        title: Unsupported version
+        detail: 'Unsupported version requested: 3.0'
+    ProblemInvalidPaginationParameter:
+      value:
+        type: https://api.ev.energy/v2/problems/pagination-parameters/
+        status: 400
+        title: Invalid pagination parameter
+        detail: 'Invalid value for pagination parameter: page_size'
+  parameters:
+    user:
+      name: EvEnergy-User
+      description: If the client is authenticated using Client Credentials, setting EvEnergy-User to a valid user ID allows requests to be made as if you were directly authenticated as that user.
+      in: header
+      required: false
+      schema:
+        type: string
+        pattern: user[A-Z\d]{26}
+        example: user01HN2NJ9NMRZBXT1H6FT9N7735
+    next:
+      name: page_after
+      description: Return results from the page before this ID.
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[a-z]{4}[A-Z\d]{26}'
+        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
+    page_size:
+      name: page_size
+      description: Specify the number of results to return per page.
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 25
+        minimum: 1
+        maximum: 100
+        example: 10
+    version-2:
+      name: EvEnergy-Version
+      description: Specify the version of this endpoint to use.
+      required: false
+      in: header
+      schema:
+        type: number
+        enum:
+        - 2
+    previous:
+      name: page_before
+      description: Return results from the page after this ID.
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[a-z]{4}[A-Z\d]{26}'
+        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
   schemas:
+    HEMSystemEnergyStatsResponse:
+      title: HEMSystemEnergyStatsResponse
+      type: object
+      description: Aggregated energy statistics response for a HEM system.
+      x-tags:
+      - HEM Systems
+      required:
+      - resolution
+      - start
+      - end
+      - buckets
+      properties:
+        resolution:
+          type: string
+          enum:
+          - PT30M
+          - P1D
+          - P1M
+          description: 'The aggregation resolution: PT30M (30 minutes), P1D (1 day), or P1M (1 month).'
+          example: P1D
+          readOnly: true
+        start:
+          type: string
+          format: date-time
+          description: Start of the requested time range.
+          example: '2024-06-01T00:00:00Z'
+          readOnly: true
+        end:
+          type: string
+          format: date-time
+          description: End of the requested time range.
+          example: '2024-06-30T23:59:59Z'
+          readOnly: true
+        buckets:
+          type: array
+          items:
+            $ref: '#/components/schemas/HEMSystemEnergyStatsBucket'
+          description: List of aggregated energy statistics buckets.
+          readOnly: true
     HEMSystemEnergyStatsBucket:
       title: HEMSystemEnergyStatsBucket
       type: object
@@ -547,45 +647,6 @@ components:
           description: Energy flow from grid to battery in watt-hours. Null if unavailable.
           example: 50
           readOnly: true
-    HEMSystemEnergyStatsResponse:
-      title: HEMSystemEnergyStatsResponse
-      type: object
-      description: Aggregated energy statistics response for a HEM system.
-      x-tags:
-      - HEM Systems
-      required:
-      - resolution
-      - start
-      - end
-      - buckets
-      properties:
-        resolution:
-          type: string
-          enum:
-          - PT30M
-          - P1D
-          - P1M
-          description: 'The aggregation resolution: PT30M (30 minutes), P1D (1 day), or P1M (1 month).'
-          example: P1D
-          readOnly: true
-        start:
-          type: string
-          format: date-time
-          description: Start of the requested time range.
-          example: '2024-06-01T00:00:00Z'
-          readOnly: true
-        end:
-          type: string
-          format: date-time
-          description: End of the requested time range.
-          example: '2024-06-30T23:59:59Z'
-          readOnly: true
-        buckets:
-          type: array
-          items:
-            $ref: '#/components/schemas/HEMSystemEnergyStatsBucket'
-          description: List of aggregated energy statistics buckets.
-          readOnly: true
     HEMSystemLivePower:
       title: HEMSystemLivePower
       type: object
@@ -713,34 +774,6 @@ components:
           description: Battery state of charge as a percentage (0-100). Null if unavailable.
           example: 82
           readOnly: true
-    HEMSystem:
-      title: HEMSystem
-      type: object
-      description: A resource representing a Home Energy Management (HEM) system, which aggregates boundary meters, home batteries, and inverters.
-      x-tags:
-      - HEM Systems
-      required:
-      - id
-      - url
-      - created_at
-      properties:
-        id:
-          type: string
-          description: Unique identifier for the given HEM system.
-          pattern: hems[A-Z\d]{26}
-          example: hems01J5DCXX8DMJDJYGVR1DW4J7AA
-          readOnly: true
-        url:
-          type: string
-          format: uri
-          example: https://api.ev.energy/v2/hem_systems/hems01J5DCXX8DMJDJYGVR1DW4J7AA
-          readOnly: true
-        created_at:
-          type: string
-          format: date-time
-          description: The date and time when this HEM system was created.
-          example: '2024-03-15T14:22:33.123456Z'
-          readOnly: true
     RFC9457ProblemDetail:
       title: RFC 9457 Problem Detail
       x-tags:
@@ -789,6 +822,34 @@ components:
           external_button_label: More info
           read_at: '2019-08-24T14:20:22Z'
           resolved_at: '2019-08-25T14:15:22Z'
+    HEMSystem:
+      title: HEMSystem
+      type: object
+      description: A resource representing a Home Energy Management (HEM) system, which aggregates boundary meters, home batteries, and inverters.
+      x-tags:
+      - HEM Systems
+      required:
+      - id
+      - url
+      - created_at
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given HEM system.
+          pattern: hems[A-Z\d]{26}
+          example: hems01J5DCXX8DMJDJYGVR1DW4J7AA
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/hem_systems/hems01J5DCXX8DMJDJYGVR1DW4J7AA
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          description: The date and time when this HEM system was created.
+          example: '2024-03-15T14:22:33.123456Z'
+          readOnly: true
     Notification:
       title: Notification
       description: Something that the user should be informed about.
@@ -875,89 +936,28 @@ components:
           type: string
           format: date-time
           description: When the problem associated with this notification was resolved
-  parameters:
-    version-2:
-      name: EvEnergy-Version
-      description: Specify the version of this endpoint to use.
-      required: false
-      in: header
-      schema:
-        type: number
-        enum:
-        - 2
-    user:
-      name: EvEnergy-User
-      description: If the client is authenticated using Client Credentials, setting EvEnergy-User to a valid user ID allows requests to be made as if you were directly authenticated as that user.
-      in: header
-      required: false
-      schema:
-        type: string
-        pattern: user[A-Z\d]{26}
-        example: user01HN2NJ9NMRZBXT1H6FT9N7735
-    previous:
-      name: page_before
-      description: Return results from the page after this ID.
-      in: query
-      required: false
-      schema:
-        type: string
-        pattern: '[a-z]{4}[A-Z\d]{26}'
-        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
-    page_size:
-      name: page_size
-      description: Specify the number of results to return per page.
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 25
-        minimum: 1
-        maximum: 100
-        example: 10
-    next:
-      name: page_after
-      description: Return results from the page before this ID.
-      in: query
-      required: false
-      schema:
-        type: string
-        pattern: '[a-z]{4}[A-Z\d]{26}'
-        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
-  examples:
-    ProblemUnsupportedVersion:
-      value:
-        type: https://api.ev.energy/v2/problems/pagination-parameters/
-        status: 400
-        title: Unsupported version
-        detail: 'Unsupported version requested: 3.0'
-    ProblemInvalidPaginationParameter:
-      value:
-        type: https://api.ev.energy/v2/problems/pagination-parameters/
-        status: 400
-        title: Invalid pagination parameter
-        detail: 'Invalid value for pagination parameter: page_size'
   headers:
-    link:
-      description: Provides links to the previous and next pages of data, if they exist.
-      example: <https://api.ev.energy/v2/vehicles?page_size=25&page_before=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="previous", <https://api.ev.energy/v2/vehicles?page_size=25&page_after=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="next"
-      schema:
-        type: string
-    x-ratelimit-remaining:
-      description: The number of requests remaining until this client's rate limit is reached.
-      schema:
-        type: number
-        default: 999
-    retry-after:
-      description: The number of seconds until this client's requests will not be rate limited.
-      schema:
-        type: number
-        default: 3600
     version-2:
       description: Indicates the version of the API that generated this response. If EvEnergy-Version was not specified in the request, this will be your OAuth application's default version.
       schema:
         type: number
         enum:
         - 2
+    link:
+      description: Provides links to the previous and next pages of data, if they exist.
+      example: <https://api.ev.energy/v2/vehicles?page_size=25&page_before=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="previous", <https://api.ev.energy/v2/vehicles?page_size=25&page_after=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="next"
+      schema:
+        type: string
+    retry-after:
+      description: The number of seconds until this client's requests will not be rate limited.
+      schema:
+        type: number
+        default: 3600
+    x-ratelimit-remaining:
+      description: The number of requests remaining until this client's rate limit is reached.
+      schema:
+        type: number
+        default: 999
     x-ratelimit-limit:
       description: The maximum number of requests that can be made to this endpoint per hour. Defaults to 1000 but may vary per client.
       schema:

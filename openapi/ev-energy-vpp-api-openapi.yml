@@ -404,8 +404,8 @@ paths:
         - dispatch_coordinator:read
 components:
   responses:
-    Problem404NotFound:
-      description: This resource either does not exist or the client is not authorized to access it.
+    Problem406NotAcceptable:
+      description: Could not satisfy the request Accept header.
       content:
         application/problem+json:
           schema:
@@ -416,13 +416,13 @@ components:
             properties:
               status:
                 type: number
-                example: 404
+                example: 406
               title:
                 type: string
-                example: Not found
+                example: Not Acceptable
               detail:
                 type: string
-                example: Resource does not exist or cannot be accessed.
+                example: Could not satisfy the request Accept header.
       headers:
         EvEnergy-Version:
           $ref: '#/components/headers/version-2'
@@ -432,22 +432,6 @@ components:
           $ref: '#/components/headers/x-ratelimit-remaining'
         RetryAfter:
           $ref: '#/components/headers/retry-after'
-    Problem400BadRequestRetrieve:
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/RFC9457ProblemDetail'
-          examples:
-            Unsupported Version:
-              $ref: '#/components/examples/ProblemUnsupportedVersion'
-      description: A problem with the request's parameters prevented it being fulfilled.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
     Problem403Forbidden:
       description: You do not have permission to perform this action.
       content:
@@ -467,26 +451,6 @@ components:
               detail:
                 type: string
                 example: You do not have permission to perform this action.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-        RetryAfter:
-          $ref: '#/components/headers/retry-after'
-    Problem400BadRequestList:
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/RFC9457ProblemDetail'
-          examples:
-            Invalid Pagination Parameter:
-              $ref: '#/components/examples/ProblemInvalidPaginationParameter'
-            Unsupported Version:
-              $ref: '#/components/examples/ProblemUnsupportedVersion'
-      description: A problem with the request's parameters prevented it being fulfilled.
       headers:
         EvEnergy-Version:
           $ref: '#/components/headers/version-2'
@@ -518,8 +482,8 @@ components:
           $ref: '#/components/headers/x-ratelimit-limit'
         X-RateLimit-Remaining:
           $ref: '#/components/headers/x-ratelimit-remaining'
-    Problem406NotAcceptable:
-      description: Could not satisfy the request Accept header.
+    Problem404NotFound:
+      description: This resource either does not exist or the client is not authorized to access it.
       content:
         application/problem+json:
           schema:
@@ -530,13 +494,13 @@ components:
             properties:
               status:
                 type: number
-                example: 406
+                example: 404
               title:
                 type: string
-                example: Not Acceptable
+                example: Not found
               detail:
                 type: string
-                example: Could not satisfy the request Accept header.
+                example: Resource does not exist or cannot be accessed.
       headers:
         EvEnergy-Version:
           $ref: '#/components/headers/version-2'
@@ -574,7 +538,110 @@ components:
           $ref: '#/components/headers/x-ratelimit-remaining'
         RetryAfter:
           $ref: '#/components/headers/retry-after'
+    Problem400BadRequestList:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Invalid Pagination Parameter:
+              $ref: '#/components/examples/ProblemInvalidPaginationParameter'
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem400BadRequestRetrieve:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+  examples:
+    ProblemUnsupportedVersion:
+      value:
+        type: https://api.ev.energy/v2/problems/pagination-parameters/
+        status: 400
+        title: Unsupported version
+        detail: 'Unsupported version requested: 3.0'
+    ProblemInvalidPaginationParameter:
+      value:
+        type: https://api.ev.energy/v2/problems/pagination-parameters/
+        status: 400
+        title: Invalid pagination parameter
+        detail: 'Invalid value for pagination parameter: page_size'
   parameters:
+    user:
+      name: EvEnergy-User
+      description: If the client is authenticated using Client Credentials, setting EvEnergy-User to a valid user ID allows requests to be made as if you were directly authenticated as that user.
+      in: header
+      required: false
+      schema:
+        type: string
+        pattern: user[A-Z\d]{26}
+        example: user01HN2NJ9NMRZBXT1H6FT9N7735
+    dispatch_event_id:
+      name: dispatch_event_id
+      in: path
+      required: true
+      schema:
+        type: string
+        example: devt01HN2NJ9NMRZBXT1H6FT9N7735
+      description: The ID of the specific dispatch event.
+    vehicle_id:
+      name: vehicle_id
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: vhcl[A-Z\d]{26}
+        example: vhcl01HRFF3SEVSCRAV9B3CHVDFN0H
+      description: The ID of the specific vehicle to retrieve.
+    dispatch_coordinator_id:
+      name: dispatch_coordinator_id
+      in: path
+      required: true
+      schema:
+        type: string
+        example: dc000000
+      description: The ID of the specific dispatch coordinator.
+    next:
+      name: page_after
+      description: Return results from the page before this ID.
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[a-z]{4}[A-Z\d]{26}'
+        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
+    page_size:
+      name: page_size
+      description: Specify the number of results to return per page.
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 25
+        minimum: 1
+        maximum: 100
+        example: 10
     evse_id:
       name: evse_id
       in: path
@@ -593,31 +660,14 @@ components:
         type: number
         enum:
         - 2
-    logged_at__lte:
-      name: logged_at__lte
+    logged_at__gte:
+      name: logged_at__gte
       in: query
       schema:
         type: string
         format: date-time
         example: '2024-04-17T09:39:45.984584Z'
-      description: Filters for logs logged at or before this datetime.
-    dispatch_event_id:
-      name: dispatch_event_id
-      in: path
-      required: true
-      schema:
-        type: string
-        example: devt01HN2NJ9NMRZBXT1H6FT9N7735
-      description: The ID of the specific dispatch event.
-    user:
-      name: EvEnergy-User
-      description: If the client is authenticated using Client Credentials, setting EvEnergy-User to a valid user ID allows requests to be made as if you were directly authenticated as that user.
-      in: header
-      required: false
-      schema:
-        type: string
-        pattern: user[A-Z\d]{26}
-        example: user01HN2NJ9NMRZBXT1H6FT9N7735
+      description: Filters for logs logged at or after this datetime.
     previous:
       name: page_before
       description: Return results from the page after this ID.
@@ -627,87 +677,107 @@ components:
         type: string
         pattern: '[a-z]{4}[A-Z\d]{26}'
         example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
-    page_size:
-      name: page_size
-      description: Specify the number of results to return per page.
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 25
-        minimum: 1
-        maximum: 100
-        example: 10
-    next:
-      name: page_after
-      description: Return results from the page before this ID.
-      in: query
-      required: false
-      schema:
-        type: string
-        pattern: '[a-z]{4}[A-Z\d]{26}'
-        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
-    vehicle_id:
-      name: vehicle_id
-      in: path
-      required: true
-      schema:
-        type: string
-        pattern: vhcl[A-Z\d]{26}
-        example: vhcl01HRFF3SEVSCRAV9B3CHVDFN0H
-      description: The ID of the specific vehicle to retrieve.
-    dispatch_coordinator_id:
-      name: dispatch_coordinator_id
-      in: path
-      required: true
-      schema:
-        type: string
-        example: dc000000
-      description: The ID of the specific dispatch coordinator.
-    logged_at__gte:
-      name: logged_at__gte
+    logged_at__lte:
+      name: logged_at__lte
       in: query
       schema:
         type: string
         format: date-time
         example: '2024-04-17T09:39:45.984584Z'
-      description: Filters for logs logged at or after this datetime.
+      description: Filters for logs logged at or before this datetime.
   schemas:
-    VPPModes:
-      title: VPPModes
+    DispatchEventWrite:
+      title: DispatchEventWrite
       type: object
-      description: VPP (Virtual Power Plant) mode capabilities indicating which control modes are supported by the resource.
+      description: Request body for creating a dispatch event.
       required:
-      - target_power
-      - import_max_power
-      - export_max_power
-      - charge_mode
+      - start_time
+      - end_time
       properties:
-        target_power:
-          type: boolean
-          description: Whether target power control mode is supported.
+        start_time:
+          type: string
+          format: date-time
+          description: Start time of the dispatch event.
+          example: '2025-06-15T14:00:00Z'
+        end_time:
+          type: string
+          format: date-time
+          description: End time of the dispatch event.
+          example: '2025-06-15T18:00:00Z'
+        import_limit_watts:
+          type:
+          - integer
+          - 'null'
+          description: Maximum import power in watts.
+          example: 5000
+        export_limit_watts:
+          type:
+          - integer
+          - 'null'
+          description: Maximum export power in watts.
+          example: null
+        target_power_watts:
+          type:
+          - integer
+          - 'null'
+          description: Target power in watts.
+          example: null
+      x-tags:
+      - VPP
+    DispatchCoordinator:
+      title: DispatchCoordinator
+      type: object
+      description: A resource representing a dispatch coordinator.
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the dispatch coordinator.
+          example: dc000000
           readOnly: true
-          example: true
-        import_max_power:
-          type: boolean
-          description: Whether import maximum power control mode is supported.
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/dispatch_coordinators/dc000000
           readOnly: true
-          example: true
-        export_max_power:
-          type: boolean
-          description: Whether export maximum power control mode is supported.
+        name:
+          type: string
+          description: The name of the dispatch coordinator.
+          example: Acme Energy
           readOnly: true
-          example: false
-        charge_mode:
-          type: boolean
-          description: Whether charge mode control is supported.
+        reference_code:
+          type: string
+          description: The reference code for the dispatch coordinator.
+          example: ACME-001
           readOnly: true
-          example: true
-      examples:
-      - target_power: true
-        import_max_power: true
-        export_max_power: false
-        charge_mode: true
+        contract_start:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: The start date of the contract.
+          example: '2026-01-01T00:00:00Z'
+          readOnly: true
+        contract_end:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: The end date of the contract.
+          example: '2027-01-01T00:00:00Z'
+          readOnly: true
+        timezone:
+          type: string
+          description: The timezone of the dispatch coordinator.
+          example: America/New_York
+          readOnly: true
+        dispatch_logs:
+          type: string
+          format: uri
+          description: Link to the dispatch logs for this coordinator.
+          example: https://api.ev.energy/v2/dispatch_coordinators/dc000000/dispatch_logs
+          readOnly: true
+      x-tags:
+      - VPP
     DispatchEventCancelResponse:
       title: DispatchEventCancelResponse
       type: object
@@ -772,73 +842,6 @@ components:
           readOnly: true
       x-tags:
       - VPP
-    DispatchEventWrite:
-      title: DispatchEventWrite
-      type: object
-      description: Request body for creating a dispatch event.
-      required:
-      - start_time
-      - end_time
-      properties:
-        start_time:
-          type: string
-          format: date-time
-          description: Start time of the dispatch event.
-          example: '2025-06-15T14:00:00Z'
-        end_time:
-          type: string
-          format: date-time
-          description: End time of the dispatch event.
-          example: '2025-06-15T18:00:00Z'
-        import_limit_watts:
-          type:
-          - integer
-          - 'null'
-          description: Maximum import power in watts.
-          example: 5000
-        export_limit_watts:
-          type:
-          - integer
-          - 'null'
-          description: Maximum export power in watts.
-          example: null
-        target_power_watts:
-          type:
-          - integer
-          - 'null'
-          description: Target power in watts.
-          example: null
-      x-tags:
-      - VPP
-    DispatchLog:
-      title: DispatchLog
-      type: object
-      description: A log entry recording the aggregate fleet charging power for a dispatch coordinator at a point in time.
-      properties:
-        url:
-          type: string
-          format: uri
-          example: https://api.ev.energy/v2/dispatch_coordinators/dc000000/dispatch_logs/2025-03-01T10:00:00Z/
-          readOnly: true
-        logged_at:
-          type: string
-          format: date-time
-          description: When this log record was created.
-          example: '2025-03-01T10:00:00Z'
-          readOnly: true
-        total_charge_rate_watts:
-          type: integer
-          description: The aggregate charging power of the fleet in watts.
-          example: 7000
-          readOnly: true
-        dispatch_coordinator:
-          type: string
-          format: uri
-          description: Link to the parent dispatch coordinator.
-          example: https://api.ev.energy/v2/dispatch_coordinators/dc000000
-          readOnly: true
-      x-tags:
-      - VPP
     RFC9457ProblemDetail:
       title: RFC 9457 Problem Detail
       x-tags:
@@ -887,6 +890,41 @@ components:
           external_button_label: More info
           read_at: '2019-08-24T14:20:22Z'
           resolved_at: '2019-08-25T14:15:22Z'
+    VPPModes:
+      title: VPPModes
+      type: object
+      description: VPP (Virtual Power Plant) mode capabilities indicating which control modes are supported by the resource.
+      required:
+      - target_power
+      - import_max_power
+      - export_max_power
+      - charge_mode
+      properties:
+        target_power:
+          type: boolean
+          description: Whether target power control mode is supported.
+          readOnly: true
+          example: true
+        import_max_power:
+          type: boolean
+          description: Whether import maximum power control mode is supported.
+          readOnly: true
+          example: true
+        export_max_power:
+          type: boolean
+          description: Whether export maximum power control mode is supported.
+          readOnly: true
+          example: false
+        charge_mode:
+          type: boolean
+          description: Whether charge mode control is supported.
+          readOnly: true
+          example: true
+      examples:
+      - target_power: true
+        import_max_power: true
+        export_max_power: false
+        charge_mode: true
     Notification:
       title: Notification
       description: Something that the user should be informed about.
@@ -973,89 +1011,36 @@ components:
           type: string
           format: date-time
           description: When the problem associated with this notification was resolved
-    DispatchCoordinator:
-      title: DispatchCoordinator
+    DispatchLog:
+      title: DispatchLog
       type: object
-      description: A resource representing a dispatch coordinator.
+      description: A log entry recording the aggregate fleet charging power for a dispatch coordinator at a point in time.
       properties:
-        id:
-          type: string
-          description: Unique identifier for the dispatch coordinator.
-          example: dc000000
-          readOnly: true
         url:
           type: string
           format: uri
-          example: https://api.ev.energy/v2/dispatch_coordinators/dc000000
+          example: https://api.ev.energy/v2/dispatch_coordinators/dc000000/dispatch_logs/2025-03-01T10:00:00Z/
           readOnly: true
-        name:
+        logged_at:
           type: string
-          description: The name of the dispatch coordinator.
-          example: Acme Energy
-          readOnly: true
-        reference_code:
-          type: string
-          description: The reference code for the dispatch coordinator.
-          example: ACME-001
-          readOnly: true
-        contract_start:
-          type:
-          - string
-          - 'null'
           format: date-time
-          description: The start date of the contract.
-          example: '2026-01-01T00:00:00Z'
+          description: When this log record was created.
+          example: '2025-03-01T10:00:00Z'
           readOnly: true
-        contract_end:
-          type:
-          - string
-          - 'null'
-          format: date-time
-          description: The end date of the contract.
-          example: '2027-01-01T00:00:00Z'
+        total_charge_rate_watts:
+          type: integer
+          description: The aggregate charging power of the fleet in watts.
+          example: 7000
           readOnly: true
-        timezone:
-          type: string
-          description: The timezone of the dispatch coordinator.
-          example: America/New_York
-          readOnly: true
-        dispatch_logs:
+        dispatch_coordinator:
           type: string
           format: uri
-          description: Link to the dispatch logs for this coordinator.
-          example: https://api.ev.energy/v2/dispatch_coordinators/dc000000/dispatch_logs
+          description: Link to the parent dispatch coordinator.
+          example: https://api.ev.energy/v2/dispatch_coordinators/dc000000
           readOnly: true
       x-tags:
       - VPP
-  examples:
-    ProblemUnsupportedVersion:
-      value:
-        type: https://api.ev.energy/v2/problems/pagination-parameters/
-        status: 400
-        title: Unsupported version
-        detail: 'Unsupported version requested: 3.0'
-    ProblemInvalidPaginationParameter:
-      value:
-        type: https://api.ev.energy/v2/problems/pagination-parameters/
-        status: 400
-        title: Invalid pagination parameter
-        detail: 'Invalid value for pagination parameter: page_size'
   headers:
-    link:
-      description: Provides links to the previous and next pages of data, if they exist.
-      example: <https://api.ev.energy/v2/vehicles?page_size=25&page_before=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="previous", <https://api.ev.energy/v2/vehicles?page_size=25&page_after=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="next"
-      schema:
-        type: string
-    x-ratelimit-remaining:
-      description: The number of requests remaining until this client's rate limit is reached.
-      schema:
-        type: number
-        default: 999
-    retry-after:
-      description: The number of seconds until this client's requests will not be rate limited.
-      schema:
-        type: number
-        default: 3600
     link-timestamps:
       description: Provides links to the previous and next pages of data, if they exist.
       example: <https://api.ev.energy/v2/vehicles?page_size=25&page_before=2024-04-18T08:53:52.225655Z>; rel="previous", <https://api.ev.energy/v2/vehicles?page_size=25&page_after=2024-04-18T08:53:52.225655Z>; rel="next"
@@ -1067,11 +1052,26 @@ components:
         type: number
         enum:
         - 2
+    link:
+      description: Provides links to the previous and next pages of data, if they exist.
+      example: <https://api.ev.energy/v2/vehicles?page_size=25&page_before=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="previous", <https://api.ev.energy/v2/vehicles?page_size=25&page_after=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="next"
+      schema:
+        type: string
+    x-ratelimit-remaining:
+      description: The number of requests remaining until this client's rate limit is reached.
+      schema:
+        type: number
+        default: 999
     x-ratelimit-limit:
       description: The maximum number of requests that can be made to this endpoint per hour. Defaults to 1000 but may vary per client.
       schema:
         type: number
         default: 1000
+    retry-after:
+      description: The number of seconds until this client's requests will not be rate limited.
+      schema:
+        type: number
+        default: 3600
   securitySchemes:
     oauth2:
       type: oauth2
