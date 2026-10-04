@@ -404,6 +404,33 @@ paths:
         '429':
           $ref: '#/components/responses/Problem429TooManyRequests'
 components:
+  headers:
+    retry-after:
+      description: The number of seconds until this client's requests will not be rate limited.
+      schema:
+        type: number
+        default: 3600
+    link:
+      description: Provides links to the previous and next pages of data, if they exist.
+      example: <https://api.ev.energy/v2/vehicles?page_size=25&page_before=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="previous", <https://api.ev.energy/v2/vehicles?page_size=25&page_after=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="next"
+      schema:
+        type: string
+    version-2:
+      description: Indicates the version of the API that generated this response. If EvEnergy-Version was not specified in the request, this will be your OAuth application's default version.
+      schema:
+        type: number
+        enum:
+        - 2
+    x-ratelimit-limit:
+      description: The maximum number of requests that can be made to this endpoint per hour. Defaults to 1000 but may vary per client.
+      schema:
+        type: number
+        default: 1000
+    x-ratelimit-remaining:
+      description: The number of requests remaining until this client's rate limit is reached.
+      schema:
+        type: number
+        default: 999
   responses:
     Problem406NotAcceptable:
       description: Could not satisfy the request Accept header.
@@ -424,6 +451,138 @@ components:
               detail:
                 type: string
                 example: Could not satisfy the request Accept header.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem400BadRequestList:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Invalid Pagination Parameter:
+              $ref: '#/components/examples/ProblemInvalidPaginationParameter'
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem429TooManyRequests:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Example 1:
+              value:
+                type: https://api.ev.energy/v2/problems/rate-limit-exceeded/
+                status: 429
+                title: Too Many Requests
+                detail: Request was rate limited. Try again in 42 seconds
+      description: The client has exceeded its rate limit.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        Retry-After:
+          $ref: '#/components/headers/retry-after'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem400BadRequestRetrieve:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem401Unauthorized:
+      description: You need to authorise requests to access this resource.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 401
+              title:
+                type: string
+                example: Unauthorized
+              detail:
+                type: string
+                example: Authentication credentials were not provided.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem400BadRequestCreate:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Request failed validation:
+              $ref: '#/components/examples/ProblemValidationFailedVehicle'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem404NotFound:
+      description: This resource either does not exist or the client is not authorized to access it.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 404
+              title:
+                type: string
+                example: Not found
+              detail:
+                type: string
+                example: Resource does not exist or cannot be accessed.
       headers:
         EvEnergy-Version:
           $ref: '#/components/headers/version-2'
@@ -461,139 +620,18 @@ components:
           $ref: '#/components/headers/x-ratelimit-remaining'
         RetryAfter:
           $ref: '#/components/headers/retry-after'
-    Problem429TooManyRequests:
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/RFC9457ProblemDetail'
-          examples:
-            Example 1:
-              value:
-                type: https://api.ev.energy/v2/problems/rate-limit-exceeded/
-                status: 429
-                title: Too Many Requests
-                detail: Request was rate limited. Try again in 42 seconds
-      description: The client has exceeded its rate limit.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        Retry-After:
-          $ref: '#/components/headers/retry-after'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-    Problem404NotFound:
-      description: This resource either does not exist or the client is not authorized to access it.
-      content:
-        application/problem+json:
-          schema:
-            type: object
-            required:
-            - title
-            - detail
-            properties:
-              status:
-                type: number
-                example: 404
-              title:
-                type: string
-                example: Not found
-              detail:
-                type: string
-                example: Resource does not exist or cannot be accessed.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-        RetryAfter:
-          $ref: '#/components/headers/retry-after'
-    Problem401Unauthorized:
-      description: You need to authorise requests to access this resource.
-      content:
-        application/problem+json:
-          schema:
-            type: object
-            required:
-            - title
-            - detail
-            properties:
-              status:
-                type: number
-                example: 401
-              title:
-                type: string
-                example: Unauthorized
-              detail:
-                type: string
-                example: Authentication credentials were not provided.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-        RetryAfter:
-          $ref: '#/components/headers/retry-after'
-    Problem400BadRequestRetrieve:
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/RFC9457ProblemDetail'
-          examples:
-            Unsupported Version:
-              $ref: '#/components/examples/ProblemUnsupportedVersion'
-      description: A problem with the request's parameters prevented it being fulfilled.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-    Problem400BadRequestList:
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/RFC9457ProblemDetail'
-          examples:
-            Invalid Pagination Parameter:
-              $ref: '#/components/examples/ProblemInvalidPaginationParameter'
-            Unsupported Version:
-              $ref: '#/components/examples/ProblemUnsupportedVersion'
-      description: A problem with the request's parameters prevented it being fulfilled.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-        RetryAfter:
-          $ref: '#/components/headers/retry-after'
-    Problem400BadRequestCreate:
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/RFC9457ProblemDetail'
-          examples:
-            Request failed validation:
-              $ref: '#/components/examples/ProblemValidationFailedVehicle'
-      description: A problem with the request's parameters prevented it being fulfilled.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-        RetryAfter:
-          $ref: '#/components/headers/retry-after'
   examples:
+    ProblemValidationFailedVehicle:
+      value:
+        type: https://api.ev.energy/v2/problems/validation-failed-create-vehicle/
+        status: 400
+        title: Request failed validation.
+        detail: 'Error on fields: user, trim'
+        field_errors:
+          user:
+          - This field is required.
+          trim:
+          - Invalid hyperlink - Object does not exist.
     ProblemUnsupportedVersion:
       value:
         type: https://api.ev.energy/v2/problems/pagination-parameters/
@@ -606,43 +644,66 @@ components:
         status: 400
         title: Invalid pagination parameter
         detail: 'Invalid value for pagination parameter: page_size'
-    ProblemValidationFailedVehicle:
-      value:
-        type: https://api.ev.energy/v2/problems/validation-failed-create-vehicle/
-        status: 400
-        title: Request failed validation.
-        detail: 'Error on fields: user, trim'
-        field_errors:
-          user:
-          - This field is required.
-          trim:
-          - Invalid hyperlink - Object does not exist.
   schemas:
-    RegionGroupValidationResult:
-      title: RegionGroupValidationResult
+    GeoJsonMultiPolygon:
+      title: GeoJsonMultiPolygon
       type: object
+      description: RFC 7946 GeoJSON MultiPolygon in WGS 84. Positions are [longitude, latitude]. Each member is a Polygon coordinate array.
+      required:
+      - type
+      - coordinates
       properties:
-        valid:
-          type: boolean
-          description: True when committing the identical body would succeed.
-        group:
-          type: object
-          properties:
-            name:
-              type: string
-            status:
-              type: string
-              enum:
-              - AVAILABLE
-              - NAME_EXISTS
-            problems:
-              type: array
-              items:
-                type: string
-        regions:
+        type:
+          type: string
+          enum:
+          - MultiPolygon
+        coordinates:
           type: array
+          description: Array of Polygon coordinate arrays.
+          minItems: 1
+          maxItems: 500
           items:
-            $ref: '#/components/schemas/RegionValidationResult'
+            type: array
+            minItems: 1
+            maxItems: 100
+            items:
+              type: array
+              minItems: 4
+              maxItems: 25000
+              items:
+                type: array
+                minItems: 2
+                maxItems: 2
+                items:
+                  type: number
+    RegionGroupEntry:
+      title: RegionGroupEntry
+      type: object
+      required:
+      - name
+      - geometries
+      properties:
+        name:
+          type: string
+          example: MILTON
+          description: Must not match any existing region — clashes fail the whole request with 409.
+        type:
+          type:
+          - string
+          - 'null'
+          enum:
+          - OTHER
+          - ELECTRICITY
+          - null
+        geometries:
+          type: array
+          description: One or more GeoJSON Polygon/MultiPolygon geometries, unioned server-side into a single MultiPolygon.
+          minItems: 1
+          maxItems: 1000
+          items:
+            oneOf:
+            - $ref: '#/components/schemas/GeoJsonPolygon'
+            - $ref: '#/components/schemas/GeoJsonMultiPolygon'
     GeoJsonPolygon:
       title: GeoJsonPolygon
       type: object
@@ -670,49 +731,6 @@ components:
               maxItems: 2
               items:
                 type: number
-    Region:
-      title: Region
-      type: object
-      description: A named geographic boundary (WGS 84) used to gate program tier eligibility, tariffs, carbon feeds and reward offers. Names are globally unique and immutable once created. The list representation omits the geometry; request a single region for the full GeoJSON MultiPolygon.
-      properties:
-        id:
-          type: string
-          example: regn01JCK1HPNAANB8WN253G27SFPC
-          pattern: regn[A-Z\d]{26}
-          readOnly: true
-        url:
-          type: string
-          format: uri
-          example: https://api.ev.energy/v2/regions/regn01JCK1HPNAANB8WN253G27SFPC
-          readOnly: true
-        name:
-          type: string
-          example: WEST ROXBURY
-          description: Globally unique region name. Immutable after creation.
-        type:
-          type:
-          - string
-          - 'null'
-          enum:
-          - OTHER
-          - ELECTRICITY
-          - null
-          description: Optional classification of the region.
-        region_groups:
-          type: array
-          description: URLs of the region groups this region belongs to.
-          readOnly: true
-          items:
-            type: string
-            format: uri
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-        updated_at:
-          type: string
-          format: date-time
-          readOnly: true
     RFC9457ProblemDetail:
       title: RFC 9457 Problem Detail
       x-tags:
@@ -761,6 +779,113 @@ components:
           external_button_label: More info
           read_at: '2019-08-24T14:20:22Z'
           resolved_at: '2019-08-25T14:15:22Z'
+    RegionGroupCreate:
+      title: RegionGroupCreate
+      type: object
+      required:
+      - name
+      - regions
+      properties:
+        name:
+          type: string
+          example: Eversource MA Pilot 1A
+          description: Unique name for the new group.
+        regions:
+          type: array
+          minItems: 1
+          maxItems: 500
+          items:
+            $ref: '#/components/schemas/RegionGroupEntry'
+    RegionCreate:
+      title: RegionCreate
+      type: object
+      required:
+      - name
+      - geometries
+      properties:
+        name:
+          type: string
+          description: Globally unique region name. A clash returns 409 region-name-conflict — there is no upsert on this endpoint.
+        type:
+          type:
+          - string
+          - 'null'
+          enum:
+          - OTHER
+          - ELECTRICITY
+          - null
+        geometries:
+          type: array
+          description: One or more GeoJSON Polygon/MultiPolygon geometries. The server unions them (GEOS unary union, make_valid applied) into a single MultiPolygon.
+          minItems: 1
+          maxItems: 1000
+          items:
+            oneOf:
+            - $ref: '#/components/schemas/GeoJsonPolygon'
+            - $ref: '#/components/schemas/GeoJsonMultiPolygon'
+        region_groups:
+          type: array
+          description: URLs of existing region groups to link the new region to.
+          items:
+            type: string
+            format: uri
+    RegionGroupValidationResult:
+      title: RegionGroupValidationResult
+      type: object
+      properties:
+        valid:
+          type: boolean
+          description: True when committing the identical body would succeed.
+        group:
+          type: object
+          properties:
+            name:
+              type: string
+            status:
+              type: string
+              enum:
+              - AVAILABLE
+              - NAME_EXISTS
+            problems:
+              type: array
+              items:
+                type: string
+        regions:
+          type: array
+          items:
+            $ref: '#/components/schemas/RegionValidationResult'
+    RegionGroup:
+      title: RegionGroup
+      type: object
+      properties:
+        id:
+          type: string
+          example: rgrp01JCK1HPNAANB8WN253G27SFPC
+          pattern: rgrp[A-Z\d]{26}
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          readOnly: true
+        name:
+          type: string
+          example: Eversource MA Pilot 1A
+        regions:
+          type: array
+          description: URLs of the member regions.
+          readOnly: true
+          items:
+            type: string
+            format: uri
+        regions_collection:
+          type: string
+          format: uri
+          description: Pre-built link to the regions collection filtered to this group.
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
     RegionValidationResult:
       title: RegionValidationResult
       type: object
@@ -795,79 +920,37 @@ components:
           - 'null'
           format: uri
           description: Present when status is NAME_EXISTS — URL of the clashing region.
-    RegionGroup:
-      title: RegionGroup
+    RegionDetail:
+      title: Region
+      description: Region including its full geometry. Served for single-region requests; the geometry is omitted from region lists.
+      allOf:
+      - $ref: '#/components/schemas/Region'
+      - type: object
+        properties:
+          geometry:
+            description: The region's boundary as a GeoJSON MultiPolygon, or null if the region has no geometry.
+            oneOf:
+            - $ref: '#/components/schemas/GeoJsonMultiPolygon'
+            - type: 'null'
+    Region:
+      title: Region
       type: object
+      description: A named geographic boundary (WGS 84) used to gate program tier eligibility, tariffs, carbon feeds and reward offers. Names are globally unique and immutable once created. The list representation omits the geometry; request a single region for the full GeoJSON MultiPolygon.
       properties:
         id:
           type: string
-          example: rgrp01JCK1HPNAANB8WN253G27SFPC
-          pattern: rgrp[A-Z\d]{26}
+          example: regn01JCK1HPNAANB8WN253G27SFPC
+          pattern: regn[A-Z\d]{26}
           readOnly: true
         url:
           type: string
           format: uri
+          example: https://api.ev.energy/v2/regions/regn01JCK1HPNAANB8WN253G27SFPC
           readOnly: true
         name:
           type: string
-          example: Eversource MA Pilot 1A
-        regions:
-          type: array
-          description: URLs of the member regions.
-          readOnly: true
-          items:
-            type: string
-            format: uri
-        regions_collection:
-          type: string
-          format: uri
-          description: Pre-built link to the regions collection filtered to this group.
-          readOnly: true
-        created_at:
-          type: string
-          format: date-time
-          readOnly: true
-    GeoJsonMultiPolygon:
-      title: GeoJsonMultiPolygon
-      type: object
-      description: RFC 7946 GeoJSON MultiPolygon in WGS 84. Positions are [longitude, latitude]. Each member is a Polygon coordinate array.
-      required:
-      - type
-      - coordinates
-      properties:
-        type:
-          type: string
-          enum:
-          - MultiPolygon
-        coordinates:
-          type: array
-          description: Array of Polygon coordinate arrays.
-          minItems: 1
-          maxItems: 500
-          items:
-            type: array
-            minItems: 1
-            maxItems: 100
-            items:
-              type: array
-              minItems: 4
-              maxItems: 25000
-              items:
-                type: array
-                minItems: 2
-                maxItems: 2
-                items:
-                  type: number
-    RegionCreate:
-      title: RegionCreate
-      type: object
-      required:
-      - name
-      - geometries
-      properties:
-        name:
-          type: string
-          description: Globally unique region name. A clash returns 409 region-name-conflict — there is no upsert on this endpoint.
+          example: WEST ROXBURY
+          description: Globally unique region name. Immutable after creation.
         type:
           type:
           - string
@@ -876,21 +959,22 @@ components:
           - OTHER
           - ELECTRICITY
           - null
-        geometries:
-          type: array
-          description: One or more GeoJSON Polygon/MultiPolygon geometries. The server unions them (GEOS unary union, make_valid applied) into a single MultiPolygon.
-          minItems: 1
-          maxItems: 1000
-          items:
-            oneOf:
-            - $ref: '#/components/schemas/GeoJsonPolygon'
-            - $ref: '#/components/schemas/GeoJsonMultiPolygon'
+          description: Optional classification of the region.
         region_groups:
           type: array
-          description: URLs of existing region groups to link the new region to.
+          description: URLs of the region groups this region belongs to.
+          readOnly: true
           items:
             type: string
             format: uri
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
     Notification:
       title: Notification
       description: Something that the user should be informed about.
@@ -977,100 +1061,7 @@ components:
           type: string
           format: date-time
           description: When the problem associated with this notification was resolved
-    RegionGroupCreate:
-      title: RegionGroupCreate
-      type: object
-      required:
-      - name
-      - regions
-      properties:
-        name:
-          type: string
-          example: Eversource MA Pilot 1A
-          description: Unique name for the new group.
-        regions:
-          type: array
-          minItems: 1
-          maxItems: 500
-          items:
-            $ref: '#/components/schemas/RegionGroupEntry'
-    RegionDetail:
-      title: Region
-      description: Region including its full geometry. Served for single-region requests; the geometry is omitted from region lists.
-      allOf:
-      - $ref: '#/components/schemas/Region'
-      - type: object
-        properties:
-          geometry:
-            description: The region's boundary as a GeoJSON MultiPolygon, or null if the region has no geometry.
-            oneOf:
-            - $ref: '#/components/schemas/GeoJsonMultiPolygon'
-            - type: 'null'
-    RegionGroupEntry:
-      title: RegionGroupEntry
-      type: object
-      required:
-      - name
-      - geometries
-      properties:
-        name:
-          type: string
-          example: MILTON
-          description: Must not match any existing region — clashes fail the whole request with 409.
-        type:
-          type:
-          - string
-          - 'null'
-          enum:
-          - OTHER
-          - ELECTRICITY
-          - null
-        geometries:
-          type: array
-          description: One or more GeoJSON Polygon/MultiPolygon geometries, unioned server-side into a single MultiPolygon.
-          minItems: 1
-          maxItems: 1000
-          items:
-            oneOf:
-            - $ref: '#/components/schemas/GeoJsonPolygon'
-            - $ref: '#/components/schemas/GeoJsonMultiPolygon'
-  headers:
-    version-2:
-      description: Indicates the version of the API that generated this response. If EvEnergy-Version was not specified in the request, this will be your OAuth application's default version.
-      schema:
-        type: number
-        enum:
-        - 2
-    link:
-      description: Provides links to the previous and next pages of data, if they exist.
-      example: <https://api.ev.energy/v2/vehicles?page_size=25&page_before=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="previous", <https://api.ev.energy/v2/vehicles?page_size=25&page_after=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="next"
-      schema:
-        type: string
-    retry-after:
-      description: The number of seconds until this client's requests will not be rate limited.
-      schema:
-        type: number
-        default: 3600
-    x-ratelimit-remaining:
-      description: The number of requests remaining until this client's rate limit is reached.
-      schema:
-        type: number
-        default: 999
-    x-ratelimit-limit:
-      description: The maximum number of requests that can be made to this endpoint per hour. Defaults to 1000 but may vary per client.
-      schema:
-        type: number
-        default: 1000
   parameters:
-    next:
-      name: page_after
-      description: Return results from the page before this ID.
-      in: query
-      required: false
-      schema:
-        type: string
-        pattern: '[a-z]{4}[A-Z\d]{26}'
-        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
     page_size:
       name: page_size
       description: Specify the number of results to return per page.
@@ -1091,6 +1082,15 @@ components:
         type: number
         enum:
         - 2
+    next:
+      name: page_after
+      description: Return results from the page before this ID.
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[a-z]{4}[A-Z\d]{26}'
+        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
     previous:
       name: page_before
       description: Return results from the page after this ID.

@@ -234,269 +234,15 @@ paths:
       - oauth2:
         - solar_forecast:read
 components:
-  responses:
-    Problem406NotAcceptable:
-      description: Could not satisfy the request Accept header.
-      content:
-        application/problem+json:
-          schema:
-            type: object
-            required:
-            - title
-            - detail
-            properties:
-              status:
-                type: number
-                example: 406
-              title:
-                type: string
-                example: Not Acceptable
-              detail:
-                type: string
-                example: Could not satisfy the request Accept header.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-        RetryAfter:
-          $ref: '#/components/headers/retry-after'
-    Problem403Forbidden:
-      description: You do not have permission to perform this action.
-      content:
-        application/problem+json:
-          schema:
-            type: object
-            required:
-            - title
-            - detail
-            properties:
-              status:
-                type: number
-                example: 403
-              title:
-                type: string
-                example: Forbidden
-              detail:
-                type: string
-                example: You do not have permission to perform this action.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-        RetryAfter:
-          $ref: '#/components/headers/retry-after'
-    Problem429TooManyRequests:
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/RFC9457ProblemDetail'
-          examples:
-            Example 1:
-              value:
-                type: https://api.ev.energy/v2/problems/rate-limit-exceeded/
-                status: 429
-                title: Too Many Requests
-                detail: Request was rate limited. Try again in 42 seconds
-      description: The client has exceeded its rate limit.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        Retry-After:
-          $ref: '#/components/headers/retry-after'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-    Problem404NotFound:
-      description: This resource either does not exist or the client is not authorized to access it.
-      content:
-        application/problem+json:
-          schema:
-            type: object
-            required:
-            - title
-            - detail
-            properties:
-              status:
-                type: number
-                example: 404
-              title:
-                type: string
-                example: Not found
-              detail:
-                type: string
-                example: Resource does not exist or cannot be accessed.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-        RetryAfter:
-          $ref: '#/components/headers/retry-after'
-    Problem401Unauthorized:
-      description: You need to authorise requests to access this resource.
-      content:
-        application/problem+json:
-          schema:
-            type: object
-            required:
-            - title
-            - detail
-            properties:
-              status:
-                type: number
-                example: 401
-              title:
-                type: string
-                example: Unauthorized
-              detail:
-                type: string
-                example: Authentication credentials were not provided.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-        RetryAfter:
-          $ref: '#/components/headers/retry-after'
-    Problem400BadRequestRetrieve:
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/RFC9457ProblemDetail'
-          examples:
-            Unsupported Version:
-              $ref: '#/components/examples/ProblemUnsupportedVersion'
-      description: A problem with the request's parameters prevented it being fulfilled.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-    Problem400BadRequestList:
-      content:
-        application/problem+json:
-          schema:
-            $ref: '#/components/schemas/RFC9457ProblemDetail'
-          examples:
-            Invalid Pagination Parameter:
-              $ref: '#/components/examples/ProblemInvalidPaginationParameter'
-            Unsupported Version:
-              $ref: '#/components/examples/ProblemUnsupportedVersion'
-      description: A problem with the request's parameters prevented it being fulfilled.
-      headers:
-        EvEnergy-Version:
-          $ref: '#/components/headers/version-2'
-        X-RateLimit-Limit:
-          $ref: '#/components/headers/x-ratelimit-limit'
-        X-RateLimit-Remaining:
-          $ref: '#/components/headers/x-ratelimit-remaining'
-        RetryAfter:
-          $ref: '#/components/headers/retry-after'
-  examples:
-    ProblemUnsupportedVersion:
-      value:
-        type: https://api.ev.energy/v2/problems/pagination-parameters/
-        status: 400
-        title: Unsupported version
-        detail: 'Unsupported version requested: 3.0'
-    ProblemInvalidPaginationParameter:
-      value:
-        type: https://api.ev.energy/v2/problems/pagination-parameters/
-        status: 400
-        title: Invalid pagination parameter
-        detail: 'Invalid value for pagination parameter: page_size'
-  parameters:
-    solar_forecast_id:
-      name: solar_forecast_id
-      in: path
-      required: true
-      schema:
-        type: string
-        pattern: solf[A-Z\d]{26}
-        example: solf01JASZTD3T7N39DTZPBJVXNPKP
-      description: The ID of the specific solar forecast.
-    started_at__gte:
-      name: started_at__gte
-      in: query
-      schema:
-        type: string
-        format: date-time
-        example: '2024-04-17T09:00:00.100000Z'
-      description: Filters for logs with a valid period start at or after this datetime.
-    next:
-      name: page_after
-      description: Return results from the page before this ID.
-      in: query
-      required: false
-      schema:
-        type: string
-        pattern: '[a-z]{4}[A-Z\d]{26}'
-        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
-    page_size:
-      name: page_size
-      description: Specify the number of results to return per page.
-      in: query
-      required: false
-      schema:
-        type: integer
-        default: 25
-        minimum: 1
-        maximum: 100
-        example: 10
-    expand-on-solarforecastlog:
-      name: expand
-      in: query
-      schema:
-        type: array
-        items:
-          type: string
-          enum:
-          - solar_forecast
-      explode: true
-      description: Specify a url field to expand into a nested resource.
-    started_at__lte:
-      name: started_at__lte
-      in: query
-      schema:
-        type: string
-        format: date-time
-        example: '2024-04-17T09:00:00.100000Z'
-      description: Filters for logs with a valid period start at or before this datetime.
-    version-2:
-      name: EvEnergy-Version
-      description: Specify the version of this endpoint to use.
-      required: false
-      in: header
+  headers:
+    retry-after:
+      description: The number of seconds until this client's requests will not be rate limited.
       schema:
         type: number
-        enum:
-        - 2
-    previous:
-      name: page_before
-      description: Return results from the page after this ID.
-      in: query
-      required: false
-      schema:
-        type: string
-        pattern: '[a-z]{4}[A-Z\d]{26}'
-        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
-  headers:
-    link-timestamps:
+        default: 3600
+    link:
       description: Provides links to the previous and next pages of data, if they exist.
-      example: <https://api.ev.energy/v2/vehicles?page_size=25&page_before=2024-04-18T08:53:52.225655Z>; rel="previous", <https://api.ev.energy/v2/vehicles?page_size=25&page_after=2024-04-18T08:53:52.225655Z>; rel="next"
+      example: <https://api.ev.energy/v2/vehicles?page_size=25&page_before=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="previous", <https://api.ev.energy/v2/vehicles?page_size=25&page_after=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="next"
       schema:
         type: string
     version-2:
@@ -505,27 +251,66 @@ components:
         type: number
         enum:
         - 2
-    link:
-      description: Provides links to the previous and next pages of data, if they exist.
-      example: <https://api.ev.energy/v2/vehicles?page_size=25&page_before=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="previous", <https://api.ev.energy/v2/vehicles?page_size=25&page_after=vhcl01HRFF3SEVSCRAV9B3CHVDFN0H>; rel="next"
-      schema:
-        type: string
-    retry-after:
-      description: The number of seconds until this client's requests will not be rate limited.
-      schema:
-        type: number
-        default: 3600
-    x-ratelimit-remaining:
-      description: The number of requests remaining until this client's rate limit is reached.
-      schema:
-        type: number
-        default: 999
     x-ratelimit-limit:
       description: The maximum number of requests that can be made to this endpoint per hour. Defaults to 1000 but may vary per client.
       schema:
         type: number
         default: 1000
+    link-timestamps:
+      description: Provides links to the previous and next pages of data, if they exist.
+      example: <https://api.ev.energy/v2/vehicles?page_size=25&page_before=2024-04-18T08:53:52.225655Z>; rel="previous", <https://api.ev.energy/v2/vehicles?page_size=25&page_after=2024-04-18T08:53:52.225655Z>; rel="next"
+      schema:
+        type: string
+    x-ratelimit-remaining:
+      description: The number of requests remaining until this client's rate limit is reached.
+      schema:
+        type: number
+        default: 999
   schemas:
+    SolarForecast:
+      title: SolarForecast
+      type: object
+      description: A resource that represents a solar forecast for a specific location.
+      examples:
+      - id: solf01JASZTD3T7N39DTZPBJVXNPKP
+        url: https://api.ev.energy/v2/solar_forecasts/solf01JASZTD3T7N39DTZPBJVXNPKP
+        location:
+          latitude: 51.51
+          longitude: -0.13
+      required:
+      - id
+      - url
+      - location
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the given solar forecast.
+          pattern: solf[A-Z\d]{26}
+          example: solf01JASZTD3T7N39DTZPBJVXNPKP
+          readOnly: true
+        url:
+          type: string
+          format: uri
+          example: https://api.ev.energy/v2/solar_forecasts/solf01JASZTD3T7N39DTZPBJVXNPKP
+          readOnly: true
+        location:
+          type: object
+          description: The geographic location for this solar forecast.
+          readOnly: true
+          properties:
+            latitude:
+              type: number
+              description: The latitude of the location.
+              example: 51.51
+            longitude:
+              type: number
+              description: The longitude of the location.
+              example: -0.13
+          required:
+          - latitude
+          - longitude
+      x-tags:
+      - Solar Forecasts
     RFC9457ProblemDetail:
       title: RFC 9457 Problem Detail
       x-tags:
@@ -705,50 +490,265 @@ components:
           type: string
           format: date-time
           description: When the problem associated with this notification was resolved
-    SolarForecast:
-      title: SolarForecast
-      type: object
-      description: A resource that represents a solar forecast for a specific location.
-      examples:
-      - id: solf01JASZTD3T7N39DTZPBJVXNPKP
-        url: https://api.ev.energy/v2/solar_forecasts/solf01JASZTD3T7N39DTZPBJVXNPKP
-        location:
-          latitude: 51.51
-          longitude: -0.13
-      required:
-      - id
-      - url
-      - location
-      properties:
-        id:
+  responses:
+    Problem406NotAcceptable:
+      description: Could not satisfy the request Accept header.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 406
+              title:
+                type: string
+                example: Not Acceptable
+              detail:
+                type: string
+                example: Could not satisfy the request Accept header.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem400BadRequestList:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Invalid Pagination Parameter:
+              $ref: '#/components/examples/ProblemInvalidPaginationParameter'
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem429TooManyRequests:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Example 1:
+              value:
+                type: https://api.ev.energy/v2/problems/rate-limit-exceeded/
+                status: 429
+                title: Too Many Requests
+                detail: Request was rate limited. Try again in 42 seconds
+      description: The client has exceeded its rate limit.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        Retry-After:
+          $ref: '#/components/headers/retry-after'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem400BadRequestRetrieve:
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/RFC9457ProblemDetail'
+          examples:
+            Unsupported Version:
+              $ref: '#/components/examples/ProblemUnsupportedVersion'
+      description: A problem with the request's parameters prevented it being fulfilled.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+    Problem401Unauthorized:
+      description: You need to authorise requests to access this resource.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 401
+              title:
+                type: string
+                example: Unauthorized
+              detail:
+                type: string
+                example: Authentication credentials were not provided.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem404NotFound:
+      description: This resource either does not exist or the client is not authorized to access it.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 404
+              title:
+                type: string
+                example: Not found
+              detail:
+                type: string
+                example: Resource does not exist or cannot be accessed.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+    Problem403Forbidden:
+      description: You do not have permission to perform this action.
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            required:
+            - title
+            - detail
+            properties:
+              status:
+                type: number
+                example: 403
+              title:
+                type: string
+                example: Forbidden
+              detail:
+                type: string
+                example: You do not have permission to perform this action.
+      headers:
+        EvEnergy-Version:
+          $ref: '#/components/headers/version-2'
+        X-RateLimit-Limit:
+          $ref: '#/components/headers/x-ratelimit-limit'
+        X-RateLimit-Remaining:
+          $ref: '#/components/headers/x-ratelimit-remaining'
+        RetryAfter:
+          $ref: '#/components/headers/retry-after'
+  parameters:
+    started_at__gte:
+      name: started_at__gte
+      in: query
+      schema:
+        type: string
+        format: date-time
+        example: '2024-04-17T09:00:00.100000Z'
+      description: Filters for logs with a valid period start at or after this datetime.
+    solar_forecast_id:
+      name: solar_forecast_id
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: solf[A-Z\d]{26}
+        example: solf01JASZTD3T7N39DTZPBJVXNPKP
+      description: The ID of the specific solar forecast.
+    expand-on-solarforecastlog:
+      name: expand
+      in: query
+      schema:
+        type: array
+        items:
           type: string
-          description: Unique identifier for the given solar forecast.
-          pattern: solf[A-Z\d]{26}
-          example: solf01JASZTD3T7N39DTZPBJVXNPKP
-          readOnly: true
-        url:
-          type: string
-          format: uri
-          example: https://api.ev.energy/v2/solar_forecasts/solf01JASZTD3T7N39DTZPBJVXNPKP
-          readOnly: true
-        location:
-          type: object
-          description: The geographic location for this solar forecast.
-          readOnly: true
-          properties:
-            latitude:
-              type: number
-              description: The latitude of the location.
-              example: 51.51
-            longitude:
-              type: number
-              description: The longitude of the location.
-              example: -0.13
-          required:
-          - latitude
-          - longitude
-      x-tags:
-      - Solar Forecasts
+          enum:
+          - solar_forecast
+      explode: true
+      description: Specify a url field to expand into a nested resource.
+    page_size:
+      name: page_size
+      description: Specify the number of results to return per page.
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 25
+        minimum: 1
+        maximum: 100
+        example: 10
+    started_at__lte:
+      name: started_at__lte
+      in: query
+      schema:
+        type: string
+        format: date-time
+        example: '2024-04-17T09:00:00.100000Z'
+      description: Filters for logs with a valid period start at or before this datetime.
+    version-2:
+      name: EvEnergy-Version
+      description: Specify the version of this endpoint to use.
+      required: false
+      in: header
+      schema:
+        type: number
+        enum:
+        - 2
+    next:
+      name: page_after
+      description: Return results from the page before this ID.
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[a-z]{4}[A-Z\d]{26}'
+        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
+    previous:
+      name: page_before
+      description: Return results from the page after this ID.
+      in: query
+      required: false
+      schema:
+        type: string
+        pattern: '[a-z]{4}[A-Z\d]{26}'
+        example: xmpl01HNFZM7Q8FXASZXYZ6XM3TQRR
+  examples:
+    ProblemUnsupportedVersion:
+      value:
+        type: https://api.ev.energy/v2/problems/pagination-parameters/
+        status: 400
+        title: Unsupported version
+        detail: 'Unsupported version requested: 3.0'
+    ProblemInvalidPaginationParameter:
+      value:
+        type: https://api.ev.energy/v2/problems/pagination-parameters/
+        status: 400
+        title: Invalid pagination parameter
+        detail: 'Invalid value for pagination parameter: page_size'
   securitySchemes:
     oauth2:
       type: oauth2
