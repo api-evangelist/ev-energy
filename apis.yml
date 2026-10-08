@@ -995,6 +995,8 @@ apis:
   - type: Conformance
     url: conformance/ev-energy-conformance.yml
 common:
+- type: RateLimits
+  url: rate-limits/ev-energy-rate-limits.yml
 - type: CapabilityMap
   url: capabilities/ev-energy-capability-edges.yml
   name: ev.energy Business Capability Map
